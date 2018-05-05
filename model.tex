@@ -1,0 +1,147 @@
+\documentclass[a4paper 12pt]{article}
+
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage[final]{pdfpages}
+\usepackage{listings}
+
+%\useunder{\uline}{\ul}{}
+
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[makeroom]{cancel}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[export]{adjustbox}
+\usepackage{xcolor,colortbl}
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+
+\usepackage{lscape}
+\usepackage{float}
+\usepackage{hyperref}
+\makeatother
+
+
+\usepackage{float}
+
+
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{Modify}{rgb}{0,0.8,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+\definecolor{MalinhoBackground}{rgb}{0.95,0.95,0.95}
+\usepackage{soul,listings,xcolor}
+\usepackage{listings}
+\lstset{language=matlab,
+	showspaces=false,
+	numbers=left,
+	showtabs=false,
+	breaklines=true,
+	frame=lines,
+	backgroundcolor=\color{MalinhoBackground},
+	showstringspaces=false,
+	breakatwhitespace=true,
+	escapeinside={(*@}{@*)},
+	commentstyle=\color{greencomments},
+	keywordstyle=\color{bluekeywords},
+	stringstyle=\color{redstrings},
+	basicstyle=\ttfamily,
+	emph={
+	},
+	emphstyle={\color{bluekeywords}},
+	otherkeywords={set, of,constraint, var, array, forall, exists, predicate, let, then, endif,:-},
+	% if you want to add more keywords to the set
+	emph={%
+		{:-,count, sum}%
+	},emphstyle={\color{bluekeywords}}
+}%
+
+\titleclass{\subsubsubsection}{straight}[\subsection]
+
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+
+\titleformat{\subsubsubsection}
+{\normalfont\normalsize\bfseries}{\thesubsubsubsection}{1em}{}
+\titlespacing*{\subsubsubsection}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{5}{\z@}%
+	{3.25ex \@plus1ex \@minus.2ex}%
+	{-1em}%
+	{\normalfont\normalsize\bfseries}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
+	{3.25ex \@plus1ex \@minus .2ex}%
+	{-1em}%
+	{\normalfont\normalsize\bfseries}}
+\def\toclevel@subsubsubsection{4}
+\def\toclevel@paragraph{5}
+\def\toclevel@paragraph{6}
+\def\l@subsubsubsection{\@dottedtocline{4}{7em}{4em}}
+\def\l@paragraph{\@dottedtocline{5}{10em}{5em}}
+\def\l@subparagraph{\@dottedtocline{6}{14em}{6em}}
+\makeatother
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{macro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\lstset{language=C,
+  frameround=fttt,
+  frame=none,
+  numbers=left,
+  emph = {inline, byte},
+  emphstyle = \color{blue}\ttfamily,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{magenta}\ttfamily,
+  breaklines=true
+  morecomment=[l][\color{magenta}]{\#}
+}
+\begin{titlepage}
+  \newcommand{\Hule}{\rule{\linewidth}{0.5mm}}
+  \center
+  \textsc{\LARGE Università degli studi di Udine}\\[1.5cm]
+  %\includegraphics[width=0.2\linewidth]{../../logo.jpg} \\[1cm]
+  \Hule \\[0.1cm]
+  \textsc{\Large **CORSO**\\~\\
+    **SUBDESCR**}\\[0.5cm]
+  \Hule \\[1cm]
+  \begin{minipage}{0.48\textwidth}
+    \begin{flushleft} \large
+      \emph{Autore}\\
+      Anna \textsc{Becchi}\\
+    \end{flushleft}
+  \end{minipage}
+  ~
+  \begin{minipage}{0.48\textwidth}
+    \begin{flushright} \large
+      \emph{Corso di Laurea magistrale in} \\
+      \textsc{Informatica}
+    \end{flushright}
+  \end{minipage}\\[2cm]
+  {\large **DATE**}\\[2cm]
+  \vfill
+\end{titlepage}
+\newpage
+%\tableofcontents
+\newpage
+
+\end{document}
