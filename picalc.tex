@@ -1,0 +1,153 @@
+\documentclass{article}
+
+\usepackage[italian]{babel}
+\usepackage{blindtext}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage{listings}
+\usepackage[export]{adjustbox}
+\usepackage{lscape}
+\usepackage{float}
+\usepackage{booktabs}
+
+%% \usepackage{pdftricks}
+%% \begin{psinputs}
+%%   \usepackage{pstricks}
+%% \end{psinputs}
+%% \usepackage[pdf]{pstricks}
+
+\usepackage{float}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\floatname{algorithm}{Pseudocode}
+
+\usepackage{cleveref}
+\usepackage{tikz}
+\usetikzlibrary{matrix,shapes,arrows,positioning,chains}
+\usepackage{hhline}
+\usepackage{multirow}
+
+\pagestyle{plain}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{macro}
+\include{prooftree}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+%
+\section{Il problema: interprete distribuito $\pi$-calcolo}
+ Costruire un sistema distribuito  che permetta il coordinamento e la comunicazione tra processi descritti attraverso il sistema formale $\pi$-calcolo.
+ 
+\subsection{Formalizzazione}
+Il sistema preso in considerazione è il $\pi$-calcolo poliadico [], un estensione del monadico, che permette la comunicazione atomica di tuple di messaggi. 
+Un processo può essere della forma
+\begin{align*}
+P::=&  P \parallel P &\text{Comp. Parallela}\\
+	  &  (\upsilon x) P &\text{Restrizione}\\
+	  & P + P  &\text{Somma non det.}\\
+	  & x?[x_1,...,x_n].P  &\text{Input}\\
+	  & x![x_1,...,x_n].P &\text{Output} \\
+	  & *P  &\text{Replicazione}\\
+	  & 0 &\text{Nil}\\
+\end{align*}
+Come suggerito nell'articolo di Turner, chiediamo che gli argomenti dell'operatore somma possano essere: prefissi di \emph{input}, prefissi di \emph{output} o il processo \emph{nil}.
+
+\subsection{Fallimenti runtime}
+
+\[
+\prooftree
+P \ fallisce
+\justifies
+P \parallel Q \ fallisce
+\endprooftree
+\]
+\\
+
+\[
+\prooftree
+P \ fallisce
+\justifies
+(\upsilon x) P \ fallisce
+\endprooftree
+\]
+\\
+
+\[
+\prooftree
+P \equiv Q,  Q fallisce
+\justifies
+P  \ fallisce
+\endprooftree
+\]
+\\
+
+\[
+\prooftree
+m \neq n
+\justifies
+(P + c?[x_1,...,x_m].Q) \parallel (c![y_1,...,y_n].R + S) \ fallisce
+\endprooftree
+\]
+\section{Da decidere}
+\begin{itemize}
+\item COME FACCIAMO P+Q ?! Avremmo bisogno di una lista globale dei nomi disponibili in quel momento ?
+\begin{itemize}
+
+\item Ad esempio: io voglio fare un somma non deterministica tra due processi, il mio (idriss::Q) e quello sul tuo computer (anna::P). 
+
+\item Quindi chiedo di farmi una "foto-parziale" del sistema. Mi viene data una lista dei processi disponibili e vedo il tuo.
+
+\item Dunque aggiungo processo idriss::Q+anna::P. Dobbiamo considerare la consistenza, ovvero se viene scelto anna::P, idriss::Q deve morire. 
+
+\item Se il tuo processo nel frattempo muore ?
+
+\item Altrimenti come potremmo fare ?
+\end{itemize}
+\end{itemize}
+\begin{itemize}
+\item I processi sono distribuiti su più macchine oppure creiamo un interprete locale (su un unico elaboratore) che simuli un sistema distribuito ?
+\begin{itemize}
+	\item La prima opzione comprata  problematiche relative a transazioni distribuite. Ad esempio un due processi comunicano sullo stesso canale. Devono cambiare stato simultaneamente (atomicità delle operazioni di input e output), e un processo muore oppure si ha un fallimento della rete. 
+	\item La seconda è pi\`u multi-thread programming.  
+\end{itemize}
+
+  
+\item  Protocollo di comunicazione in presenza di restrizione. Bisogna definire un protocollo per la comunicazione delle variabili free e bounded. Una sorta di handshaking per SSL.
+Idem per la restrizione su canali. \textbf{cfr(Encoding polyadic communication pg. 19 Turner)}. 
+
+\item Linguaggio di programmazione: un linguaggio O.O sicuramente semplificherebbe l'implementazione in quanto i processi possono essere visti come istanze di una classe. Le possibilità con tali proprietà sono:
+\begin{itemize}
+	\item Java + framework Akka
+	\item Scala 
+\end{itemize}
+Con Erlang invece andremmo ad appesantire troppo il codice dovendo passarci in base alle necessità i parametri.
+  
+  
+  \item La comunicazione tra i processi è del tipo \emph{Time-uncoupled} ovvero un processo che effettua l'operazione di output può essere in attesa di un processo che effettui l'operazione di input con lo stesso nome di canale ma questo può avvenire in momenti diversi. Come facciamo a dire che siamo disponibili a comunicare. Le soluzioni potrebbero essere: 
+  \begin{itemize}
+  	\item Message queues (RabbitMQ)
+  	\item Anything else? 
+  \end{itemize}
+
+\item Fault tollerance:
+\begin{itemize}
+\item Abbiamo visto come un processo può fallire. Se un processo muore viene rebootato ? Se si con quale stato ? Perdiamo tutto ?
+
+
+\item In base al tipo di comunicazione tra processi (MQ, TS) abbiamo diverse possibilità di fallimento. Forse la seconda è migliore dal punto di vista dei fallimenti, un po meno rispetto la scalabilità.
+
+
+ \end{itemize}
+
+\end{itemize}
+
+%
+\end{document}
