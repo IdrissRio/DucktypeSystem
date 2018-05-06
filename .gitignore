@@ -3,3 +3,5 @@
 *.log
 *.out
 *.pdf
+*.gz
+*.DS_Store
