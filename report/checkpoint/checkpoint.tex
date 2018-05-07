@@ -1,6 +1,7 @@
 \documentclass{llncs}
 
 \usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
 %% \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{blindtext}
@@ -57,27 +58,115 @@
 \end{abstract}
 %\end{titlingpage}
 
-\coanote{In this chapter, we describe in detail functional
-and non-functional requirements of a solution for the problem.}
+Il problema che si intende affrontare si pone come una variante del
+\emph{subgraph isomorphism problem} in contesto distribuito.
+
+\coanote{A little bit oh handweaving... TO BE SAID:}
+\begin{itemize}
+\item applicabilità a modello fisico da cui traiamo ipotesi:
+\item precisare che la nostra è un'astrazione -- uso di strumenti
+  implementativi in grado di evidenziare solo le caratteristiche
+  di rilevanza del problema: verrà fornita un'interfaccia strettamente
+  legata alla ricerca del subgraph, focalizzando l'attenzione
+  alle problematiche dei sistemi distribuiti.
+  Verranno trattati black-box le modalità con cui i sensori
+  acquisiscono informazioni sulla mappa, ragionando direttamente
+  sull'astrazione matematica.
+\item descrizione (formale) del problema
+\end{itemize}
+
+\coanote{Aggiunta no-brain di cose...}
+
+Dato un grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$,
+che rappresenta una mappa di un luogo, viene inizializzato un
+insieme di processi $\Sset = \{s_i \}_{i \in S}$ con $S$ insieme
+random $S \sseq V$.
+Tali processi simulano un insieme di sensori che
+acquisiscono durante la fase di inizializzazione una conoscenza
+parziale del luogo. L'acquisizione di nuova conoscenza corrisponde
+alla memorizzazione in ogni $s_i$ della lista di adiacenza del nodo
+corrispondente $v_i \in \Vset$.
+Inizialmente dunque il raggio di conoscenza di ogni sensore corrisponde
+a un solo arco del grafo.
+
+Inoltre potrà essere simulato anche il loro spostamento e la progressiva
+acquisizione di nuova conoscenza del grafo, compatibilmente con le
+loro (limitate) capacità di memorizzazione.
+
+L'algoritmo viene innescato da una query $\cQ = (\Vset_\cQ, E_\cQ)$
+che viene divulgata alla rete di processi: l'obiettivo sarà verificare
+nel grafo $\cG$ l'esistenza di un sottografo corrispondente a $\cQ$,
+evitando di ricostruire la conoscenza totale e centralizzata del
+grafo stesso.
 
 \section{Requisiti funzionali}
 \label{sec:func-req}
-Which functions must be offered to users / other programs?
-Which are the input data and the output data?
-Which is the expected effect?
+\begin{quote}
+  Which functions must be offered to users / other programs?
+  Which are the input data and the output data?
+  Which is the expected effect?
+\end{quote}
 
+Si assume la memorizzazione pregressa di un grafo.
+Questo potrà essere letto da un file esterno e caricato dal sistema
+staticamente. Non sarà dunque possibile cambiare a runtime la mappa
+del luogo nel quale i sensori lavorano.
+\coanote{TODO: definire dimensione massima grafo, caratteristiche
+  di memorizzazione.}
+
+L'utente può decidere in fase di inizializzazione del sistema con quanti
+sensori popolare la mappa. Questi verranno distribuiti in modo casuale
+ognuno in corrispondenza di un nodo del grafo: è ammesso che più
+sensori condividano in un momento la stessa posizione
+(i.e. non c'è conflitto sui nodi in cui sono posizionati).
+
+\coanote{TODO: Decidere \textbf{COME CAZZO} viene inserita la query
+  dall'utente: decidere se la query viene distribuita a tutti i sensori
+  inizialmente e se sì come... broadcast? messaggio a tutti i sensori
+  (con tell in un ciclo sequenziale)?
+  coda a cui tutti sono registrati?}
+
+Se la query non viene trovata, l'utente può decidere se ritentare
+la stessa ricerca dopo aver fatto acquisire nuova conoscenza al sistema
+distribuito: ciò può essere fatto in due modi.
+Si può aggiungere un nuovo sensore alla rete, posizionato in modo
+casuale nel grafo. Alternativamente
+si possono far muovere \emph{tutti} i sensori in un loro nodo adiacente,
+scelto non deterministicamente, caricando dal grafo (centralizzato)
+la lista di adiacenza del nuovo nodo: ciò simula quindi una fase di
+\emph{apprendimento} da parte di ogni sensore. Occorre tenere presente
+che i sensori hanno una capacità limitata di memorizzazione,
+dunque si permetterà di mantenere contemporaneamente in memoria un
+numero limitato di nodi: può dunque accadere che durante il movimento
+vengano scordate le liste di adiacenza dei nodi più lontani.
+\coanote{TODO: definire capacità massima.}\\
+
+In caso in cui venga trovato un sottografo corrispondente alla query,
+questo viene comunicato all'utente.
+Oltre alla mera conferma della sua esistenza, vengono aggiunte
+le eventuali istanziazioni dei nodi non etichettati.
+Sebbene la stessa soluzione possa essere trovata da più sensori,
+la sua restituzione sarà unica, in particoalre si eviterà di rispondere
+positivamente più volte per confermare l'esistenza di un sottografo
+interamente etichettato.\\
+
+\coanote{TODO: definire già interfacce e nomi metodi??
+  Almeno fornire sottoforma di elendo il nome del metodo, senza ancora
+  specificare parametri e tipo parametri...
+}
 
 \section{Requisiti non funzionali}
 \label{sec:nonfunc-req}
-Everything about mode and transparencies:
-availability, mobility, security, fault tolerance, etc.
-Are there execution time bounds? Minimum data rates?
+\begin{quote}
+  Everything about mode and transparencies:
+  availability, mobility, security, fault tolerance, etc.
+  Are there execution time bounds? Minimum data rates?
 
-If requested, specific platforms/languages/middlewares requirements
-for the implementation can be decided here.
-(E.g.: if the project is on a SOA, we may request that functions
-are offered via SOAP or RESTful services).
-
+  If requested, specific platforms/languages/middlewares requirements
+  for the implementation can be decided here.
+  (E.g.: if the project is on a SOA, we may request that functions
+  are offered via SOAP or RESTful services).
+\end{quote}
 
 %%%%%%%%%%%%%%%%%%%%
 \end{document}
