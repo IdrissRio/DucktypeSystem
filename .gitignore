@@ -5,3 +5,7 @@
 *.pdf
 *.gz
 *.DS_Store
+akka-stuff/first-project/target/classes/
+akka-stuff/first-project/target/test-classes/
+akka-stuff/first-project/target/maven-status
+akka-stuff/first-project/.idea/workspace.xml
