@@ -1,0 +1,83 @@
+\documentclass{llncs}
+
+\usepackage[italian]{babel}
+%% \usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{blindtext}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage{listings}
+\usepackage[export]{adjustbox}
+\usepackage{lscape}
+\usepackage{float}
+\usepackage{booktabs}
+
+%% \usepackage{pdftricks}
+%% \begin{psinputs}
+%%   \usepackage{pstricks}
+%% \end{psinputs}
+%% \usepackage[pdf]{pstricks}
+
+\usepackage{float}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\floatname{algorithm}{Pseudocode}
+
+\usepackage{cleveref}
+\usepackage{tikz}
+\usetikzlibrary{matrix,shapes,arrows,positioning,chains}
+\usepackage{hhline}
+\usepackage{multirow}
+
+\pagestyle{plain}
+
+%%%%
+\include{macro}
+%%%%
+\subtitle{A distribuited algorithm\\for the subgraph isomorphism problem}
+\title{Analisi dei requisiti}
+\author{Anna Becchi, Idriss Riouak}
+\institute{Laurea Magistrale in Informatica\\Universit\`a di Udine, Italy}
+\date{A.A. 2017/2018}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%\begin{titlingpage}
+\maketitle
+\begin{abstract}
+  Scrivimi.
+\end{abstract}
+%\end{titlingpage}
+
+\coanote{In this chapter, we describe in detail functional
+and non-functional requirements of a solution for the problem.}
+
+\section{Requisiti funzionali}
+\label{sec:func-req}
+Which functions must be offered to users / other programs?
+Which are the input data and the output data?
+Which is the expected effect?
+
+
+\section{Requisiti non funzionali}
+\label{sec:nonfunc-req}
+Everything about mode and transparencies:
+availability, mobility, security, fault tolerance, etc.
+Are there execution time bounds? Minimum data rates?
+
+If requested, specific platforms/languages/middlewares requirements
+for the implementation can be decided here.
+(E.g.: if the project is on a SOA, we may request that functions
+are offered via SOAP or RESTful services).
+
+
+%%%%%%%%%%%%%%%%%%%%
+\end{document}
