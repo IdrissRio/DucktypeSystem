@@ -1,0 +1,92 @@
+\documentclass{memoir}
+
+%% \usepackage[italian]{babel}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{blindtext}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage{listings}
+\usepackage[export]{adjustbox}
+\usepackage{lscape}
+\usepackage{float}
+\usepackage{booktabs}
+
+%% \usepackage{pdftricks}
+%% \begin{psinputs}
+%%   \usepackage{pstricks}
+%% \end{psinputs}
+%% \usepackage[pdf]{pstricks}
+
+\usepackage{float}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\floatname{algorithm}{Pseudocode}
+
+\usepackage{cleveref}
+\usepackage{tikz}
+\usetikzlibrary{matrix,shapes,arrows,positioning,chains}
+\usepackage{hhline}
+\usepackage{multirow}
+
+\pagestyle{plain}
+
+%%%%
+\include{macro}
+%%%%
+\title{A distribuited algorithm\\for the subgraph isomorphism problem}
+
+\author{Anna Becchi, Idriss Riouak}
+%\institute{Laurea Magistrale in Informatica\\Universit\`a di Udine, Italy}
+\date{A.A. 2017/2018}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%\begin{titlingpage}
+\maketitle
+\begin{abstract}
+Write me.
+\end{abstract}
+%\end{titlingpage}
+
+\chapter{Introduction}
+\label{ch:intro}
+\input{intro}
+
+\chapter{Analysis}
+\label{ch:analysis}
+\input{analysis}
+
+%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Project}
+\label{ch:project}
+\input{project}
+
+\chapter{Implementation}
+\label{ch:impl}
+\input{impl}
+
+\chapter{Validation}
+\label{ch:validation}
+\input{validation}
+
+\chapter{Conclusions}
+\label{ch:conclusions}
+\input{conclusions}
+
+\appendix
+
+\chapter{Appendix}
+\label{ch:appendix}
+\input{appendix}
+
+\end{document}
