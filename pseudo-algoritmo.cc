@@ -1,4 +1,3 @@
-
 /******* Strutture dati: ********/
 
 // Contiene il grafo: classe a cui si delega interamente l'accesso alla struttura centralizzata.
@@ -13,6 +12,7 @@ private:
   int** adj_matrix;
 public:
   // Load from general_graph.
+  Graph();
   Graph(int* nodes);
   Graph(int node);
   // ...
@@ -21,6 +21,10 @@ public:
   int* adj_nodes(i);
   void add_node(int i);
   void remove_node(int i);
+  void remove_adj(int i, int j); // Don't remove trailing nodes!
+
+  // remove nodes whose adj info are empty.
+  void shrink_redundancies();
 
   int choose_next(int current) {
     return random_in(adj_nodes(current));
@@ -73,30 +77,33 @@ private:
 
   // Questa è la parte centrale dell'algoritmo:
   bool check_and_reduce_query(Query q, Query new_query) {
+    assert(!q.graph.redundant());
     bool new_hypothesis = false;
-    for (auto i : q.graph.nodes()) {
+    for (auto i : q.graph.get_nodes()) {
       // QUERY TUTTA ETICHETTATA.
       // ricerca ordinata O(log k) con k = max arietà adj
       if (binary_search(i, my_graph.get_nodes(), j)) {
           // il nodo della query in pos i è presente nella conoscenza del sensore in pos j
           // controlla se lista di adiacenza è coerente.
-          //
-        if (subset(q.graph.adj_nodes(i), my_graph.adj_nodes(j))) {
-          // so tutto di quel nodo: rimuovilo dalla query.
-          new_query.graph.remove_node(i);
-          new_hypothesis = true;
-        }
-        else {
+        if (i == my_node && !subset(q.graph.adj_nodes(i), my_graph.adj_nodes(j))) {
           // viene richiesta una lista di adiacenza più grande della conosciuta.
           // se ho la certezza di sapere tutto di quel nodo (se ci sono sopra)
           // segnalo inconsistenza.
-          if (i == my_node) {
-            throw_query_failed();
-            return false;
+          throw_query_failed();
+          return false;
+        }
+        // So qualcosa del nodo, rimuovo dalla query archi che conosco.
+        for (auto k : q.graph.adj_nodes(i)) {
+          if (binary_search(k, my_graph.graph.adj_nodes(i))) {
+            new_query.graph.remove_adj(i, k);
+            new_hypothesis = true;
           }
         }
-      } // nodo non presente o non abbastanza info
+      }
+      // end if nodo presente
     }
+    if (new_hypothesis)
+      new_query.graph.shrink_redundancies();
     return new_hypothesis;
   }
 
@@ -108,7 +115,7 @@ private:
 public:
   Sensore(int node) {
     my_node = node;
-    my_grap = new Graph(node);
+    my_graph = new Graph(node);
     subscribe();
   }
   void onReceive(int message) {
@@ -137,14 +144,17 @@ public:
 // disribuisce a tutti lo stesso comando
 // listener di fallimenti
 class Father {
-  // popola random grafo con sensori
-  // move a tutti
+  // -> Cluster : creazione - popola random
+  // -> Cluster : move
+  // -> Cluster : termina ricerca.
   // -> Printer : failure detected
 };
 
 // Riceve eventi dal cluster relativi alla query
 // (è il pub sub stesso??)
 class Query_Event_Distpatcher {
+  // <- Cluster : found or fail : dobbiamo tenere conto che possono essercene due consecutivi.
+  //              mandare al printer solo una volta.
   // -> Printer : query match
   // -> Printer : query fail
 };
@@ -158,3 +168,14 @@ class Command_loader {
   // -> Father : move a tutti
   // -> Father : aggiungi nuovo sensore
 };
+
+
+/*
+ CHECK ME:
+ PubSub coda di messaggi per ogni attore?
+ Se riceve messaggio di terminazione, deve ancora smaltire la coda rimasta?
+ Coda ordinata?
+
+ Quando rimette in circolo query, al massimo la rilegge lui stesso una sola volta:
+ garanzia che il proprio messaggio non prenda il posto sempre degli altri.
+ */
