@@ -140,23 +140,47 @@ public:
 };
 
 
-// Punto di accesso al cluster di Sensori
-// disribuisce a tutti lo stesso comando
-// listener di fallimenti
-class Father {
-  // -> Cluster : creazione - popola random
-  // -> Cluster : move
-  // -> Cluster : termina ricerca.
-  // -> Printer : failure detected
+/******************************************************/
+// Ruoli schema messaggi:
+
+class Sensor {
+  // -> Cluster_X : register
+  // <- Cluster_X : Try_query() : -> Supervisor : Cache query + cluster_x
+  //                          + elabora new query
+  //                          + remove from cluster_x
+  //                          + -> Supervisor : ACK (o dopo??)
+  //                          + if (new_query)         -> Cluster_X : SEND(new_query)
+  //                            else if (match_query)  -> Query_Event_Dispatcher : match!
+  //                            else if (failed_query) -> Query_Event_Dispatcher : failed!
+  // <- Father : move
 };
 
+class One_to_one_Supervisor {
+  // <- Supervised : i'm dead : supervised.restart
+  //                          + supervised.register_again
+  //                          + if (flag == CRITICO) -> Cluster_X : SEND(cached_query)
+  // <- Supervised : Cached_query + quale cluster : flag = CRITICO
+  // <- Supervised : Ack : flag = NON_CRITICO
+};
+
+// Punto di accesso al cluster di Sensori
+// disribuisce a tutti lo stesso comando.
+class Father {
+  // -> Cluster : popola grafo in posizioni random
+  // -> Cluster : move
+  // <- Loader : inizia nuova query:
+  //             init k Cluster : per ognuno : -> Cluster_X SEND(query)
+  // -> Query_Event_Dispathcer : termina ricerca : azzera ogni Cluster_X
+};
+
+class Father_Cluster_X; ?????
+
 // Riceve eventi dal cluster relativi alla query
-// (è il pub sub stesso??)
-class Query_Event_Distpatcher {
-  // <- Cluster : found or fail : dobbiamo tenere conto che possono essercene due consecutivi.
-  //              mandare al printer solo una volta.
-  // -> Printer : query match
-  // -> Printer : query fail
+class Query_Event_Dispatcher {
+  // <- Cluster_X : match or fail
+  //              -> Father : termina ricerca.
+  //              -> Printer : query match
+  //              or -> Printer : query fail
 };
 
 class Printer {
@@ -164,18 +188,53 @@ class Printer {
 };
 
 class Command_loader {
-  // -> Father : con quanti inizializzare.
+  // -> Father : con quanti inizializzare / decisone k
   // -> Father : move a tutti
   // -> Father : aggiungi nuovo sensore
 };
 
 
 /*
- CHECK ME:
- PubSub coda di messaggi per ogni attore?
- Se riceve messaggio di terminazione, deve ancora smaltire la coda rimasta?
- Coda ordinata?
+  Cose da dire:
+  Poiché la soluzione in ogni caso richiede l'esplorazione dei nodi
+  in modo sequenziale, NON è una limitazione in termini di efficienza
+  avere un solo nodo attivo alla volta. Ovvero NON possiamo comunque
+  sfruttare il parallelismo di un sistema distribuito.
+  Il percorso di esplorazione della query, progressivamente snellita,
+  non influisce nella sua determinazione: una qualunque delle n! possibili
+  permutazioni -- qualunque sia l'ordine in cui la query attraversa i nodi --
+  trova la stessa soluzione, che richiede l'intervento SEQUENZIALE di
+  tutti i nodi che possono dire qualcosa sulla query stessa.
+  Dunque, dal punto di vista della correttezza dell'algoritmo,
+  a meno di failure, possiamo far procedere una query sola alla volta.
 
- Quando rimette in circolo query, al massimo la rilegge lui stesso una sola volta:
- garanzia che il proprio messaggio non prenda il posto sempre degli altri.
+  In caso di fallimenti:
+  la ricerca è "affected" (come cacchio si dice in italiano?)
+  quando muore il sensore durante il suo periodo di attività,
+  ovvero nel momento in cui ha la query attiva.
+  Possiamo ridurre inizialmente la finestra temporale in cui può
+  avvenire tale fallimento critico, copiando la query attiva
+  nel supervisore one-to-one del processo, non appena questa
+  è stata ricevuta dal processo stesso.
+  In caso di fallimento, il supervisore che ha ricevuto la copia,
+  ovvero è informato che il processo è in una fase critica del lavoro,
+  si occuperà, oltre di fare il restart del processo e di reiscriverlo
+  al cluster, di fare una nuova SEND della query al cluster.
+  Se invece il processo fallisce in una fase *non* critica del lavoro,
+  i.e. quando NON ha la query attiva, verrà semplicemente riattivato
+  dal supervisore.
+
+  Nonostante la finestra temporale in cui il fallimento critico può avvenire
+  sia stata ridotta,
+  possiamo ulteriormente proteggere il sistema facendo procedere
+  un numero k costante (3 di default?) di query contemporaneamente,
+  ognuna con il proprio cluster di processi.
+  In questo modo si ottiene una forma di ridondanza: nel caso una
+  query venga persa a causa di una fallimento critico,
+  il suo cluster risulta semplicemente inattivo.
+  Sperabilmente, almeno una delle k query parallele riesce ad
+  esplorare tutto il cluster: di conseguenza, il messaggio di
+  match_query / fail_query termina la ricerca delle altre versioni,
+  sbloccando i cluster eventualmente rimasti inattivi.
+
  */
