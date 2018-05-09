@@ -178,6 +178,80 @@ interamente etichettato.\\
   specificare parametri e tipo parametri...
 }
 
+\subsection{Ruoli}
+In questa sezione descriviamo le caratteristiche e le funzionalità
+efferte dai principali ruoli del sistema:
+oltre ai sensori, che costituiscono la parte distribuita
+è necessario definire a priori alcuni ruoli centralizzati
+che possano essere punto di accesso all'intero cluster.%
+~\footnote{Come verrà successivamente analizzato,
+  nella Sezione~\ref{sec:nonfunc-req} questo non lede alla
+  scalabilità del sistema.}
+
+\subsubsection*{Sensore}
+I sensori vengono sparpagliati in fase di inizializzazione del
+sistema ognuno su un nodo della rete: sono in grado di
+acquisire una conoscenza parziale del grafo, assumendo che si
+riesca sempre ad acquisire correttamente tutta l'informazione
+locale al nodo su cui si trovano
+(tale fase di acquisizione verrà simultata tramite il caricamento
+della lista di adiacenza di alcuni nodi da un grafo centralizzato,
+astraendo l'implementazione dai particolari metodi di
+rilevazione e di sintesi delle informazioni).
+
+Sono in grado di muoversi e di conseguenza aumentare la loro
+conoscenza.
+
+Data la loro limitata capacità di memorizzazione,
+stimata essere \coanote{``STIMAMI!!''},
+può accadere che
+durante uno spostamento perdano conoscenza rispetto alla zona del
+grafo precedentemente esplorata.
+
+Rispetto ad un'analisi ad alto livello,
+saranno in grado di gestire messaggi del tipo:
+\begin{itemize}
+\item \texttt{try-query()}: alla ricezione della query da verificare
+  si occupa di rimuovere da questa le parti che corrispondono alla
+  sua conoscenza parziale del grafo. In questa fase può riuscire a
+  verificare la presenza dell'intera query (\emph{match}),
+  scoprire inconsistenze della query con il grafo conosciuto
+  (\emph{fail}), oppure rimanere in una fase di \emph{dontknow}
+  per cui rimangono elementi ancora da verificare: la nuova query
+  prodotta verrà rimandata al resto del cluster attivo.
+  Al termine il sensore si dichiarerà non più interessato a seguire
+  gli sviluppi di quella query, avendo già contribuito con le
+  sue conoscenze.
+\item \texttt{move()}: causa lo spostamento del sensore e il
+  conseguente caricamento di nuova conoscenza.
+\end{itemize}
+
+\subsubsection*{Accesso al cluster}
+Definiamo alcuni ruoli di accesso all'intero cluster di sensori
+che si occuperanno di:
+\begin{itemize}
+\item inizializzare il sistema distribuendo random i sensori sui
+  nodi del grafo totale;
+\item distribuire la richiesta di spostamento a tutti i sensori;
+\item aggiungere un nuovo sensore sulla mappa;
+\item iniziare una nuova ricerca;
+\item forzare la terminazione della ricerca.
+\end{itemize}
+
+\subsubsection*{Interfaccia}
+L'interfaccia con l'utente viene fornita da terminale, offrendo:
+\begin{itemize}
+\item comando caricare manualmente la mappa del grafo
+  completo (utile in fase di sperimentazione);
+\item comando per iniziare una nuova query caricandola da file:
+  la query verrà controllata perché non può richiedere una
+  memorizzazione superiore alla capacità di un singolo sensore.
+\item comando per imporre l'avanzamento di tutti i sensori;
+\item comando per l'aggiunta manuale di un nuovo sensore;
+\item restituizione del risultato (\emph{match}, \emph{fail},
+  \emph{dontknow}) all'utente.
+\end{itemize}
+
 \section{Requisiti non funzionali}
 \label{sec:nonfunc-req}
 \begin{quote}
