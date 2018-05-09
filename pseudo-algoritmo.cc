@@ -76,6 +76,7 @@ private:
   }
 
   // Questa è la parte centrale dell'algoritmo:
+  // WARNING: this code is NOT UP-TO-DATE!!!!!!!!
   bool check_and_reduce_query(Query q, Query new_query) {
     assert(!q.graph.redundant());
     bool new_hypothesis = false;

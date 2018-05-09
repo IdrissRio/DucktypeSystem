@@ -255,5 +255,118 @@ L'interfaccia con l'utente viene fornita da terminale, offrendo:
   are offered via SOAP or RESTful services).
 \end{quote}
 
+In questa sezione analizziamo le caratteristiche non funzionali
+che il sistema sarà in grado di offrire.
+
+\subsubsection*{Scalabilità e trasparenza}
+I sensori costituiscono una rete peer-to-peer,
+senza alcuna suddivisione di ruoli a priori: i ruoli centralizzati
+sono definiti staticamente con il compito fissato di fornire un punto
+di accesso al cluster in ingresso (proponendo una nuova query) e
+in uscita (raccogliendo informazioni relative alla riuscita
+o fallimento della query).
+
+La \emph{conoscenza} del grafo complessivo è totalmente distribuita:
+non viene ricostruita alcuna conoscenza centralizzata di essa.
+Questo rende il sistema scalabile e flessibile:
+si possono dinamicamente aggiungere nuovi sensori o far spostare
+quelli già presenti nella rete, senza dover riconfigurare nulla.
+L'implementazione delle
+comunicazioni tra i punti di accesso centrali al cluster e
+tra gli elementi stessi scalano con la dimensione del cluster:
+inoltre il sistema risulta svincolato dal conoscere la posizione
+dei singoli sensori: il grado di \emph{location transparency} offerto
+è dunque molto elevato.
+
+Il sistema è inoltre \emph{flessibile}: quando nuovi sensori vengono
+aggiunti, o quando si muovono quelli già presenti, si acquisisce
+nuova conoscenza che sarà utilizzabile dalle query successive.
+
+\subsubsection*{Load balancing}
+La risoluzione del problema e la ricostruzione del sottografo
+comporta l'esplorazione progressiva e necessariamente sequenziale
+dei sensori che hanno informazioni rilevanti per la query.
+Non potendo dunque essere sfruttato in ogni caso il parallelismo
+offerto da un sistema distribuito, non risulta una limitazione
+in termini di efficienza avere un solo nodo attivo alla volta.
+%% Inoltre,
+%% il percorso di esplorazione della query, progressivamente snellita,
+%% non influisce nella sua determinazione: una qualunque delle n! possibili
+%% permutazioni -- qualunque sia l'ordine in cui la query attraversa i nodi --
+%% trova la stessa soluzione, che richiede l'intervento SEQUENZIALE di
+%% tutti i nodi che possono dire qualcosa sulla query stessa.
+%% Dunque, dal punto di vista della correttezza dell'algoritmo,
+%% a meno di failure, possiamo far procedere una sola query alla volta.
+
+\subsubsection*{Failure model}
+Trattandosi di query potenzialmente molto lunghe da verificare,
+comunque da gestirsi in modo sequenziale in un numero potenzialmente
+alto di sensori,
+siamo disposti ad aggiungere messaggi informativi che ci consentano,
+in caso di fallimenti durante la ricerca di recuperare la query parziale,
+evitando di perdere il lavoro eseguito fino a quel momento.
+
+In quanto stiamo lavorando in un contesto distribuito,
+occorre tenere in considerazione i fallimenti legati alla rete e i
+fallimenti legati ai sensori stessi.
+
+Per proteggersi dalla perdita da parte della rete dei messaggi
+con i quali si divulga la query durante una ricerca,
+il mittente aspetterà un messaggio di \emph{acknowledgement}: questo
+comporta dover definire un timeout di attesa massima prima di
+stabilire che il messaggio è andato perduto e dunque che è necessario
+reinviarlo. Tale soluzione è comunque affetta a casi di duplice invio
+della stessa query, nel caso sia il messaggio di \emph{ack} ad
+essere perso dalla rete.
+
+Per proteggersi da casi di fallimento e morte dei sensori,
+si utilizzerà un sistema di supervisione \emph{one-to-one}
+per cui ogni processo sensore ha un supervisore in grado di
+riattivarlo e di reiscrivero al cluster.
+La ricerca può essere intaccata da fallimenti di questo tipo
+quando il sensore muore nel momento in cui sta elaborando
+nuove ipotesi sulla query attiva.
+Copiare una versione della query parziale nel supervisore del nodo,
+limita la finestra temporale in cui può accadere questo fallimento
+critico.
+Possiamo ulteriormente proteggere il sistema facendo procedere
+un numero $k$ costante (\coanote{3 di default???}) di query
+contemporaneamente. Questa ridondanza introdotta, come già discusso,
+non può essere una forma di parallelizzazione del lavoro: avere
+più ricerche attive nello stesso momento permette unicamente di
+avere più possibilità che una di queste giunga all'esplorazione
+di tutto lo spazio dei sensori senza incontrare i fallimenti critici
+ai quali il sistema rimane soggetto.
+Questi ultimi infatti, hanno nel caso pessimo l'effetto di
+rendere la corrispondente ricerca inattiva: quando una delle versioni
+arriva alla conclusione, sblocca quelle che eventualmente sono rimaste
+bloccate in questo stato.
+
+Nel malaugurato caso in cui tutte le ricerche incontrino fallimenti
+critici (ovvero quelli che avvengono in porzioni già molto limitate
+del codice), il sistema risulta bloccato: pur non potendo
+distinguere tale sospensione dalla fase di ricerca, si affida
+la responsabilità all'utente di terminare la ricerca manualmente.
+
+\subsubsection*{Correttezza del risultato}
+Senza fallimenti, il sistema riesce a rispondere con un messaggio di
+\emph{match} / \emph{fail} / \emph{dontknow} correttamente
+per quanto definito nelle specifiche funzionali.
+In generale, si garantisce che,
+il sistema non dà falsi \emph{match} o falsi \emph{fail} della query:
+viene ammessa solo la restituzione di un falso \emph{dontknow}.
+
+Infatti,
+in caso di fallimenti può accadere che il sistema, sebbene la somma
+delle conoscenze parziali sia in grado di definire un risultato,
+risponda comunque \emph{dontknow} all'utente.
+
+Quando la conoscenza dei sensori aumenta,
+non è garantito che le nuove informazioni possano essere immediatamente
+utilizzate se queste sono state acquisite \emph{durante} la fase di verifica
+di una query: anche in questo caso, il sistema può rispondere eventualmente
+\emph{dontknow}, anche quando l'insieme (aggiornato) delle conoscenze parziali
+dei sensori sarebbe in grado di dare una risposta più specifica.
+
 %%%%%%%%%%%%%%%%%%%%
 \end{document}
