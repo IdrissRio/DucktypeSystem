@@ -54,14 +54,57 @@
 %\begin{titlingpage}
 \maketitle
 \begin{abstract}
-  Scrivimi.
+In letteratura il problema del \emph{subgraph isomorphism}
+centralizzato è stato ampiamente studiato. Ciononostante è difficile
+trovare studi relativi alla stessa problematica su sistemi distribuiti.
+L'obiettivo della seguente analisi è fornire un algoritmo distribuito
+per il \emph{subgraph isomorphism} individuandone le criticità e
+problematiche, descrivendo dunque i requisiti funzionali e non
+funzionali del sistema come ad esempio la \emph{tolleranza ai
+guasti} e \emph{consistenza} delle strutture dati. 
 \end{abstract}
 %\end{titlingpage}
 
-Il problema che si intende affrontare si pone come una variante del
-\emph{subgraph isomorphism problem} in contesto distribuito.
+\section{Introduzione}
+Il \emph{subgraph isomorphism} ha diverse applicazioni nello contesto
+dei sistemi distribuiti, in particolare considereremo il caso in cui  un insieme
+di \emph{robot} con \emph{sensori wireless} viene posizionato all'interno di
+un edificio in maniera casuale. Tali robot hanno una visione parziale dell'edificio
+e sono in grado di comunicare unicamente attraverso scambio di messaggi.
+Dunque dato un percorso l'obiettivo finale è quello di determinare se esiste
+solamente attraverso la conoscenza parziale dei robot.
 
-\coanote{A little bit oh handweaving... TO BE SAID:}
+\subsection{Modellazione del problema}
+Dato un grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$,
+che rappresenta la mappa di un edificio, viene inizializzato un
+insieme di processi $\Sset = \{s_i \}_{i \in S}$ con $S$ insieme
+random $S \sseq V$.
+Tali processi simulano l'insieme dei robot che
+acquisiscono, durante la fase di inizializzazione, una conoscenza
+parziale del luogo. L'acquisizione di nuova conoscenza corrisponde
+alla memorizzazione in ogni $s_i$ della lista di adiacenza del nodo
+corrispondente $v_i \in \Vset$.
+Inizialmente dunque il raggio di conoscenza di ogni sensore corrisponde
+a un solo arco del grafo.
+
+Inoltre potrà essere simulato anche il loro spostamento e la progressiva
+acquisizione di nuova conoscenza del grafo, compatibilmente con le
+loro (limitate) capacità di memorizzazione.
+
+L'algoritmo viene innescato da una query $\cQ = (\Vset_\cQ, E_\cQ)$, 
+che viene divulgata alla rete di processi: l'obiettivo sarà verificare
+nel grafo $\cG$ l'esistenza di un sottografo corrispondente a $\cQ$,
+evitando di ricostruire la conoscenza totale e centralizzata del
+grafo stesso.
+
+Considereremo black-box tutti gli aspetti legati all'acquisizione delle informazioni 
+da parte dei robot, focalizzando l'attenzione sull'astrazione matematica.
+
+I vincoli sulle limitazioni fisiche dei sensori è lasciata all'utente finale dell'applicazione.
+\subsection{Ambiente di sviluppo}
+L'ambiente di sviluppo è stato scelto in modo tale da poter evidenziare solamente le caratteristiche più rilevanti del problema. Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di sistemi distribuiti che offre 
+
+
 \begin{itemize}
 \item applicabilità a modello fisico da cui traiamo ipotesi:
 \item precisare che la nostra è un'astrazione -- uso di strumenti
@@ -77,27 +120,7 @@ Il problema che si intende affrontare si pone come una variante del
 
 \coanote{Aggiunta no-brain di cose...}
 
-Dato un grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$,
-che rappresenta una mappa di un luogo, viene inizializzato un
-insieme di processi $\Sset = \{s_i \}_{i \in S}$ con $S$ insieme
-random $S \sseq V$.
-Tali processi simulano un insieme di sensori che
-acquisiscono durante la fase di inizializzazione una conoscenza
-parziale del luogo. L'acquisizione di nuova conoscenza corrisponde
-alla memorizzazione in ogni $s_i$ della lista di adiacenza del nodo
-corrispondente $v_i \in \Vset$.
-Inizialmente dunque il raggio di conoscenza di ogni sensore corrisponde
-a un solo arco del grafo.
 
-Inoltre potrà essere simulato anche il loro spostamento e la progressiva
-acquisizione di nuova conoscenza del grafo, compatibilmente con le
-loro (limitate) capacità di memorizzazione.
-
-L'algoritmo viene innescato da una query $\cQ = (\Vset_\cQ, E_\cQ)$
-che viene divulgata alla rete di processi: l'obiettivo sarà verificare
-nel grafo $\cG$ l'esistenza di un sottografo corrispondente a $\cQ$,
-evitando di ricostruire la conoscenza totale e centralizzata del
-grafo stesso.
 
 \section{Requisiti funzionali}
 \label{sec:func-req}
