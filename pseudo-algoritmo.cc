@@ -145,13 +145,15 @@ public:
 
 class Sensor {
   // -> Cluster_X : register
-  // <- Cluster_X : Try_query() : -> Supervisor : Cache query + cluster_x
+  // <- Cluster_X : Try_query() : -> Sender : ACK ricezione
+  //                          + -> Supervisor : Cache query + cluster_x
   //                          + elabora new query
   //                          + remove from cluster_x
-  //                          + -> Supervisor : ACK (o dopo??)
-  //                          + if (new_query)         -> Cluster_X : SEND(new_query)
-  //                            else if (match_query)  -> Query_Event_Dispatcher : match!
-  //                            else if (failed_query) -> Query_Event_Dispatcher : failed!
+  //                          + -> Supervisor : ACK fine lavoro critica            <------------------
+  //                          + if (match_query)  -> Query_Event_Dispatcher : match!
+  //                            elsif (failed_query) -> Query_Event_Dispatcher : failed!
+  //                            else -> Cluster_X : do SEND(new_query)             <------------------
+  //                                                while wait ACK / timeout
   // <- Father : move
 };
 
@@ -173,21 +175,23 @@ class Father {
   // -> Query_Event_Dispathcer : termina ricerca : azzera ogni Cluster_X
 };
 
-class Father_Cluster_X; ?????
-
 // Riceve eventi dal cluster relativi alla query
 class Query_Event_Dispatcher {
-  // <- Cluster_X : match or fail
+  // <- Cluster_X : MATCH / FAIL / DONTKNOW (= i'm empty)
   //              -> Father : termina ricerca.
-  //              -> Printer : query match
-  //              or -> Printer : query fail
+  //              -> Printer : query MATCH / FAIL / DONTKNOW
 };
 
 class Printer {
-  // ...
+  // A terminale:
+  // Searching.....
+  // MATCH
+  // FAIL
+  // DONTKNOW
 };
 
 class Command_loader {
+  // Da terminale:
   // -> Father : con quanti inizializzare / decisone k
   // -> Father : move a tutti
   // -> Father : aggiungi nuovo sensore
@@ -195,7 +199,30 @@ class Command_loader {
 
 
 /*
-  Cose da dire:
+  Cose da dire: requisiti non funzionali:
+  *****************
+  SCALABILITÀ:
+  Sistema P2P: i ruoli centralizzati sono solo ruoli che permettono
+  la comunicazione all'intero cluster di una nuova query o che
+  raccolgono informazioni relative alla riuscita o fallimento della stessa.
+  NON viene ricostruita alcuna conoscenza centralizzata del grafo totale,
+  ovvero al gestione della conoscenza è interamente distribuita.
+  Questo rende il sistema scalabile e flessibile.
+  Si può dinamicamente aggiungere un nuovo sensore o far spostare
+  quelli presenti nella rete, senza dover riconfigurare nulla.
+  L'acquisizione di nuova conoscenza però ha effetti limitati se avviene
+  nel periodo in cui la query è stata già innescata: infatti la nuova
+  conoscenza può essere sfruttata solo se acquisita dal sensore
+  *prima* che la query che passa sequenzialmente tra i sensori attivi,
+  abbia chiesto il suo contributo.
+  Se un sensore acquisisce nuova conoscenza dopo aver elaborato la query,
+  questa non tornerà nuovamente dallo stesso sensore, dunque non potrà utilizzare,
+  per quella particolare ricerca la nuova conoscenza.
+  L'effetto di questo è solo un'eventuale risposta DONTKNOW,
+  senza rischiare di dare falsi MATCH o falsi FAIL della query.
+
+  *****************
+  LOAD BALANCING e COMPLESSITÀ del lavoro:
   Poiché la soluzione in ogni caso richiede l'esplorazione dei nodi
   in modo sequenziale, NON è una limitazione in termini di efficienza
   avere un solo nodo attivo alla volta. Ovvero NON possiamo comunque
@@ -208,7 +235,26 @@ class Command_loader {
   Dunque, dal punto di vista della correttezza dell'algoritmo,
   a meno di failure, possiamo far procedere una query sola alla volta.
 
-  In caso di fallimenti:
+  *****************
+  FAILURE MODEL:
+  Essendo tasks potenzialmente molto lunghi da affrontare,
+  e comunque da gestirsi in modo sequenziale,
+  siamo disposti ad aggiungere messaggi informativi per il recupero della query parziale,
+  evitando di perdere il lavoro eseguito fino a quel punto.
+  Aggiunta di - messaggi di ACK al mittente
+              - sistema di caching della query attuale al supervisor
+              - ridondanza della ricerca.
+  Si garantisce che i casi non gestiti di fallimenti del sistema comunque,
+  NON portano a falsi MATCH o falsi FAIL della query, al massimo il sistema
+  risponde DONTKNOW e l'utente può manualmente reiniziare la query.
+
+  Motivazioni:
+
+  In caso di fallimenti della rete:
+  Si può perdere il messaggio di Send al cluster_x con la query corrente.
+  Il mittente aspetta l'ack del ricevente con un timeout.
+
+  In caso di fallimenti dei sensori:
   la ricerca è "affected" (come cacchio si dice in italiano?)
   quando muore il sensore durante il suo periodo di attività,
   ovvero nel momento in cui ha la query attiva.
@@ -237,4 +283,15 @@ class Command_loader {
   match_query / fail_query termina la ricerca delle altre versioni,
   sbloccando i cluster eventualmente rimasti inattivi.
 
+  Criticità rimaste:
+  - Rischio di doppio invio di Send per timeout expired (rete perde il messaggio di ack)
+  - Query persa (morte del processo prima che il supervisor abbia il flag == CRITICO)
+  In ogni caso, il comportamento del sistema è di ritornare un DONTKNOW quando invece
+  si sarebbe stati in grado di avere un match o un fail certi della query.
+  NON rischiamo di avere falsi match o falsi fail della query a causa di fallimenti del sistema.
+
+  ***************
+  NAMING E LOCATION TRANSPARENCY:
+  Il sistema di Cluster e di Send svincola il sistema dalla conoscenza
+  della posizione dei vari sensori.
  */
