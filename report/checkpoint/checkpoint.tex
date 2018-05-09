@@ -100,54 +100,44 @@ grafo stesso.
 Considereremo black-box tutti gli aspetti legati all'acquisizione delle informazioni 
 da parte dei robot, focalizzando l'attenzione sull'astrazione matematica.
 
-I vincoli sulle limitazioni fisiche dei sensori è lasciata all'utente finale dell'applicazione.
+
+
 \subsection{Ambiente di sviluppo}
-L'ambiente di sviluppo è stato scelto in modo tale da poter evidenziare solamente le caratteristiche più rilevanti del problema. Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di sistemi distribuiti che offre 
+L'ambiente di sviluppo è stato scelto in modo tale da poter evidenziare solamente
+le caratteristiche più rilevanti del problema. 
+Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di applicazioni 
+distribuite e concorrenti con supporto alla \emph{fault-tollerance event-driven}.
+Il toolkit è disponibile sia per il linguaggio imperativo \emph{Java} che per il 
+funzionale \emph{Scala}.
 
-
-\begin{itemize}
-\item applicabilità a modello fisico da cui traiamo ipotesi:
-\item precisare che la nostra è un'astrazione -- uso di strumenti
-  implementativi in grado di evidenziare solo le caratteristiche
-  di rilevanza del problema: verrà fornita un'interfaccia strettamente
-  legata alla ricerca del subgraph, focalizzando l'attenzione
-  alle problematiche dei sistemi distribuiti.
-  Verranno trattati black-box le modalità con cui i sensori
-  acquisiscono informazioni sulla mappa, ragionando direttamente
-  sull'astrazione matematica.
-\item descrizione (formale) del problema
-\end{itemize}
-
-\coanote{Aggiunta no-brain di cose...}
-
-
+Akka si basa sulla figura degli \emph{Actor}. Un Actor è un astrazione che permette
+al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberandolo 
+da alcune di quelle che sono le  problematiche della programmazione 
+concorrente e distribuita tra cui: gestione dei thread e creazioni di canali.
 
 \section{Requisiti funzionali}
 \label{sec:func-req}
-\begin{quote}
-  Which functions must be offered to users / other programs?
-  Which are the input data and the output data?
-  Which is the expected effect?
-\end{quote}
 
-Si assume la memorizzazione pregressa di un grafo.
+
+Si assume la memorizzazione pregressa del grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$.
 Questo potrà essere letto da un file esterno e caricato dal sistema
-staticamente. Non sarà dunque possibile cambiare a runtime la mappa
+staticamente, così come la query. Si assume inoltre che i grafi vengano forniti
+sotto forma di liste d'adiacenza.
+Non sarà dunque possibile cambiare a runtime la mappa
 del luogo nel quale i sensori lavorano.
-\coanote{TODO: definire dimensione massima grafo, caratteristiche
-  di memorizzazione.}
 
+
+Sia $\Sset = \{s_i \}_{i \in S}$ l'insieme dei processi con $S$ insieme random $S \sseq V$.
 L'utente può decidere in fase di inizializzazione del sistema con quanti
-sensori popolare la mappa. Questi verranno distribuiti in modo casuale
+sensori popolare la mappa ovvero l'utente determina $|S|$.
+ Questi verranno distribuiti in modo casuale
 ognuno in corrispondenza di un nodo del grafo: è ammesso che più
 sensori condividano in un momento la stessa posizione
-(i.e. non c'è conflitto sui nodi in cui sono posizionati).
+(i.e. non c'è conflitto sui nodi in cui sono posizionati). 
 
-\coanote{TODO: Decidere \textbf{COME CAZZO} viene inserita la query
-  dall'utente: decidere se la query viene distribuita a tutti i sensori
-  inizialmente e se sì come... broadcast? messaggio a tutti i sensori
-  (con tell in un ciclo sequenziale)?
-  coda a cui tutti sono registrati?}
+L'utente inoltre fornirà in input un intero $k$, se non definito il valore di  default 
+viene posto a 3, che rappresenterà il numero di  \emph{Search\_Group} creati ovvero il livello
+di replicazione del sistema \ref{sec:nonfunc-req}. 
 
 Se la query non viene trovata, l'utente può decidere se ritentare
 la stessa ricerca dopo aver fatto acquisire nuova conoscenza al sistema
