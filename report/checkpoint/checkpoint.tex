@@ -115,6 +115,7 @@ al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberand
 da alcune di quelle che sono le  problematiche della programmazione 
 concorrente e distribuita tra cui: gestione dei thread e creazioni di canali.
 \subsubsection{Ipotesi sul sistema}
+\label{sec:hypotesis}
 Il sistema distribuito della quale stiamo fornendo la descrizione è stato progettato per funzionare 
 sotto determinate ipotesi quali:
 \begin{itemize}
@@ -123,8 +124,10 @@ sotto determinate ipotesi quali:
 	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un 
 	file di testo sotto forma di liste d'adiacenza,
 	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo,
-	\item 
 	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo,
+	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e 
+	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere in memoria la conoscenza acquisita nello stato attuale e nel passo precedente (i.e. al secondo spostamento perdo la conoscenza acquisita 
+	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza.
 \end{itemize}
 \section{Requisiti funzionali}
 Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali dell'applicativo
@@ -133,126 +136,133 @@ Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $
 file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
 	\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di 
-	robot distribuiti sulla mappa dell'edificio.
+	robot distribuiti sulla mappa dell'edificio,
 	\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
-\end{itemize} 
-
-
-
-Sia $\Sset = \{s_i \}_{i \in S}$ l'insieme dei processi con $S$ insieme random $S \sseq V$.
-L'utente può decidere in fase di inizializzazione del sistema con quanti
-sensori popolare la mappa ovvero l'utente determina $|S|$.
- Questi verranno distribuiti in modo casuale
-ognuno in corrispondenza di un nodo del grafo: è ammesso che più
-sensori condividano in un momento la stessa posizione
-(i.e. non c'è conflitto sui nodi in cui sono posizionati). 
-
-L'utente inoltre fornirà in input un intero $k$, se non definito il valore di  default 
-viene posto a 3, che rappresenterà il numero di  \emph{Search\_Group} creati ovvero il livello
-di replicazione del sistema \ref{sec:nonfunc-req}. 
-
-Se la query non viene trovata, l'utente può decidere se ritentare
-la stessa ricerca dopo aver fatto acquisire nuova conoscenza al sistema
-distribuito: ciò può essere fatto in due modi.
-Si può aggiungere un nuovo sensore alla rete, posizionato in modo
-casuale nel grafo. Alternativamente
-si possono far muovere \emph{tutti} i sensori in un loro nodo adiacente,
-scelto non deterministicamente, caricando dal grafo (centralizzato)
-la lista di adiacenza del nuovo nodo: ciò simula quindi una fase di
-\emph{apprendimento} da parte di ogni sensore. Occorre tenere presente
-che i sensori hanno una capacità limitata di memorizzazione,
-dunque si permetterà di mantenere contemporaneamente in memoria un
-numero limitato di nodi: può dunque accadere che durante il movimento
-vengano scordate le liste di adiacenza dei nodi più lontani.
-\coanote{TODO: definire capacità massima.}\\
-
-In caso in cui venga trovato un sottografo corrispondente alla query,
-questo viene comunicato all'utente.
-Oltre alla mera conferma della sua esistenza, vengono aggiunte
-le eventuali istanziazioni dei nodi non etichettati.
-Sebbene la stessa soluzione possa essere trovata da più sensori,
-la sua restituzione sarà unica, in particoalre si eviterà di rispondere
-positivamente più volte per confermare l'esistenza di un sottografo
-interamente etichettato.\\
-
-\coanote{TODO: definire già interfacce e nomi metodi??
-  Almeno fornire sottoforma di elendo il nome del metodo, senza ancora
-  specificare parametri e tipo parametri...
-}
-
-\subsection{Ruoli}
-In questa sezione descriviamo le caratteristiche e le funzionalità
-efferte dai principali ruoli del sistema:
-oltre ai sensori, che costituiscono la parte distribuita
-è necessario definire a priori alcuni ruoli centralizzati
-che possano essere punto di accesso all'intero cluster.%
-~\footnote{Come verrà successivamente analizzato,
-  nella Sezione~\ref{sec:nonfunc-req} questo non lede alla
-  scalabilità del sistema.}
-
-\subsubsection*{Sensore}
-I sensori vengono sparpagliati in fase di inizializzazione del
-sistema ognuno su un nodo della rete: sono in grado di
-acquisire una conoscenza parziale del grafo, assumendo che si
-riesca sempre ad acquisire correttamente tutta l'informazione
-locale al nodo su cui si trovano
-(tale fase di acquisizione verrà simultata tramite il caricamento
-della lista di adiacenza di alcuni nodi da un grafo centralizzato,
-astraendo l'implementazione dai particolari metodi di
-rilevazione e di sintesi delle informazioni).
-
-Sono in grado di muoversi e di conseguenza aumentare la loro
-conoscenza.
-
-Data la loro limitata capacità di memorizzazione,
-stimata essere \coanote{``STIMAMI!!''},
-può accadere che
-durante uno spostamento perdano conoscenza rispetto alla zona del
-grafo precedentemente esplorata.
-
-Rispetto ad un'analisi ad alto livello,
-saranno in grado di gestire messaggi del tipo:
-\begin{itemize}
-\item \texttt{try-query()}: alla ricezione della query da verificare
-  si occupa di rimuovere da questa le parti che corrispondono alla
-  sua conoscenza parziale del grafo. In questa fase può riuscire a
-  verificare la presenza dell'intera query (\emph{match}),
-  scoprire inconsistenze della query con il grafo conosciuto
-  (\emph{fail}), oppure rimanere in una fase di \emph{dontknow}
-  per cui rimangono elementi ancora da verificare: la nuova query
-  prodotta verrà rimandata al resto del cluster attivo.
-  Al termine il sensore si dichiarerà non più interessato a seguire
-  gli sviluppi di quella query, avendo già contribuito con le
-  sue conoscenze.
-\item \texttt{move()}: causa lo spostamento del sensore e il
-  conseguente caricamento di nuova conoscenza.
 \end{itemize}
 
-\subsubsection*{Accesso al cluster}
-Definiamo alcuni ruoli di accesso all'intero cluster di sensori
-che si occuperanno di:
+\subsection{Computazione}
+\label{sec:computation}
+La query viene distribuita ad un elemento per ogni \texttt{search\_group} [\ref*{sec:nonfunc-req}],
+che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che un viene trovato isomorfismo 
+parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita e poi inoltrata ad 
+un altro elemento dello stesso \texttt{search\_group}.
+
+Se l'esisto della computazione della query dovesse avere esito negativo,
+l'utente può decidere se ritentare la stessa ricerca facendo acquisire nuova conoscenza
+all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \begin{itemize}
-\item inizializzare il sistema distribuendo random i sensori sui
-  nodi del grafo totale;
-\item distribuire la richiesta di spostamento a tutti i sensori;
-\item aggiungere un nuovo sensore sulla mappa;
-\item iniziare una nuova ricerca;
-\item forzare la terminazione della ricerca.
+	\item posizionamento di un nuovo robot all'interno del grafo $\cG$,
+	\item muovere \emph{tutti} i robot in un nodo a loro adiacente, caricando e memorizzando
+	 dal grafo $\cG$ le nuove liste d'adiacenza. Occorre tenere presente che i sensori hanno
+	 una capacità di memorizzazione limitata [\ref{sec:hypotesis}] e dunque può accadere che durante
+	 tale operazione vengano sovrascritte  le liste d'adiacenza dei nodi più lontani.
 \end{itemize}
 
-\subsubsection*{Interfaccia}
-L'interfaccia con l'utente viene fornita da terminale, offrendo:
-\begin{itemize}
-\item comando caricare manualmente la mappa del grafo
-  completo (utile in fase di sperimentazione);
-\item comando per iniziare una nuova query caricandola da file:
-  la query verrà controllata perché non può richiedere una
-  memorizzazione superiore alla capacità di un singolo sensore.
-\item comando per imporre l'avanzamento di tutti i sensori;
-\item comando per l'aggiunta manuale di un nuovo sensore;
-\item restituizione del risultato (\emph{match}, \emph{fail},
-  \emph{dontknow}) all'utente.
-\end{itemize}
+\subsection{Esito della computazione}
+
+
+%Se la query non viene trovata, l'utente può decidere se ritentare
+%la stessa ricerca dopo aver fatto acquisire nuova conoscenza al sistema
+%distribuito: ciò può essere fatto in due modi.
+%Si può aggiungere un nuovo sensore alla rete, posizionato in modo
+%casuale nel grafo. Alternativamente
+%si possono far muovere \emph{tutti} i sensori in un loro nodo adiacente,
+%scelto non deterministicamente, caricando dal grafo (centralizzato)
+%la lista di adiacenza del nuovo nodo: ciò simula quindi una fase di
+%\emph{apprendimento} da parte di ogni sensore. Occorre tenere presente
+%che i sensori hanno una capacità limitata di memorizzazione,
+%dunque si permetterà di mantenere contemporaneamente in memoria un
+%numero limitato di nodi: può dunque accadere che durante il movimento
+%vengano scordate le liste di adiacenza dei nodi più lontani.
+%\coanote{TODO: definire capacità massima.}\\
+%
+%In caso in cui venga trovato un sottografo corrispondente alla query,
+%questo viene comunicato all'utente.
+%Oltre alla mera conferma della sua esistenza, vengono aggiunte
+%le eventuali istanziazioni dei nodi non etichettati.
+%Sebbene la stessa soluzione possa essere trovata da più sensori,
+%la sua restituzione sarà unica, in particoalre si eviterà di rispondere
+%positivamente più volte per confermare l'esistenza di un sottografo
+%interamente etichettato.\\
+%
+%\coanote{TODO: definire già interfacce e nomi metodi??
+%  Almeno fornire sottoforma di elendo il nome del metodo, senza ancora
+%  specificare parametri e tipo parametri...
+%}
+%
+%\subsection{Ruoli}
+%In questa sezione descriviamo le caratteristiche e le funzionalità
+%efferte dai principali ruoli del sistema:
+%oltre ai sensori, che costituiscono la parte distribuita
+%è necessario definire a priori alcuni ruoli centralizzati
+%che possano essere punto di accesso all'intero cluster.%
+%~\footnote{Come verrà successivamente analizzato,
+%  nella Sezione~\ref{sec:nonfunc-req} questo non lede alla
+%  scalabilità del sistema.}
+%
+%\subsubsection*{Sensore}
+%I sensori vengono sparpagliati in fase di inizializzazione del
+%sistema ognuno su un nodo della rete: sono in grado di
+%acquisire una conoscenza parziale del grafo, assumendo che si
+%riesca sempre ad acquisire correttamente tutta l'informazione
+%locale al nodo su cui si trovano
+%(tale fase di acquisizione verrà simultata tramite il caricamento
+%della lista di adiacenza di alcuni nodi da un grafo centralizzato,
+%astraendo l'implementazione dai particolari metodi di
+%rilevazione e di sintesi delle informazioni).
+%
+%Sono in grado di muoversi e di conseguenza aumentare la loro
+%conoscenza.
+%
+%Data la loro limitata capacità di memorizzazione,
+%stimata essere \coanote{``STIMAMI!!''},
+%può accadere che
+%durante uno spostamento perdano conoscenza rispetto alla zona del
+%grafo precedentemente esplorata.
+%
+%Rispetto ad un'analisi ad alto livello,
+%saranno in grado di gestire messaggi del tipo:
+%\begin{itemize}
+%\item \texttt{try-query()}: alla ricezione della query da verificare
+%  si occupa di rimuovere da questa le parti che corrispondono alla
+%  sua conoscenza parziale del grafo. In questa fase può riuscire a
+%  verificare la presenza dell'intera query (\emph{match}),
+%  scoprire inconsistenze della query con il grafo conosciuto
+%  (\emph{fail}), oppure rimanere in una fase di \emph{dontknow}
+%  per cui rimangono elementi ancora da verificare: la nuova query
+%  prodotta verrà rimandata al resto del cluster attivo.
+%  Al termine il sensore si dichiarerà non più interessato a seguire
+%  gli sviluppi di quella query, avendo già contribuito con le
+%  sue conoscenze.
+%\item \texttt{move()}: causa lo spostamento del sensore e il
+%  conseguente caricamento di nuova conoscenza.
+%\end{itemize}
+%
+%\subsubsection*{Accesso al cluster}
+%Definiamo alcuni ruoli di accesso all'intero cluster di sensori
+%che si occuperanno di:
+%\begin{itemize}
+%\item inizializzare il sistema distribuendo random i sensori sui
+%  nodi del grafo totale;
+%\item distribuire la richiesta di spostamento a tutti i sensori;
+%\item aggiungere un nuovo sensore sulla mappa;
+%\item iniziare una nuova ricerca;
+%\item forzare la terminazione della ricerca.
+%\end{itemize}
+%
+%\subsubsection*{Interfaccia}
+%L'interfaccia con l'utente viene fornita da terminale, offrendo:
+%\begin{itemize}
+%\item comando caricare manualmente la mappa del grafo
+%  completo (utile in fase di sperimentazione);
+%\item comando per iniziare una nuova query caricandola da file:
+%  la query verrà controllata perché non può richiedere una
+%  memorizzazione superiore alla capacità di un singolo sensore.
+%\item comando per imporre l'avanzamento di tutti i sensori;
+%\item comando per l'aggiunta manuale di un nuovo sensore;
+%\item restituizione del risultato (\emph{match}, \emph{fail},
+%  \emph{dontknow}) all'utente.
+%\end{itemize}
 
 \section{Requisiti non funzionali}
 \label{sec:nonfunc-req}
