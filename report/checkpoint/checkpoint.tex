@@ -128,7 +128,7 @@ sotto determinate ipotesi quali:
 	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e
 	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere
 	in memoria la conoscenza acquisita nello stato attuale e nel passo
-	 precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
+	precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
 	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza;
 	\item il robot ha una conoscenza parziale del grafo $\cG$, ma ha la conoscenza
 	totale del nodo sulla quale viene posizionato, i.e. la sua lista d'adiacenza è completa;
@@ -141,8 +141,9 @@ Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $
 file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
 \item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
-  robot distribuiti sulla mappa dell'edificio;
-\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
+robot distribuiti sulla mappa dell'edificio;
+\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante
+il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
 \end{itemize}
 
 \subsection{Computazione}
@@ -150,7 +151,7 @@ file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 La query viene distribuita ad un elemento per ogni \texttt{search\_group} [\ref*{sec:nonfunc-req}],
 che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che un viene trovato isomorfismo
 parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita e poi inoltrata ad
-un altro elemento dello stesso \texttt{search\_group}.
+un altro elemento dello stesso \texttt{search\_group}. Nel caso non ci fosse 
 
 Se l'esisto della computazione della query dovesse avere esito negativo,
 l'utente può decidere se ritentare la stessa ricerca facendo acquisire nuova conoscenza
@@ -158,21 +159,21 @@ all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \begin{itemize}
 	\item posizionamento di un nuovo robot all'interno del grafo $\cG$;
 	\item muovere \emph{tutti} i robot in un nodo a loro adiacente, caricando e memorizzando
-	 dal grafo $\cG$ le nuove liste d'adiacenza. Occorre tenere presente che i sensori hanno
-	 una capacità di memorizzazione limitata [\ref{sec:hypotesis}] e dunque può accadere che durante
-	 tale operazione vengano sovrascritte  le liste d'adiacenza dei nodi più lontani.
+	dal grafo $\cG$ le nuove liste d'adiacenza. Occorre tenere presente che i sensori hanno
+	una capacità di memorizzazione limitata [\ref{sec:hypotesis}] e dunque può accadere che durante
+	tale operazione vengano sovrascritte  le liste d'adiacenza dei nodi più lontani.
 \end{itemize}
 
 \subsection{Esito della computazione}
 L'esito della computazione dell'algoritmo viene comunicata a video all'utente finale che può essere:
 \begin{itemize}
 \item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
-  un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$;
+un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$;
 \item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query;
 \item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e
-  non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione
-  è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente
-  che i  \texttt{MATCH} o \texttt{FAIL} sono da considerarsi effettivi.
+non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione
+è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente
+che i  \texttt{MATCH} o \texttt{FAIL} sono da considerarsi effettivi.
 \end{itemize}
 
 \subsection{Entità}
@@ -182,57 +183,44 @@ gli attori principali. Di seguito una descrizione di quest'ultimi:
 	\item \emph{robot:} durante la fase di inizializzazione
 	vengono distribuiti in maniera casuale sul grafo $\cG$. Tali robot
 	attraverso dei sensori riescono ad avere una conoscenza parziale
-	del grafo. 
+	del grafo, inoltre sono in grado di muoversi e di conseguenza
+	sono in grado d'aumentare la loro conoscenza. Tutto ciò nei limiti
+	fisici decritti nella sezione \ref{sec:hypotesis};
+	
+	Da un analisi ad alto livello è emerso che i messaggi scambiati con
+	gli altri attori saranno:
+	\begin{itemize}
+		\item \texttt{try\_query}: ovvero al robot è giunta\footnote{si
+		tenga presente che ad un processo possono arrivare tante query
+		quanto è il valore \texttt{num\_search\_group}.} la query e prova
+		a trovare una corrispondenza tra la sua conoscenza parziale e
+		la query stessa. Passando da un processo all'altro la query
+		viene scremata degli archi della quale è stato trovato un match
+		e dunque in questa fase, se la query corrisponde con la conoscenza
+		del robot, quest'ultimo comunica la presenza dell'isomorfismo attraverso
+		il messaggio \texttt{MATCH}.
+		
+		Se dovesse riscontrare un'inconsistenza tra la query e
+		le sue informazioni, comunica il mismatch attraverso
+		il messaggio \texttt{FAIL}.
+		
+		Nel caso in cui la conoscenza del robot sia completamente disgiunta
+		dalla query, allora la quest'ultima viene inoltrata ad un'altro nodo.
+		
+		Al termine dell'elaborazione, il robot si dichiarerà non più interessato
+		a seguire gli sviluppi di \emph{quella} query, avendo già contribuito con la
+		sua conoscenza.
+		\item \texttt{move:} causa lo spostamento del robot in uno dei
+		nodi adiacenti, avendo come conseguenza il caricamento
+		di nuova conoscenza.
+	\end{itemize}
+	\item \emph{Interfaccia}:
 \end{itemize}
 
-%\subsection{Ruoli}
-%In questa sezione descriviamo le caratteristiche e le funzionalità
-%efferte dai principali ruoli del sistema:
-%oltre ai sensori, che costituiscono la parte distribuita
-%è necessario definire a priori alcuni ruoli centralizzati
-%che possano essere punto di accesso all'intero cluster.%
-%~\footnote{Come verrà successivamente analizzato,
-%  nella Sezione~\ref{sec:nonfunc-req} questo non lede alla
-%  scalabilità del sistema.}
-%
-%\subsubsection*{Sensore}
-%I sensori vengono sparpagliati in fase di inizializzazione del
-%sistema ognuno su un nodo della rete: sono in grado di
-%acquisire una conoscenza parziale del grafo, assumendo che si
-%riesca sempre ad acquisire correttamente tutta l'informazione
-%locale al nodo su cui si trovano
-%(tale fase di acquisizione verrà simultata tramite il caricamento
-%della lista di adiacenza di alcuni nodi da un grafo centralizzato,
-%astraendo l'implementazione dai particolari metodi di
-%rilevazione e di sintesi delle informazioni).
-%
-%Sono in grado di muoversi e di conseguenza aumentare la loro
-%conoscenza.
-%
-%Data la loro limitata capacità di memorizzazione,
-%stimata essere \coanote{``STIMAMI!!''},
-%può accadere che
-%durante uno spostamento perdano conoscenza rispetto alla zona del
-%grafo precedentemente esplorata.
-%
-%Rispetto ad un'analisi ad alto livello,
-%saranno in grado di gestire messaggi del tipo:
-%\begin{itemize}
-%\item \texttt{try-query()}: alla ricezione della query da verificare
-%  si occupa di rimuovere da questa le parti che corrispondono alla
-%  sua conoscenza parziale del grafo. In questa fase può riuscire a
-%  verificare la presenza dell'intera query (\emph{match}),
-%  scoprire inconsistenze della query con il grafo conosciuto
-%  (\emph{fail}), oppure rimanere in una fase di \emph{dontknow}
-%  per cui rimangono elementi ancora da verificare: la nuova query
-%  prodotta verrà rimandata al resto del cluster attivo.
-%  Al termine il sensore si dichiarerà non più interessato a seguire
-%  gli sviluppi di quella query, avendo già contribuito con le
-%  sue conoscenze.
-%\item \texttt{move()}: causa lo spostamento del sensore e il
-%  conseguente caricamento di nuova conoscenza.
-%\end{itemize}
-%
+
+
+
+
 %\subsubsection*{Accesso al cluster}
 %Definiamo alcuni ruoli di accesso all'intero cluster di sensori
 %che si occuperanno di:
