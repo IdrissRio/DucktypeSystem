@@ -114,17 +114,29 @@ Akka si basa sulla figura degli \emph{Actor}. Un Actor è un astrazione che perm
 al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberandolo 
 da alcune di quelle che sono le  problematiche della programmazione 
 concorrente e distribuita tra cui: gestione dei thread e creazioni di canali.
-
+\subsubsection{Ipotesi sul sistema}
+Il sistema distribuito della quale stiamo fornendo la descrizione è stato progettato per funzionare 
+sotto determinate ipotesi quali:
+\begin{itemize}
+	\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito dall'utente in un 
+	file di testo sotto forma di liste d'adiacenza,
+	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un 
+	file di testo sotto forma di liste d'adiacenza,
+	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo,
+	\item 
+	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo,
+\end{itemize}
 \section{Requisiti funzionali}
-\label{sec:func-req}
+Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali dell'applicativo
+\subsection{Inizializzazione}
+Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $\cQ = (\Vset_\cQ, E_\cQ)$ dai 
+file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
+\begin{itemize}
+	\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di 
+	robot distribuiti sulla mappa dell'edificio.
+	\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
+\end{itemize} 
 
-
-Si assume la memorizzazione pregressa del grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$.
-Questo potrà essere letto da un file esterno e caricato dal sistema
-staticamente, così come la query. Si assume inoltre che i grafi vengano forniti
-sotto forma di liste d'adiacenza.
-Non sarà dunque possibile cambiare a runtime la mappa
-del luogo nel quale i sensori lavorano.
 
 
 Sia $\Sset = \{s_i \}_{i \in S}$ l'insieme dei processi con $S$ insieme random $S \sseq V$.
