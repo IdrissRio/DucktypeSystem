@@ -53,16 +53,16 @@
 
 %\begin{titlingpage}
 \maketitle
-\begin{abstract}
-In letteratura il problema del \emph{subgraph isomorphism}
-centralizzato è stato ampiamente studiato. Ciononostante è difficile
-trovare studi relativi alla stessa problematica su sistemi distribuiti.
-L'obiettivo della seguente analisi è fornire un algoritmo distribuito
-per il \emph{subgraph isomorphism} individuandone le criticità e
-problematiche, descrivendo dunque i requisiti funzionali e non
-funzionali del sistema come ad esempio la \emph{tolleranza ai
-guasti} e \emph{consistenza} delle strutture dati.
-\end{abstract}
+%\begin{abstract}
+%%In letteratura il problema del \emph{subgraph isomorphism}
+%%centralizzato è stato ampiamente studiato. Ciononostante è difficile
+%%trovare studi relativi alla stessa problematica su sistemi distribuiti.
+%%L'obiettivo della seguente analisi è fornire un algoritmo distribuito
+%%per il \emph{subgraph isomorphism} individuandone le criticità e
+%%problematiche, descrivendo dunque i requisiti funzionali e non
+%%funzionali del sistema come ad esempio la \emph{tolleranza ai
+%%guasti} e \emph{consistenza} delle strutture dati.
+%\end{abstract}
 %\end{titlingpage}
 
 \section{Introduzione}
@@ -123,8 +123,10 @@ sotto determinate ipotesi quali:
 	file di testo sotto forma di liste d'adiacenza;
 	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un
 	file di testo sotto forma di liste d'adiacenza;
+	\item ambedue i grafi $\cG$ e $\cQ$ sono etichettati; $\cQ$ è un sottografo di $\cG$ se e solo se
+	$\Vset_\cQ \subseteq \Vset \wedge E_\cQ \subseteq E \cap (\Vset_\cQ \times \Vset_\cQ)$;
 	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo;
-	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo,
+	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo;
 	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e
 	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere
 	in memoria la conoscenza acquisita nello stato attuale e nel passo
@@ -165,74 +167,82 @@ all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \end{itemize}
 
 \subsection{Esito della computazione}
-L'esito della computazione dell'algoritmo viene comunicata a video all'utente finale che può essere:
+L'esito della computazione dell'algoritmo verrà comunicata a video all'utente finale, che potrà essere:
 \begin{itemize}
-\item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
-un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$;
+\item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi,
+i sensori riuscissero a trovare un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$.
+Ciò potrà avvenire soltanto se la query risultasse essere contenuta nella somma delle conoscenze
+parziali di tutti i robot.
+Ciò potrà avvenire soltanto se la query risultasse non essere contenuta nella somma delle conoscenze
+parziali di tutti i robot.
 \item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query;
 \item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e
-non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione
-è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente
-che i  \texttt{MATCH} o \texttt{FAIL} sono da considerarsi effettivi.
+non si riuscisse a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale esito
+è stato introdotto per evitare la presenza di falsi \texttt{MATCH} o falsi \texttt{FAIL}. In tal modo garantiremo all'utente che i  \texttt{MATCH} ed i  \texttt{FAIL} saranno da considerarsi effettivi.
 \end{itemize}
 
-\subsection{Entità}
-Nel corso dell'analisi dei requisiti del sistema, abbiamo individuato quelli che sono
-gli attori principali. Di seguito una descrizione di quest'ultimi:
+\subsection{Entità robot}
+Nella seguente sezione, essendo i robot tra gli attori principali
+del problema, specificheremo il loro comportamento
+al ricevere di determinati messaggi dall'ambiente circostante.
+
+Come già detto nella sezione [\ref{sec:computation}],
+durante la fase di inizializzazione vengono distribuiti
+in maniera casuale sul grafo $\cG$. Tali robot
+attraverso dei sensori riescono ad avere una conoscenza parziale
+del grafo, inoltre sono in grado di muoversi e di conseguenza
+sono in grado d'aumentare la loro conoscenza. Tutto ciò nei limiti
+fisici decritti nella sezione [\ref{sec:hypotesis}];
+
+Da un analisi ad alto livello è emerso che i messaggi scambiati con
+gli altri attori saranno:
 \begin{itemize}
-	\item \emph{robot:} durante la fase di inizializzazione
-	vengono distribuiti in maniera casuale sul grafo $\cG$. Tali robot
-	attraverso dei sensori riescono ad avere una conoscenza parziale
-	del grafo, inoltre sono in grado di muoversi e di conseguenza
-	sono in grado d'aumentare la loro conoscenza. Tutto ciò nei limiti
-	fisici decritti nella sezione \ref{sec:hypotesis};
+	\item \texttt{try\_query}: ovvero al robot è giunta\footnote{si
+	tenga presente che ad un processo possono arrivare tante query
+	quanto è il valore \texttt{num\_search\_group}.} la query e prova
+	a trovare una corrispondenza tra la sua conoscenza parziale e
+	la query stessa. Passando da un processo all'altro la query
+	viene scremata degli archi della quale è stato trovato un match
+	e dunque in questa fase, se la query corrisponde con la conoscenza
+	del robot, quest'ultimo comunica la presenza dell'isomorfismo attraverso
+	il messaggio \texttt{MATCH}.
 	
-	Da un analisi ad alto livello è emerso che i messaggi scambiati con
-	gli altri attori saranno:
-	\begin{itemize}
-		\item \texttt{try\_query}: ovvero al robot è giunta\footnote{si
-		tenga presente che ad un processo possono arrivare tante query
-		quanto è il valore \texttt{num\_search\_group}.} la query e prova
-		a trovare una corrispondenza tra la sua conoscenza parziale e
-		la query stessa. Passando da un processo all'altro la query
-		viene scremata degli archi della quale è stato trovato un match
-		e dunque in questa fase, se la query corrisponde con la conoscenza
-		del robot, quest'ultimo comunica la presenza dell'isomorfismo attraverso
-		il messaggio \texttt{MATCH}.
-		
-		Se dovesse riscontrare un'inconsistenza tra la query e
-		le sue informazioni, comunica il mismatch attraverso
-		il messaggio \texttt{FAIL}.
-		
-		Nel caso in cui la conoscenza del robot sia completamente disgiunta
-		dalla query, allora la quest'ultima viene inoltrata ad un'altro nodo.
-		
-		Al termine dell'elaborazione, il robot si dichiarerà non più interessato
-		a seguire gli sviluppi di \emph{quella} query, avendo già contribuito con la
-		sua conoscenza.
-		\item \texttt{move:} causa lo spostamento del robot in uno dei
-		nodi adiacenti, avendo come conseguenza il caricamento
-		di nuova conoscenza.
-	\end{itemize}
-	\item \emph{Interfaccia}:
+	Se dovesse riscontrare un'inconsistenza tra la query e
+	le sue informazioni, comunica il mismatch attraverso
+	il messaggio \texttt{FAIL}.
+	
+	Nel caso in cui la conoscenza del robot sia completamente disgiunta
+	dalla query, allora la quest'ultima viene inoltrata ad un'altro nodo.
+	
+	Al termine dell'elaborazione, il robot si dichiarerà non più interessato
+	a seguire gli sviluppi di \emph{quella} query, avendo già contribuito con la
+	sua conoscenza;
+	\item \texttt{move:} causa lo spostamento del robot in uno dei
+	nodi adiacenti, avendo come conseguenza il caricamento
+	di nuova conoscenza.
+\end{itemize}
+
+\subsection{Interfaccia con l'utente}
+In fine all'utente verrà fornito come punto d'accesso all'applicativo,
+un'interfaccia da terminale, le cui funzionalità saranno:
+\begin{itemize}
+	\item possibilità di caricare manualmente il grafo $\cG$; tale
+	funzionalità sarà utile soprattutto in fase di sperimentazione;
+	\item possibilità di caricare il grafo $\cG$ fornendo il percorso
+	del file sulla quale è memorizzato;
+	\item comando per iniziare una nuova query fornendo il path del
+	file sulla quale è memorizzata; si tenga presente che la query
+	può essere \emph{modificata} ad ogni terminazione dell'algoritmo di 
+	matching. 
+	
+	\coanote{Dobbiamo decidere su chi fare il controllo per la dimensione massima ?}
+	\item verrà fornito un comando per imporre l'avanzamento di tutti
+	i robot;
+	\item possibilità d'aggiungere manualmente un nuovo robot;
+	\item visualizzazione a video dei risultati ottenuti.
 \end{itemize}
 
 
-
-
-
-%\subsubsection*{Accesso al cluster}
-%Definiamo alcuni ruoli di accesso all'intero cluster di sensori
-%che si occuperanno di:
-%\begin{itemize}
-%\item inizializzare il sistema distribuendo random i sensori sui
-%  nodi del grafo totale;
-%\item distribuire la richiesta di spostamento a tutti i sensori;
-%\item aggiungere un nuovo sensore sulla mappa;
-%\item iniziare una nuova ricerca;
-%\item forzare la terminazione della ricerca.
-%\end{itemize}
-%
 %\subsubsection*{Interfaccia}
 %L'interfaccia con l'utente viene fornita da terminale, offrendo:
 %\begin{itemize}
@@ -244,7 +254,7 @@ gli attori principali. Di seguito una descrizione di quest'ultimi:
 %\item comando per imporre l'avanzamento di tutti i sensori;
 %\item comando per l'aggiunta manuale di un nuovo sensore;
 %\item restituizione del risultato (\emph{match}, \emph{fail},
-%  \emph{dontknow}) all'utente.
+% \emph{dontknow}) all'utente.
 %\end{itemize}
 
 \section{Requisiti non funzionali}
