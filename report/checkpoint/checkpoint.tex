@@ -61,7 +61,7 @@ L'obiettivo della seguente analisi è fornire un algoritmo distribuito
 per il \emph{subgraph isomorphism} individuandone le criticità e
 problematiche, descrivendo dunque i requisiti funzionali e non
 funzionali del sistema come ad esempio la \emph{tolleranza ai
-guasti} e \emph{consistenza} delle strutture dati. 
+guasti} e \emph{consistenza} delle strutture dati.
 \end{abstract}
 %\end{titlingpage}
 
@@ -97,46 +97,46 @@ nel grafo $\cG$ l'esistenza di un sottografo corrispondente a $\cQ$,
 evitando di ricostruire la conoscenza totale e centralizzata del
 grafo stesso.
 
-Considereremo black-box tutti gli aspetti legati all'acquisizione delle informazioni 
+Considereremo black-box tutti gli aspetti legati all'acquisizione delle informazioni
 da parte dei robot, focalizzando l'attenzione sull'astrazione matematica.
 
 
 
 \subsection{Ambiente di sviluppo}
 L'ambiente di sviluppo è stato scelto in modo tale da poter evidenziare solamente
-le caratteristiche più rilevanti del problema. 
-Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di applicazioni 
+le caratteristiche più rilevanti del problema.
+Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di applicazioni
 distribuite e concorrenti con supporto alla \emph{fault-tollerance event-driven}.
-Il toolkit è disponibile sia per il linguaggio imperativo \emph{Java} che per il 
+Il toolkit è disponibile sia per il linguaggio imperativo \emph{Java} che per il
 funzionale \emph{Scala}.
 
 Akka si basa sulla figura degli \emph{Actor}. Un Actor è un astrazione che permette
-al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberandolo 
-da alcune di quelle che sono le  problematiche della programmazione 
+al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberandolo
+da alcune di quelle che sono le  problematiche della programmazione
 concorrente e distribuita tra cui: gestione dei thread e creazioni di canali.
 \subsubsection{Ipotesi sul sistema}
 \label{sec:hypotesis}
-Il sistema distribuito della quale stiamo fornendo la descrizione è stato progettato per funzionare 
+Il sistema distribuito della quale stiamo fornendo la descrizione è stato progettato per funzionare
 sotto determinate ipotesi quali:
 \begin{itemize}
-	\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito dall'utente in un 
+	\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito dall'utente in un
 	file di testo sotto forma di liste d'adiacenza,
-	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un 
+	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un
 	file di testo sotto forma di liste d'adiacenza,
 	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo,
 	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo,
-	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e 
-	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere in memoria la conoscenza acquisita nello stato attuale e nel passo precedente (i.e. al secondo spostamento perdo la conoscenza acquisita 
+	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e
+	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere in memoria la conoscenza acquisita nello stato attuale e nel passo precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
 	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza.
 	\item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}
 \end{itemize}
 \section{Requisiti funzionali}
 Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali dell'applicativo
 \subsection{Inizializzazione}
-Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $\cQ = (\Vset_\cQ, E_\cQ)$ dai 
+Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $\cQ = (\Vset_\cQ, E_\cQ)$ dai
 file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
-\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di 
+\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
   robot distribuiti sulla mappa dell'edificio,
 \item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
 \end{itemize}
@@ -144,8 +144,8 @@ file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \subsection{Computazione}
 \label{sec:computation}
 La query viene distribuita ad un elemento per ogni \texttt{search\_group} [\ref*{sec:nonfunc-req}],
-che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che un viene trovato isomorfismo 
-parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita e poi inoltrata ad 
+che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che un viene trovato isomorfismo
+parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita e poi inoltrata ad
 un altro elemento dello stesso \texttt{search\_group}.
 
 Se l'esisto della computazione della query dovesse avere esito negativo,
@@ -165,15 +165,18 @@ L'esito della computazione dell'algoritmo viene comunicata a video all'utente fi
 \item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
   un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$,
 \item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query,
-\item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e 
-  non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione 
-  è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente 
+\item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e
+  non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione
+  è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente
   che i  \texttt{MATCH} o \texttt{FAIL} sono da considerarsi effettivi.
 \end{itemize}
 
 \subsection{Entità}
-Nel corso dell'analisi dei requisiti del sistema, siamo riusciti ad individuare quelli che sono 
-gli attori principali del sistema.
+Nel corso dell'analisi dei requisiti del sistema, abbiamo individuato quelli che sono 
+gli attori principali. Di seguito una descrizione di quest'ultimi:
+\begin{itemize}
+	\item 
+\end{itemize}
 
 %\subsection{Ruoli}
 %In questa sezione descriviamo le caratteristiche e le funzionalità
