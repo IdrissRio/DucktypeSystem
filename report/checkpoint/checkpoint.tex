@@ -159,37 +159,21 @@ all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \end{itemize}
 
 \subsection{Esito della computazione}
+L'esito della computazione dell'algoritmo viene comunicata a video all'utente finale che può essere:
+\begin{itemize}
+	\item \texttt{match}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
+	 un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$,
+	\item \texttt{fail}: nel caso in cui non esita il match tra la mappa dell'edificio e la query,
+	\item \texttt{dont\_know}: nel caso in cui si verificasse un errore interno del sistema e 
+	non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione 
+	è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente 
+	che i  \texttt{match} o \texttt{fail} sono da considerarsi effettivi.
+\end{itemize}
+
+\subsection{Entità}
 
 
-%Se la query non viene trovata, l'utente può decidere se ritentare
-%la stessa ricerca dopo aver fatto acquisire nuova conoscenza al sistema
-%distribuito: ciò può essere fatto in due modi.
-%Si può aggiungere un nuovo sensore alla rete, posizionato in modo
-%casuale nel grafo. Alternativamente
-%si possono far muovere \emph{tutti} i sensori in un loro nodo adiacente,
-%scelto non deterministicamente, caricando dal grafo (centralizzato)
-%la lista di adiacenza del nuovo nodo: ciò simula quindi una fase di
-%\emph{apprendimento} da parte di ogni sensore. Occorre tenere presente
-%che i sensori hanno una capacità limitata di memorizzazione,
-%dunque si permetterà di mantenere contemporaneamente in memoria un
-%numero limitato di nodi: può dunque accadere che durante il movimento
-%vengano scordate le liste di adiacenza dei nodi più lontani.
-%\coanote{TODO: definire capacità massima.}\\
-%
-%In caso in cui venga trovato un sottografo corrispondente alla query,
-%questo viene comunicato all'utente.
-%Oltre alla mera conferma della sua esistenza, vengono aggiunte
-%le eventuali istanziazioni dei nodi non etichettati.
-%Sebbene la stessa soluzione possa essere trovata da più sensori,
-%la sua restituzione sarà unica, in particoalre si eviterà di rispondere
-%positivamente più volte per confermare l'esistenza di un sottografo
-%interamente etichettato.\\
-%
-%\coanote{TODO: definire già interfacce e nomi metodi??
-%  Almeno fornire sottoforma di elendo il nome del metodo, senza ancora
-%  specificare parametri e tipo parametri...
-%}
-%
+
 %\subsection{Ruoli}
 %In questa sezione descriviamo le caratteristiche e le funzionalità
 %efferte dai principali ruoli del sistema:
