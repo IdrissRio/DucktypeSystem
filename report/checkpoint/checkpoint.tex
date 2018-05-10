@@ -136,9 +136,9 @@ Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali
 Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $\cQ = (\Vset_\cQ, E_\cQ)$ dai 
 file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
-	\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di 
-	robot distribuiti sulla mappa dell'edificio,
-	\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
+\item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di 
+  robot distribuiti sulla mappa dell'edificio,
+\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
 \end{itemize}
 
 \subsection{Computazione}
@@ -162,13 +162,13 @@ all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \subsection{Esito della computazione}
 L'esito della computazione dell'algoritmo viene comunicata a video all'utente finale che può essere:
 \begin{itemize}
-	\item \texttt{match}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
-	 un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$,
-	\item \texttt{fail}: nel caso in cui non esita il match tra la mappa dell'edificio e la query,
-	\item \texttt{dont\_know}: nel caso in cui si verificasse un errore interno del sistema e 
-	non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione 
-	è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente 
-	che i  \texttt{match} o \texttt{fail} sono da considerarsi effettivi.
+\item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
+  un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$,
+\item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query,
+\item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e 
+  non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione 
+  è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente 
+  che i  \texttt{MATCH} o \texttt{FAIL} sono da considerarsi effettivi.
 \end{itemize}
 
 \subsection{Entità}
@@ -266,36 +266,43 @@ In questa sezione analizziamo le caratteristiche non funzionali
 che il sistema sarà in grado di offrire.
 
 \subsubsection*{Scalabilità e trasparenza}
-I sensori costituiscono una rete peer-to-peer,
+I sensori costituiranno una rete peer-to-peer,
 senza alcuna suddivisione di ruoli a priori: i ruoli centralizzati
 sono definiti staticamente con il compito fissato di fornire un punto
 di accesso al cluster in ingresso (proponendo una nuova query) e
 in uscita (raccogliendo informazioni relative alla riuscita
-o fallimento della query).
+o al fallimento della query).
 
-La \emph{conoscenza} del grafo complessivo è totalmente distribuita:
-non viene ricostruita alcuna conoscenza centralizzata di essa.
-Questo rende il sistema scalabile e flessibile:
-si possono dinamicamente aggiungere nuovi sensori o far spostare
-quelli già presenti nella rete, senza dover riconfigurare nulla.
+Un fondamentale requisito è che
+la \emph{conoscenza} del grafo complessivo sia totalmente distribuita:
+data la sua potenziale grandezza
+non viene ricostruita alcuna descrizione centralizzata di essa.
+Il sistema deve essere dunque scalabile e flessibile:
+si devono poter aggiungere nuovi sensori o far spostare
+quelli già presenti nella rete, senza la necessità di riconfigurare nulla.
 L'implementazione delle
 comunicazioni tra i punti di accesso centrali al cluster e
-tra gli elementi stessi scalano con la dimensione del cluster:
-inoltre il sistema risulta svincolato dal conoscere la posizione
-dei singoli sensori: il grado di \emph{location transparency} offerto
-è dunque molto elevato.
+tra gli elementi stessi del cluster, potrà
+sfruttare le catatteristiche offerte da \emph{Akka}:
+scala con il numero di sensori e
+deve essere svincolata dal conoscere la posizione dei singoli sensori.
+Il grado di \emph{location transparency} offerto deve dunque essere molto elevato.
 
-Il sistema è inoltre \emph{flessibile}: quando nuovi sensori vengono
-aggiunti, o quando si muovono quelli già presenti, si acquisisce
-nuova conoscenza che sarà utilizzabile dalle query successive.
+La gestione della conoscenza del grafo deve poter
+sfruttare la scalabilità del sistema: quando nuovi sensori vengono
+aggiunti, o quando si muovono quelli già presenti, si acquisiscono
+nuove informazioni che devono essere utilizzabili dalle query successive.
 
-\subsubsection*{Load balancing}
+\subsubsection*{Balancing}
 La risoluzione del problema e la ricostruzione del sottografo
-comporta l'esplorazione progressiva e necessariamente sequenziale
+comporta intrinsecamente l'esplorazione progressiva e sequenziale
 dei sensori che hanno informazioni rilevanti per la query.
-Non potendo dunque essere sfruttato in ogni caso il parallelismo
-offerto da un sistema distribuito, non risulta una limitazione
-in termini di efficienza avere un solo nodo attivo alla volta.
+Sono quindi le caratteristiche proprie del problema a impedire di
+parallelizzare il lavoro nel sistema distribuito:
+per ogni ricerca si avrà un solo nodo attivo alla volta.
+
+La cifra dell'algoritmo distribuito sta dunque nella
+condivisione di conoscenza, piuttosto che nella suddivisione del lavoro.
 %% Inoltre,
 %% il percorso di esplorazione della query, progressivamente snellita,
 %% non influisce nella sua determinazione: una qualunque delle n! possibili
@@ -307,29 +314,27 @@ in termini di efficienza avere un solo nodo attivo alla volta.
 
 \subsubsection*{Failure model}
 Trattandosi di query potenzialmente molto lunghe da verificare,
-comunque da gestirsi in modo sequenziale in un numero potenzialmente
-alto di sensori,
-siamo disposti ad aggiungere messaggi informativi che ci consentano,
-in caso di fallimenti durante la ricerca di recuperare la query parziale,
+da gestirsi in modo sequenziale su un numero potenzialmente alto di sensori,
+siamo disposti ad aggiungere uno scambio di messaggi non direttamente
+informativi per quanto riguarda la ricerca: l'obiettivo è essere in grado
+in caso di fallimenti di recuperare la query parziale,
 evitando di perdere il lavoro eseguito fino a quel momento.
 
-In quanto stiamo lavorando in un contesto distribuito,
-occorre tenere in considerazione i fallimenti legati alla rete e i
+Occorre infatti tenere in considerazione i fallimenti legati alla rete e i
 fallimenti legati ai sensori stessi.
 
-Per proteggersi dalla perdita da parte della rete dei messaggi
-con i quali si divulga la query durante una ricerca,
-il mittente aspetterà un messaggio di \emph{acknowledgement}: questo
-comporta dover definire un timeout di attesa massima prima di
-stabilire che il messaggio è andato perduto e dunque che è necessario
-reinviarlo. Tale soluzione è comunque affetta a casi di duplice invio
-della stessa query, nel caso sia il messaggio di \emph{ack} ad
-essere perso dalla rete.
+Per proteggersi dalla perdita di messaggi da parte di una rete inaffidabile,
+all'invio della query durante la ricerca, il mittente aspetterà un messaggio
+di \emph{acknowledgement}: questo comporta dover definire un timeout
+di attesa massima prima di stabilire che il messaggio è andato perduto
+(e dunque che è necessario reinviarlo).
+Bisogna tenere presente che
+tale soluzione espone a casi di duplice invio della stessa query,
+quando è il messaggio di \emph{ack} ad essere perso dalla rete.
 
 Per proteggersi da casi di fallimento e morte dei sensori,
-si utilizzerà un sistema di supervisione \emph{one-to-one}
-per cui ogni processo sensore ha un supervisore in grado di
-riattivarlo e di reiscrivero al cluster.
+si utilizzerà una strategia di supervisione \emph{one-to-one}
+per cui ogni sensore avrà un supervisore in grado di riattivarlo.
 La ricerca può essere intaccata da fallimenti di questo tipo
 quando il sensore muore nel momento in cui sta elaborando
 nuove ipotesi sulla query attiva.
@@ -337,42 +342,41 @@ Copiare una versione della query parziale nel supervisore del nodo,
 limita la finestra temporale in cui può accadere questo fallimento
 critico.
 Possiamo ulteriormente proteggere il sistema facendo procedere
-un numero $k$ costante (\coanote{3 di default???}) di query
-contemporaneamente. Questa ridondanza introdotta, come già discusso,
+un numero $k$ costante (3 di default) di query contemporaneamente.
+La ridondanza introdotta, come già discusso,
 non può essere una forma di parallelizzazione del lavoro: avere
 più ricerche attive nello stesso momento permette unicamente di
-avere più possibilità che una di queste giunga all'esplorazione
-di tutto lo spazio dei sensori senza incontrare i fallimenti critici
-ai quali il sistema rimane soggetto.
-Questi ultimi infatti, hanno nel caso pessimo l'effetto di
-rendere la corrispondente ricerca inattiva: quando una delle versioni
-arriva alla conclusione, sblocca quelle che eventualmente sono rimaste
-bloccate in questo stato.
+aumentare le possibilità che una di queste riesca ad esplorare
+tutto lo spazio dei sensori senza incontrare i (già limitati)
+fallimenti critici ai quali il sistema rimane soggetto.
+%% Questi ultimi infatti, hanno nel caso pessimo l'effetto di
+%% rendere la corrispondente ricerca inattiva: quando una delle versioni
+%% arriva alla conclusione, sblocca quelle che eventualmente sono rimaste
+%% bloccate in questo stato.
 
-Nel malaugurato caso in cui tutte le ricerche incontrino fallimenti
-critici (ovvero quelli che avvengono in porzioni già molto limitate
-del codice), il sistema risulta bloccato: pur non potendo
+Nel malaugurato caso in cui tutte le $k$ ricerche incontrino
+fallimenti critici, il sistema risulterà bloccato: pur non potendo
 distinguere tale sospensione dalla fase di ricerca, si affida
 la responsabilità all'utente di terminare la ricerca manualmente.
 
 \subsubsection*{Correttezza del risultato}
-Senza fallimenti, il sistema riesce a rispondere con un messaggio di
-\emph{match} / \emph{fail} / \emph{dontknow} correttamente
-per quanto definito nelle specifiche funzionali.
+Senza fallimenti, il sistema deve riusire a rispondere con un messaggio di
+\texttt{MATCH} / \texttt{FAIL} / \texttt{DONTKNOW} correttamente
+rispetto a quanto definito nelle specifiche funzionali.
 In generale, si garantisce che,
-il sistema non dà falsi \emph{match} o falsi \emph{fail} della query:
-viene ammessa solo la restituzione di un falso \emph{dontknow}.
+il sistema non dà falsi \texttt{MATCH} o falsi \texttt{FAIL} della query:
+viene ammessa solo la restituzione di un falso \texttt{DONTKNOW}.
 
 Infatti,
 in caso di fallimenti può accadere che il sistema, sebbene la somma
 delle conoscenze parziali sia in grado di definire un risultato,
-risponda comunque \emph{dontknow} all'utente.
+risponda comunque \texttt{DONTKNOW} all'utente.
 
 Quando la conoscenza dei sensori aumenta,
 non è garantito che le nuove informazioni possano essere immediatamente
 utilizzate se queste sono state acquisite \emph{durante} la fase di verifica
 di una query: anche in questo caso, il sistema può rispondere eventualmente
-\emph{dontknow}, anche quando l'insieme (aggiornato) delle conoscenze parziali
+\texttt{DONTKNOW}, anche quando l'insieme (aggiornato) delle conoscenze parziali
 dei sensori sarebbe in grado di dare una risposta più specifica.
 
 %%%%%%%%%%%%%%%%%%%%
