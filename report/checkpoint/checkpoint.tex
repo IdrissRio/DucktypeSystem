@@ -120,15 +120,19 @@ Il sistema distribuito della quale stiamo fornendo la descrizione è stato proge
 sotto determinate ipotesi quali:
 \begin{itemize}
 	\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito dall'utente in un
-	file di testo sotto forma di liste d'adiacenza,
+	file di testo sotto forma di liste d'adiacenza;
 	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un
-	file di testo sotto forma di liste d'adiacenza,
-	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo,
+	file di testo sotto forma di liste d'adiacenza;
+	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo;
 	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo,
 	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e
-	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere in memoria la conoscenza acquisita nello stato attuale e nel passo precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
-	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza.
-	\item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}
+	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere
+	in memoria la conoscenza acquisita nello stato attuale e nel passo
+	 precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
+	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza;
+	\item il robot ha una conoscenza parziale del grafo $\cG$, ma ha la conoscenza
+	totale del nodo sulla quale viene posizionato, i.e. la sua lista d'adiacenza è completa;
+	\item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}.
 \end{itemize}
 \section{Requisiti funzionali}
 Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali dell'applicativo
@@ -137,7 +141,7 @@ Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $
 file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
 \item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
-  robot distribuiti sulla mappa dell'edificio,
+  robot distribuiti sulla mappa dell'edificio;
 \item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
 \end{itemize}
 
@@ -152,7 +156,7 @@ Se l'esisto della computazione della query dovesse avere esito negativo,
 l'utente può decidere se ritentare la stessa ricerca facendo acquisire nuova conoscenza
 all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 \begin{itemize}
-	\item posizionamento di un nuovo robot all'interno del grafo $\cG$,
+	\item posizionamento di un nuovo robot all'interno del grafo $\cG$;
 	\item muovere \emph{tutti} i robot in un nodo a loro adiacente, caricando e memorizzando
 	 dal grafo $\cG$ le nuove liste d'adiacenza. Occorre tenere presente che i sensori hanno
 	 una capacità di memorizzazione limitata [\ref{sec:hypotesis}] e dunque può accadere che durante
@@ -163,8 +167,8 @@ all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
 L'esito della computazione dell'algoritmo viene comunicata a video all'utente finale che può essere:
 \begin{itemize}
 \item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi, i sensori riescano a trovare
-  un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$,
-\item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query,
+  un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$;
+\item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query;
 \item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e
   non si riesca a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale opzione
   è stata introdotta per evitare la presenza di falsi negati o falsi positivi. In tal modo garantiamo all'utente
@@ -172,10 +176,13 @@ L'esito della computazione dell'algoritmo viene comunicata a video all'utente fi
 \end{itemize}
 
 \subsection{Entità}
-Nel corso dell'analisi dei requisiti del sistema, abbiamo individuato quelli che sono 
+Nel corso dell'analisi dei requisiti del sistema, abbiamo individuato quelli che sono
 gli attori principali. Di seguito una descrizione di quest'ultimi:
 \begin{itemize}
-	\item 
+	\item \emph{robot:} durante la fase di inizializzazione
+	vengono distribuiti in maniera casuale sul grafo $\cG$. Tali robot
+	attraverso dei sensori riescono ad avere una conoscenza parziale
+	del grafo. 
 \end{itemize}
 
 %\subsection{Ruoli}
