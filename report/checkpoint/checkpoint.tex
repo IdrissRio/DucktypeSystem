@@ -43,27 +43,14 @@
 \include{macro}
 %%%%
 \subtitle{A distribuited algorithm\\for the subgraph isomorphism problem}
-\title{Analisi dei requisiti}
+\title{ANALISI DEI REQUISITI}
 \author{Anna Becchi, Idriss Riouak}
 \institute{Laurea Magistrale in Informatica\\Universit\`a di Udine, Italy}
 \date{A.A. 2017/2018}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
-
-%\begin{titlingpage}
 \maketitle
-%\begin{abstract}
-%%In letteratura il problema del \emph{subgraph isomorphism}
-%%centralizzato è stato ampiamente studiato. Ciononostante è difficile
-%%trovare studi relativi alla stessa problematica su sistemi distribuiti.
-%%L'obiettivo della seguente analisi è fornire un algoritmo distribuito
-%%per il \emph{subgraph isomorphism} individuandone le criticità e
-%%problematiche, descrivendo dunque i requisiti funzionali e non
-%%funzionali del sistema come ad esempio la \emph{tolleranza ai
-%%guasti} e \emph{consistenza} delle strutture dati.
-%\end{abstract}
-%\end{titlingpage}
 
 \section{Introduzione}
 Il \emph{subgraph isomorphism} ha diverse applicazioni nel contesto
@@ -151,19 +138,19 @@ dell'applicativo che si intende realizzare.
 
 \subsection{Inizializzazione}
 In fase di inizializzazione il sistema caricherà il grafo $\cG = ( \Vset, E)$ dal file
-fornito dall'utente. Quest'ultimo dovrà fornire anche in input due interi:
+fornito dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \begin{itemize}
 \item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
 robot distribuiti sulla mappa dell'edificio;
 \item \texttt{num\_search\_group} (\emph{opzionale}): rappresentante
   il livello di replicazione del sistema~\footnote{\label{fn:searchgroup}
-    L'uso e la necessità dei \texttt{search\_group} verrà spiegato
+    L'uso e la necessità dei \texttt{search\_group} verranno descritti
     nella Sezione~\ref*{sec:nonfunc-req}.} Se non specificato viene posto uguale a $3$.
 \end{itemize}
 
 \subsection{Computazione}
 \label{sec:computation}
-La query viene distribuita ad un elemento per ogni \texttt{search\_group}\textsuperscript{\ref{fn:searchgroup}}
+La query viene distribuita ad un elemento per ogni \texttt{search\_group}~\textsuperscript{\ref{fn:searchgroup}}
 che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che viene trovato un isomorfismo
 parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita, rimuovendo
 le informazioni già verificate, e poi inoltrata ad
@@ -175,11 +162,11 @@ all'intero sistema distribuito. Ciò può avvenire attraverso due modalità:
 \begin{itemize}
 	\item posizionare un nuovo robot all'interno del grafo $\cG$;
 	\item muovere \emph{tutti} i robot in un nodo a loro adiacente, caricando e memorizzando
-	  dal grafo $\cG$ le nuove liste d'adiacenza.
+	  dal grafo $\cG$ la nuova matrice d'adiacenza.
           Come già analizzato in~\ref{sec:hypotesis},
           occorre tenere presente che i sensori hanno
 	una capacità di memorizzazione limitata e dunque può accadere che durante
-	tale operazione vengano sovrascritte le liste d'adiacenza dei nodi più lontani.
+	tale operazione vengano sovrascritte le conoscenze relative ai nodi più lontani.
 \end{itemize}
 
 \subsection{Esito della computazione}
@@ -194,8 +181,6 @@ parziali di tutti i robot.
   delle conoscenze parziali (ma localmente certe) dei sensori e la query;
 \item \texttt{DONTKNOW}: nel caso in cui, data la mancanza di una visione
   totale del grafo, non si riuscisse a determinare in maniera effettiva l'esistenza della query.
-  %  Tale esito è stato introdotto per evitare la presenza di falsi \texttt{MATCH} o falsi \texttt{FAIL}. In tal modo garantiremo all'utente che i  \texttt{MATCH} ed i  \texttt{FAIL} saranno da considerarsi effettivi.
-  % questo sta tra i requisiti non-funzionali = qualitiativi..imho..
 \end{itemize}
 
 \subsection{Entità robot}
@@ -214,7 +199,7 @@ fisici decritti nella Sezione~\ref{sec:hypotesis}.
 Da un'analisi ad alto livello è emerso che i messaggi scambiati con
 gli altri attori saranno:
 \begin{itemize}
-	\item \texttt{try\_query}: al robot è giunta\footnote{Si
+	\item \texttt{try\_query}: al robot è giunta~\footnote{Si
 	tenga presente che ad un processo possono arrivare tante query
 	quanto è il valore \texttt{num\_search\_group}.} la query e prova
 	a trovare una corrispondenza tra la sua conoscenza parziale e
@@ -257,28 +242,13 @@ un'interfaccia da terminale, le cui funzionalità saranno:
 	\item visualizzazione a video dei risultati ottenuti.
 \end{itemize}
 
-
-%\subsubsection*{Interfaccia}
-%L'interfaccia con l'utente viene fornita da terminale, offrendo:
-%\begin{itemize}
-%\item comando caricare manualmente la mappa del grafo
-%  completo (utile in fase di sperimentazione);
-%\item comando per iniziare una nuova query caricandola da file:
-%  la query verrà controllata perché non può richiedere una
-%  memorizzazione superiore alla capacità di un singolo sensore.
-%\item comando per imporre l'avanzamento di tutti i sensori;
-%\item comando per l'aggiunta manuale di un nuovo sensore;
-%\item restituizione del risultato (\emph{match}, \emph{fail},
-% \emph{dontknow}) all'utente.
-%\end{itemize}
-
 \section{Requisiti non funzionali}
 \label{sec:nonfunc-req}
 
 In questa sezione analizziamo le caratteristiche non funzionali
 che il sistema sarà in grado di offrire.
 
-\subsubsection*{Scalabilità e trasparenza}
+\subsection{Scalabilità e trasparenza}
 I sensori costituiranno una rete peer-to-peer,
 senza alcuna suddivisione di ruoli a priori: i ruoli centralizzati
 sono definiti staticamente con il compito fissato di fornire un punto
@@ -306,7 +276,7 @@ sfruttare la scalabilità del sistema: quando nuovi sensori vengono
 aggiunti, o quando si muovono quelli già presenti, si acquisiscono
 nuove informazioni che devono essere utilizzabili dalle query successive.
 
-\subsubsection*{Balancing}
+\subsection{Balancing}
 La risoluzione del problema e la ricostruzione del sottografo
 comporta intrinsecamente l'esplorazione progressiva e sequenziale
 dei sensori che hanno informazioni rilevanti per la query.
@@ -325,7 +295,7 @@ condivisione di conoscenza, piuttosto che nella suddivisione del lavoro.
 %% Dunque, dal punto di vista della correttezza dell'algoritmo,
 %% a meno di failure, possiamo far procedere una sola query alla volta.
 
-\subsubsection*{Failure model}
+\subsection{Failure model}
 Trattandosi di query potenzialmente molto lunghe da verificare,
 da gestirsi in modo sequenziale su un numero potenzialmente alto di sensori,
 siamo disposti ad aggiungere uno scambio di messaggi non direttamente
@@ -340,7 +310,7 @@ Per proteggersi dalla perdita di messaggi da parte di una rete inaffidabile,
 all'invio della query durante la ricerca, il mittente aspetterà un messaggio
 di \emph{acknowledgement}: questo comporta dover definire un timeout
 di attesa massima prima di stabilire che il messaggio è andato perduto
-(e dunque che è necessario reinviarlo).
+(e dunque che è necessario rinviarlo).
 Bisogna tenere presente che
 tale soluzione espone a casi di duplice invio della stessa query,
 quando è il messaggio di \emph{ack} ad essere perso dalla rete.
@@ -374,7 +344,7 @@ fallimenti critici, il sistema risulterà bloccato: pur non potendo
 distinguere tale sospensione dalla fase di ricerca, si affida
 la responsabilità all'utente di terminare la ricerca manualmente.
 
-\subsubsection*{Correttezza del risultato}
+\subsection{Correttezza del risultato}
 Senza fallimenti, il sistema deve riuscire a rispondere con un messaggio di
 \texttt{MATCH} / \texttt{FAIL} / \texttt{DONTKNOW} correttamente
 rispetto a quanto definito nelle specifiche funzionali.
