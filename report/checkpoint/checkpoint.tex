@@ -66,13 +66,13 @@
 %\end{titlingpage}
 
 \section{Introduzione}
-Il \emph{subgraph isomorphism} ha diverse applicazioni nello contesto
-dei sistemi distribuiti, in particolare considereremo il caso in cui  un insieme
+Il \emph{subgraph isomorphism} ha diverse applicazioni nel contesto
+dei sistemi distribuiti: in particolare considereremo il caso in cui un insieme
 di \emph{robot} con \emph{sensori wireless} viene posizionato all'interno di
-un edificio in maniera casuale. Tali robot hanno una visione parziale dell'edificio
-e sono in grado di comunicare unicamente attraverso scambio di messaggi.
-Dunque dato un percorso l'obiettivo finale è quello di determinare se esiste
-solamente attraverso la conoscenza parziale dei robot.
+un edificio in maniera casuale. I robot hanno una visione parziale del luogo
+e sono in grado di comunicare tra loro unicamente attraverso scambio di messaggi.
+Dato un percorso, l'obiettivo finale è quello di determinare se questo esiste
+nell'edificio sfruttando solamente la conoscenza parziale e frammentata dei robot.
 
 \subsection{Modellazione del problema}
 Dato un grafo $\cG = ( \Vset, E)$, $\Vset = \{v_i\}_{i \in V}$,
@@ -91,129 +91,145 @@ Inoltre potrà essere simulato anche il loro spostamento e la progressiva
 acquisizione di nuova conoscenza del grafo, compatibilmente con le
 loro (limitate) capacità di memorizzazione.
 
-L'algoritmo viene innescato da una query $\cQ = (\Vset_\cQ, E_\cQ)$, 
-che viene divulgata alla rete di processi: l'obiettivo sarà verificare
-nel grafo $\cG$ l'esistenza di un sottografo corrispondente a $\cQ$,
+L'algoritmo viene innescato da una query $\cQ = (\Vset_\cQ, E_\cQ)$
+che viene divulgata alla rete di processi: si dovrà verificare
+l'esistenza nel grafo $\cG$ di un sottografo corrispondente a $\cQ$,
 evitando di ricostruire la conoscenza totale e centralizzata del
 grafo stesso.
 
 Considereremo black-box tutti gli aspetti legati all'acquisizione delle informazioni
 da parte dei robot, focalizzando l'attenzione sull'astrazione matematica.
-
-
-
+%
+%
 \subsection{Ambiente di sviluppo}
-L'ambiente di sviluppo è stato scelto in modo tale da poter evidenziare solamente
+L'ambiente di sviluppo è stato scelto in modo da poter evidenziare solamente
 le caratteristiche più rilevanti del problema.
-Si è scelto di utilizzare il \emph{Akka}: un toolkit per la creazione di applicazioni
+Si è scelto di utilizzare \emph{Akka}, un toolkit per la creazione di applicazioni
 distribuite e concorrenti con supporto alla \emph{fault-tollerance event-driven}.
 Il toolkit è disponibile sia per il linguaggio imperativo \emph{Java} che per il
 funzionale \emph{Scala}.
 
-Akka si basa sulla figura degli \emph{Actor}. Un Actor è un astrazione che permette
+Akka si basa sulla figura degli \emph{Actor}: un Actor è un'astrazione che permette
 al programmatore di focalizzare l'attenzione sugli obiettivi funzionali liberandolo
-da alcune di quelle che sono le  problematiche della programmazione
-concorrente e distribuita tra cui: gestione dei thread e creazioni di canali.
-\subsubsection{Ipotesi sul sistema}
+da alcune problematiche della programmazione
+concorrente e distribuita tra cui gestione dei thread e creazioni di canali.
+%
+\subsection{Ipotesi sul sistema}
 \label{sec:hypotesis}
-Il sistema distribuito della quale stiamo fornendo la descrizione è stato progettato per funzionare
-sotto determinate ipotesi quali:
+Il sistema distribuito del quale stiamo fornendo la descrizione verrà progettato per funzionare
+sotto determinate ipotesi:
 \begin{itemize}
-	\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito dall'utente in un
-	file di testo sotto forma di liste d'adiacenza;
-	\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$,  rappresentante la query viene fornito dall'utente in un
-	file di testo sotto forma di liste d'adiacenza;
-	\item ambedue i grafi $\cG$ e $\cQ$ sono etichettati; $\cQ$ è un sottografo di $\cG$ se e solo se
-	$\Vset_\cQ \subseteq \Vset \wedge E_\cQ \subseteq E \cap (\Vset_\cQ \times \Vset_\cQ)$;
-	\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo;
-	\item la possibilità che due o più robot possano trovarsi contemporaneamente sullo stesso nodo;
-	\item i robot hanno limitazioni fisiche, possono memorizzare l'intera  query $\cQ$, e
-	nel caso di spostamento [\ref{sec:computation}] dei sensori, sono in grado di tenere
-	in memoria la conoscenza acquisita nello stato attuale e nel passo
-	precedente (i.e. al secondo spostamento perdo la conoscenza acquisita
-	durante l'inizializzazione). Ciò impedisce ad un sensore di ricostruire l'intero grafo $\cG$ nella sua completezza;
-	\item il robot ha una conoscenza parziale del grafo $\cG$, ma ha la conoscenza
-	totale del nodo sulla quale viene posizionato, i.e. la sua lista d'adiacenza è completa;
-	\item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}.
+\item il grafo $\cG = ( \Vset, E)$ rappresentante la mappa dell'edificio viene fornito
+  in fase di inizializzazione dall'utente in un
+  file di testo che espone l'elenco dei nodi etichettati e la matrice di adiacenza;
+\item il grafo  $\cQ = (\Vset_\cQ, E_\cQ)$, rappresentante la query viene fornito dall'utente
+  a runtime in un formato analogo a quello di $\cG$;
+\item ambedue i grafi $\cG$ e $\cQ$ sono etichettati; $\cQ$ è un sottografo di $\cG$ se e solo se
+  $\Vset_\cQ \subseteq \Vset \wedge E_\cQ \subseteq E$;
+  % \cap (\Vset_\cQ \times \Vset_\cQ)$;  \coanote{Perché il \cap??}
+\item la topologia del grafo $\cG = ( \Vset, E)$ è costante nel tempo;
+\item due o più robot possano trovarsi contemporaneamente sullo stesso nodo;
+\item i robot hanno limitazioni fisiche di memorizzazione:
+  dovendo tenere in memoria l'intera query $\cQ$, questa dovrà avere
+  dimensioni limitate dalla loro capacità massima; inoltre,
+  si tenga presente che, in caso di spostamento, si garantisce che i sensori
+  possono tenere in memoria solo la conoscenza acquisita nello stato attuale e in quello
+  precedente (i.e., al secondo spostamento si potrebbe perdere la conoscenza acquisita
+  durante l'inizializzazione).
+  Per un sensore risulta dunque impossibile ricostruire l'intero grafo $\cG$ nella sua completezza;
+\item il robot ha una conoscenza parziale del grafo $\cG$, ma ha la conoscenza
+  totale del nodo sulla quale viene posizionato, i.e. la sua lista d'adiacenza è completa;
+  %% Ben detto cazzo!
+% \item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}.
+% non dovendo memorizzarlo davvero nell'applicazione concreta non ha senso imporre delle restrizioni...imho...
 \end{itemize}
+%
+%
 \section{Requisiti funzionali}
-Nella seguente sezione verranno descritti quelli che sono i requisiti funzionali dell'applicativo
+Nella seguente sezione verranno descritti i requisiti funzionali
+dell'applicativo che si intende realizzare.
+
 \subsection{Inizializzazione}
-Il sistema in fase d'inizializzazione caricherà i grafi $\cG = ( \Vset, E)$ e $\cQ = (\Vset_\cQ, E_\cQ)$ dai
-file forniti dall'utente. Quest'ultimo dovrà fornire in input due interi:
+In fase di inizializzazione il sistema caricherà il grafo $\cG = ( \Vset, E)$ dal file
+fornito dall'utente. Quest'ultimo dovrà fornire anche in input due interi:
 \begin{itemize}
 \item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
 robot distribuiti sulla mappa dell'edificio;
-\item \texttt{num\_search\_group} (\emph{opzionale}) : rappresentante
-il livello di replicazione del sistema [\ref*{sec:nonfunc-req}]. Se non specificato viene posto uguale a tre.
+\item \texttt{num\_search\_group} (\emph{opzionale}): rappresentante
+  il livello di replicazione del sistema~\footnote{\label{fn:searchgroup}
+    L'uso e la necessità dei \texttt{search\_group} verrà spiegato
+    nella Sezione~\ref*{sec:nonfunc-req}.} Se non specificato viene posto uguale a $3$.
 \end{itemize}
 
 \subsection{Computazione}
 \label{sec:computation}
-La query viene distribuita ad un elemento per ogni \texttt{search\_group} [\ref*{sec:nonfunc-req}],
-che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che un viene trovato isomorfismo
-parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita e poi inoltrata ad
-un altro elemento dello stesso \texttt{search\_group}. Nel caso non ci fosse 
+La query viene distribuita ad un elemento per ogni \texttt{search\_group}\textsuperscript{\ref{fn:searchgroup}}
+che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che viene trovato un isomorfismo
+parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita, rimuovendo
+le informazioni già verificate, e poi inoltrata ad
+un altro elemento dello stesso \texttt{search\_group}.
 
-Se l'esisto della computazione della query dovesse avere esito negativo,
+Se l'esisto della computazione della query dovesse condurre a un \texttt{DONTKNOW}
 l'utente può decidere se ritentare la stessa ricerca facendo acquisire nuova conoscenza
-all'intero sistema distribuito, ciò può avvenire attraverso due modalità:
+all'intero sistema distribuito. Ciò può avvenire attraverso due modalità:
 \begin{itemize}
-	\item posizionamento di un nuovo robot all'interno del grafo $\cG$;
+	\item posizionare un nuovo robot all'interno del grafo $\cG$;
 	\item muovere \emph{tutti} i robot in un nodo a loro adiacente, caricando e memorizzando
-	dal grafo $\cG$ le nuove liste d'adiacenza. Occorre tenere presente che i sensori hanno
-	una capacità di memorizzazione limitata [\ref{sec:hypotesis}] e dunque può accadere che durante
-	tale operazione vengano sovrascritte  le liste d'adiacenza dei nodi più lontani.
+	  dal grafo $\cG$ le nuove liste d'adiacenza.
+          Come già analizzato in~\ref{sec:hypotesis},
+          occorre tenere presente che i sensori hanno
+	una capacità di memorizzazione limitata e dunque può accadere che durante
+	tale operazione vengano sovrascritte le liste d'adiacenza dei nodi più lontani.
 \end{itemize}
 
 \subsection{Esito della computazione}
-L'esito della computazione dell'algoritmo verrà comunicata a video all'utente finale, che potrà essere:
+L'esito della computazione dell'algoritmo verrà comunicato a video all'utente finale.
+I risultati previsti sono:
 \begin{itemize}
 \item \texttt{MATCH}: nel caso in cui, unicamente attraverso scambio di messaggi,
 i sensori riuscissero a trovare un isomorfismo parziale tra il grafo $\cG$ e il grafo $\cQ$.
 Ciò potrà avvenire soltanto se la query risultasse essere contenuta nella somma delle conoscenze
 parziali di tutti i robot.
-Ciò potrà avvenire soltanto se la query risultasse non essere contenuta nella somma delle conoscenze
-parziali di tutti i robot.
-\item \texttt{FAIL}: nel caso in cui non esita il match tra la mappa dell'edificio e la query;
-\item \texttt{DONTKNOW}: nel caso in cui si verificasse un errore interno del sistema e
-non si riuscisse a determinare in maniera effettiva se esiste un isomorfismo tra i due grafi. Tale esito
-è stato introdotto per evitare la presenza di falsi \texttt{MATCH} o falsi \texttt{FAIL}. In tal modo garantiremo all'utente che i  \texttt{MATCH} ed i  \texttt{FAIL} saranno da considerarsi effettivi.
+\item \texttt{FAIL}: nel caso in cui vengano riscontrate inconsistenze tra la somma
+  delle conoscenze parziali (ma localmente certe) dei sensori e la query;
+\item \texttt{DONTKNOW}: nel caso in cui, data la mancanza di una visione
+  totale del grafo, non si riuscisse a determinare in maniera effettiva l'esistenza della query.
+  %  Tale esito è stato introdotto per evitare la presenza di falsi \texttt{MATCH} o falsi \texttt{FAIL}. In tal modo garantiremo all'utente che i  \texttt{MATCH} ed i  \texttt{FAIL} saranno da considerarsi effettivi.
+  % questo sta tra i requisiti non-funzionali = qualitiativi..imho..
 \end{itemize}
 
 \subsection{Entità robot}
-Nella seguente sezione, essendo i robot tra gli attori principali
-del problema, specificheremo il loro comportamento
+Essendo i robot gli attori principali del problema,
+nella seguente sezione specifichiamo il loro comportamento
 al ricevere di determinati messaggi dall'ambiente circostante.
 
-Come già detto nella sezione [\ref{sec:computation}],
-durante la fase di inizializzazione vengono distribuiti
-in maniera casuale sul grafo $\cG$. Tali robot
-attraverso dei sensori riescono ad avere una conoscenza parziale
+Come già detto nella Sezione~\ref{sec:computation},
+durante la fase di inizializzazione i robot vengono distribuiti
+in maniera casuale sul grafo $\cG$.
+Attraverso dei sensori riescono ad avere una conoscenza parziale
 del grafo, inoltre sono in grado di muoversi e di conseguenza
-sono in grado d'aumentare la loro conoscenza. Tutto ciò nei limiti
-fisici decritti nella sezione [\ref{sec:hypotesis}];
+sono in grado di aumentare la loro conoscenza. Tutto ciò nei limiti
+fisici decritti nella Sezione~\ref{sec:hypotesis}.
 
-Da un analisi ad alto livello è emerso che i messaggi scambiati con
+Da un'analisi ad alto livello è emerso che i messaggi scambiati con
 gli altri attori saranno:
 \begin{itemize}
-	\item \texttt{try\_query}: ovvero al robot è giunta\footnote{si
+	\item \texttt{try\_query}: al robot è giunta\footnote{Si
 	tenga presente che ad un processo possono arrivare tante query
 	quanto è il valore \texttt{num\_search\_group}.} la query e prova
 	a trovare una corrispondenza tra la sua conoscenza parziale e
-	la query stessa. Passando da un processo all'altro la query
-	viene scremata degli archi della quale è stato trovato un match
-	e dunque in questa fase, se la query corrisponde con la conoscenza
-	del robot, quest'ultimo comunica la presenza dell'isomorfismo attraverso
+	la query stessa. Passando da un processo all'altro, la query
+	viene scremata degli archi per cui viene trovato un match.
+	Se non rimane nulla da dover ancora verificare, il robot comunica la presenza dell'isomorfismo attraverso
 	il messaggio \texttt{MATCH}.
-	
+
 	Se dovesse riscontrare un'inconsistenza tra la query e
 	le sue informazioni, comunica il mismatch attraverso
 	il messaggio \texttt{FAIL}.
-	
-	Nel caso in cui la conoscenza del robot sia completamente disgiunta
-	dalla query, allora la quest'ultima viene inoltrata ad un'altro nodo.
-	
+
+	Nel caso in cui la conoscenza del robot non sia sufficiente a completare il controllo
+	dalla query, allora quest'ultima viene inoltrata ad un altro nodo.
+
 	Al termine dell'elaborazione, il robot si dichiarerà non più interessato
 	a seguire gli sviluppi di \emph{quella} query, avendo già contribuito con la
 	sua conoscenza;
@@ -223,22 +239,21 @@ gli altri attori saranno:
 \end{itemize}
 
 \subsection{Interfaccia con l'utente}
-In fine all'utente verrà fornito come punto d'accesso all'applicativo,
+Infine all'utente verrà fornito come punto d'accesso all'applicativo
 un'interfaccia da terminale, le cui funzionalità saranno:
 \begin{itemize}
-	\item possibilità di caricare manualmente il grafo $\cG$; tale
+	\item possibilità di caricare manualmente il grafo $\cG$ fornendo il percorso
+	del file sulla quale è memorizzato; tale
 	funzionalità sarà utile soprattutto in fase di sperimentazione;
-	\item possibilità di caricare il grafo $\cG$ fornendo il percorso
-	del file sulla quale è memorizzato;
-	\item comando per iniziare una nuova query fornendo il path del
-	file sulla quale è memorizzata; si tenga presente che la query
-	può essere \emph{modificata} ad ogni terminazione dell'algoritmo di 
-	matching. 
-	
-	\coanote{Dobbiamo decidere su chi fare il controllo per la dimensione massima ?}
-	\item verrà fornito un comando per imporre l'avanzamento di tutti
+	\item iniziare una nuova query fornendo il path del
+	file sul quale è memorizzata; si tenga presente che la query
+	può essere riproposta ad ogni terminazione dell'algoritmo di
+	matching, senza dover riavviare il sistema;
+        %	\coanote{Dobbiamo decidere su chi fare il controllo per la dimensione massima ?}
+        % io direi demoni dal naso se si sfora.. ma il controllo lo dovrebbe fare il sistema di inizializzazione...
+	\item imporre l'avanzamento di tutti
 	i robot;
-	\item possibilità d'aggiungere manualmente un nuovo robot;
+	\item aggiungere manualmente un nuovo robot;
 	\item visualizzazione a video dei risultati ottenuti.
 \end{itemize}
 
@@ -259,16 +274,6 @@ un'interfaccia da terminale, le cui funzionalità saranno:
 
 \section{Requisiti non funzionali}
 \label{sec:nonfunc-req}
-\begin{quote}
-  Everything about mode and transparencies:
-  availability, mobility, security, fault tolerance, etc.
-  Are there execution time bounds? Minimum data rates?
-
-  If requested, specific platforms/languages/middlewares requirements
-  for the implementation can be decided here.
-  (E.g.: if the project is on a SOA, we may request that functions
-  are offered via SOAP or RESTful services).
-\end{quote}
 
 In questa sezione analizziamo le caratteristiche non funzionali
 che il sistema sarà in grado di offrire.
@@ -291,9 +296,9 @@ quelli già presenti nella rete, senza la necessità di riconfigurare nulla.
 L'implementazione delle
 comunicazioni tra i punti di accesso centrali al cluster e
 tra gli elementi stessi del cluster, potrà
-sfruttare le catatteristiche offerte da \emph{Akka}:
+sfruttare le caratteristiche offerte da \emph{Akka}:
 scala con il numero di sensori e
-deve essere svincolata dal conoscere la posizione dei singoli sensori.
+deve essere svincolata dal conoscere la loro posizione.
 Il grado di \emph{location transparency} offerto deve dunque essere molto elevato.
 
 La gestione della conoscenza del grafo deve poter
@@ -350,7 +355,9 @@ Copiare una versione della query parziale nel supervisore del nodo,
 limita la finestra temporale in cui può accadere questo fallimento
 critico.
 Possiamo ulteriormente proteggere il sistema facendo procedere
-un numero $k$ costante (3 di default) di query contemporaneamente.
+più query contemporaneamente (ognuna con il proprio \texttt{search\_group}),
+in numero pari al parametro \texttt{num\_search\_group}
+definito dall'utente (3 di default).
 La ridondanza introdotta, come già discusso,
 non può essere una forma di parallelizzazione del lavoro: avere
 più ricerche attive nello stesso momento permette unicamente di
@@ -362,13 +369,13 @@ fallimenti critici ai quali il sistema rimane soggetto.
 %% arriva alla conclusione, sblocca quelle che eventualmente sono rimaste
 %% bloccate in questo stato.
 
-Nel malaugurato caso in cui tutte le $k$ ricerche incontrino
+Nel malaugurato caso in cui tutte le ricerche incontrino
 fallimenti critici, il sistema risulterà bloccato: pur non potendo
 distinguere tale sospensione dalla fase di ricerca, si affida
 la responsabilità all'utente di terminare la ricerca manualmente.
 
 \subsubsection*{Correttezza del risultato}
-Senza fallimenti, il sistema deve riusire a rispondere con un messaggio di
+Senza fallimenti, il sistema deve riuscire a rispondere con un messaggio di
 \texttt{MATCH} / \texttt{FAIL} / \texttt{DONTKNOW} correttamente
 rispetto a quanto definito nelle specifiche funzionali.
 In generale, si garantisce che,
