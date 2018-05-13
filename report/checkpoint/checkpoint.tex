@@ -125,7 +125,7 @@ sotto determinate ipotesi:
   durante l'inizializzazione).
   Per un sensore risulta dunque impossibile ricostruire l'intero grafo $\cG$ nella sua completezza;
 \item il robot ha una conoscenza parziale del grafo $\cG$, ma ha la conoscenza
-  totale del nodo sulla quale viene posizionato, i.e. la sua lista d'adiacenza è completa;
+  totale del nodo sulla quale viene posizionato, i.e., la sua lista d'adiacenza è completa.
   %% Ben detto cazzo!
 % \item \coanote{Definire le ipotesi sulla grandezza del grafo $\cG$!}.
 % non dovendo memorizzarlo davvero nell'applicazione concreta non ha senso imporre delle restrizioni...imho...
@@ -143,14 +143,14 @@ fornito dall'utente. Quest'ultimo dovrà fornire in input due interi:
 \item \texttt{num\_proc:} rappresentante la cardinalità dell'insieme $\Sset$, ovvero il numero di
 robot distribuiti sulla mappa dell'edificio;
 \item \texttt{num\_search\_group} (\emph{opzionale}): rappresentante
-  il livello di replicazione del sistema~\footnote{\label{fn:searchgroup}
+  il livello di replicazione del sistema\footnote{\label{fn:searchgroup}
     L'uso e la necessità dei \texttt{search\_group} verranno descritti
-    nella Sezione~\ref*{sec:nonfunc-req}.} Se non specificato viene posto uguale a $3$.
+    nella Sezione~\ref{sec:nonfunc-req}.} Se non specificato viene posto uguale a $3$.
 \end{itemize}
 
 \subsection{Computazione}
 \label{sec:computation}
-La query viene distribuita ad un elemento per ogni \texttt{search\_group}~\textsuperscript{\ref{fn:searchgroup}}
+La query viene distribuita ad un elemento per ogni \texttt{search\_group}\textsuperscript{\ref{fn:searchgroup}}
 che inizierà a cercare un match tra i grafi $\cG$ e $\cQ$. Ogni volta che viene trovato un isomorfismo
 parziale tra la conoscenza del robot e la query, quest'ultima viene prima sfoltita, rimuovendo
 le informazioni già verificate, e poi inoltrata ad
@@ -199,7 +199,7 @@ fisici decritti nella Sezione~\ref{sec:hypotesis}.
 Da un'analisi ad alto livello è emerso che i messaggi scambiati con
 gli altri attori saranno:
 \begin{itemize}
-	\item \texttt{try\_query}: al robot è giunta~\footnote{Si
+	\item \texttt{try\_query}: al robot è giunta\footnote{Si
 	tenga presente che ad un processo possono arrivare tante query
 	quanto è il valore \texttt{num\_search\_group}.} la query e prova
 	a trovare una corrispondenza tra la sua conoscenza parziale e
@@ -250,13 +250,13 @@ che il sistema sarà in grado di offrire.
 
 \subsection{Scalabilità e trasparenza}
 I sensori costituiranno una rete peer-to-peer,
-senza alcuna suddivisione di ruoli a priori: i ruoli centralizzati
+senza alcuna suddivisione di ruoli a priori; i ruoli centralizzati
 sono definiti staticamente con il compito fissato di fornire un punto
 di accesso al cluster in ingresso (proponendo una nuova query) e
 in uscita (raccogliendo informazioni relative alla riuscita
 o al fallimento della query).
 
-Un fondamentale requisito è che
+Un requisito fondamentale è che
 la \emph{conoscenza} del grafo complessivo sia totalmente distribuita:
 data la sua potenziale grandezza
 non viene ricostruita alcuna descrizione centralizzata di essa.
@@ -284,8 +284,8 @@ Sono quindi le caratteristiche proprie del problema a impedire di
 parallelizzare il lavoro nel sistema distribuito:
 per ogni ricerca si avrà un solo nodo attivo alla volta.
 
-La cifra dell'algoritmo distribuito sta dunque nella
-condivisione di conoscenza, piuttosto che nella suddivisione del lavoro.
+Il punto focale dell'algoritmo distribuito sta dunque nella
+condivisione di conoscenza, piuttosto che nella suddivisione del tempo di calcolo.
 %% Inoltre,
 %% il percorso di esplorazione della query, progressivamente snellita,
 %% non influisce nella sua determinazione: una qualunque delle n! possibili
