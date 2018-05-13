@@ -1,10 +1,7 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.subgraph;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
-import com.lightbend.akka.sample.Greeter.*;
-import com.lightbend.akka.sample.Printer.*;
 
 import static org.junit.Assert.assertEquals;
 

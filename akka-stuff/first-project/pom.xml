@@ -1,4 +1,4 @@
-<!-- #build-sample -->
+<!-- #build-subgraph -->
 <project>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,7 +43,7 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath />
-                        <argument>com.lightbend.akka.sample.AkkaQuickstart</argument>
+                        <argument>com.lightbend.akka.subgraph.AkkaQuickstart</argument>
                     </arguments>
                 </configuration>
             </plugin>
