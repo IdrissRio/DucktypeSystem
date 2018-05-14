@@ -9,3 +9,7 @@ akka-stuff/first-project/target/classes/
 akka-stuff/first-project/target/test-classes/
 akka-stuff/first-project/target/maven-status
 akka-stuff/first-project/.idea/workspace.xml
+akka-stuff/project/target/classes/
+akka-stuff/project/target/test-classes/
+akka-stuff/project/target/maven-status
+akka-stuff/project/.idea/workspace.xml

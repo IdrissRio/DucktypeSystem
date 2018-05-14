@@ -1,13 +1,13 @@
 package it.uniud.ducktypesystem.controller;
 
-import it.uniud.ducktypesystem.view.sView;
+import it.uniud.ducktypesystem.view.DSView;
 
-public class Application  implements Runnable{
-    protected sView view;
+public class DSApplication  implements Runnable{
+    protected DSView view;
 
     @Override
     public void run() {
-        view=new sView(this);
+        view=new DSView(this);
         view.openApplication();
     }
     public void exit() {

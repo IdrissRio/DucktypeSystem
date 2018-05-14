@@ -10,9 +10,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class log implements abstractLog{
+public class DSLog implements DSAbstractLog {
     private JTextPane logPane;
-    public log(){
+    public DSLog(){
         logPane=new JTextPane();
         logPane.setEditable(false);
         logPane.setFont(new Font("Avenir", Font.PLAIN, 20));

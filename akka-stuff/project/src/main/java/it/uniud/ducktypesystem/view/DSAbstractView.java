@@ -1,5 +1,5 @@
 package it.uniud.ducktypesystem.view;
 
-public interface View {
+public interface DSAbstractView {
     public void openApplication();
 }

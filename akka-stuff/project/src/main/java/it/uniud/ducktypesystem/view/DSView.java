@@ -1,37 +1,33 @@
 package it.uniud.ducktypesystem.view;
 
-import it.uniud.ducktypesystem.controller.Application;
-import it.uniud.ducktypesystem.logger.abstractLog;
-import it.uniud.ducktypesystem.logger.log;
+import it.uniud.ducktypesystem.controller.DSApplication;
+import it.uniud.ducktypesystem.distributed.controller.DSAbstractInterface;
+import it.uniud.ducktypesystem.distributed.controller.DSInterface;
+import it.uniud.ducktypesystem.logger.DSAbstractLog;
+import it.uniud.ducktypesystem.logger.DSLog;
 import org.graphstream.algorithm.generator.BananaTreeGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
 
 
-public class sView implements View {
-    protected JFrame mainFrame;
-    protected Application App;
-    protected JTextField pathField;
-    protected URL pathUrl;
-    protected abstractLog logger;
-    protected JScrollPane logScroll;
-    protected JPanel graphPanel;
-    protected JPanel mainPanel;
-    protected Graph graph;
-    protected Generator gen;
-    protected Viewer viewer;
-    protected ViewPanel view;
-    protected Color greenForest= new Color(11,102,35);
+public class DSView implements DSAbstractView {
+    private JFrame mainFrame;
+    private DSApplication App;
+    private DSAbstractLog logger;
+    private JScrollPane logScroll;
+    private JPanel graphPanel;
+    private Graph graph;
+    private Generator gen;
+    private Viewer viewer;
+    private Color greenForest= new Color(11,102,35);
 
-    public sView(Application application) {
+    public DSView(DSApplication application) {
         try {
             System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "ted" );
             System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
@@ -45,7 +41,7 @@ public class sView implements View {
         }
 
         this.App = application;
-        logger=new log();
+        logger=new DSLog();
         logScroll=new JScrollPane(logger.getLog());
         logScroll.setSize(new Dimension(600,300));
         graphPanel=new JPanel(new GridLayout()){
@@ -56,6 +52,7 @@ public class sView implements View {
         };
     }
 
+
     public void openApplication() {
         logger.log("Inizializzazione ambiente", greenForest);
         initMainFrame();
@@ -63,14 +60,12 @@ public class sView implements View {
         logger.log("Inizializzazione grafo", greenForest);
         welcomeGraph();
         mainFrame.setVisible(true);
-
-
         gen.begin();
         for(int i=0; i<20; i++) {
             gen.nextEvents();
             viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
             try {
-                Thread.sleep(100);
+                Thread.sleep(0);
             }catch(Throwable e){
 
             }
@@ -78,7 +73,6 @@ public class sView implements View {
         }
         gen.end();
         logger.log("Inzializzazione completata", greenForest);
-        logger.log("And this is a very very very very very very  very very  very very  very very  very very  very very  very very  long string", Color.RED);
     }
 
     protected void exit() {
@@ -100,9 +94,8 @@ public class sView implements View {
             public void actionPerformed(ActionEvent l) {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.showOpenDialog(mainFrame);
-                pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
                 try {
-                    pathUrl = new URL(fileChooser.getSelectedFile().getAbsolutePath());
+
                 }catch(Throwable e) {
                 }
             }
@@ -128,9 +121,21 @@ public class sView implements View {
     }
 
     private void initMainFrame(){
-        mainPanel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel soutPanel = new JPanel(new BorderLayout());
+        JButton startComputation = new JButton("Submit query");
+        startComputation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logger.log("Let's start the computation", greenForest);
+                DSAbstractInterface computation = new DSInterface(logger,graph,graph);
+
+            }
+        });
+        soutPanel.add(startComputation,BorderLayout.CENTER);
         mainPanel.add(graphPanel, BorderLayout.NORTH);
         mainPanel.add(logScroll, BorderLayout.CENTER);
+        mainPanel.add(soutPanel,BorderLayout.SOUTH);
         mainFrame = new JFrame();
         mainFrame.getContentPane().add(mainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
@@ -172,8 +177,8 @@ public class sView implements View {
         gen = new BananaTreeGenerator();
         graph.addAttribute("ui.stylesheet", getGraphAttribute());
         gen.addSink(graph);
-        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-        view = viewer.addDefaultView(false);
+        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        ViewPanel view = viewer.addDefaultView(false);
         graphPanel.add(view);
     }
 }
