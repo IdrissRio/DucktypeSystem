@@ -17,49 +17,6 @@ import java.awt.*;
 public class DSInterface implements DSAbstractInterface {
     private Integer seedPortNumber;
 
-    static//#send-destination
-    public class Destination extends AbstractActor {
-        LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-
-        public Destination() {
-            ActorRef mediator =
-                    DistributedPubSub.get(getContext().system()).mediator();
-            // register to the path
-            mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
-        }
-
-        @Override
-        public Receive createReceive() {
-            return receiveBuilder()
-                    .match(String.class, msg ->
-                            log.info("Got: {}", msg))
-                    .build();
-        }
-
-    }
-
-    static//#sender
-    public class Sender extends AbstractActor {
-
-        // activate the extension
-        ActorRef mediator =
-                DistributedPubSub.get(getContext().system()).mediator();
-
-        @Override
-        public Receive createReceive() {
-            return receiveBuilder()
-                    .match(String.class, in -> {
-                        String out = in.toUpperCase();
-                        boolean localAffinity = true;
-                        mediator.tell(new DistributedPubSubMediator.Send("/user/destination", out,
-                                localAffinity), getSelf());
-                    })
-                    .build();
-        }
-
-    }
-    //#sender
-
     public DSInterface(DSAbstractLog logger, Graph graph, Graph query) {
         this(logger, graph, query, 5);
     }
@@ -85,7 +42,7 @@ public class DSInterface implements DSAbstractInterface {
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=2554").withFallback(config));
 
         node1.actorOf(DSRobot.props("Nodo1"), "destination");
-//another node
+        //another node
         node2.actorOf(DSRobot.props("Nodo2"), "destination");
         //another node
         node3.actorOf(DSRobot.props("Nodo3"), "destination");
@@ -99,11 +56,6 @@ public class DSInterface implements DSAbstractInterface {
         ActorRef sender = node1.actorOf(DSRobot.props("Sender"), "sen3456der");
 // after a while the destinations are replicated
         sender.tell(new hello(sender.path().name()), sender);
-
-
-
-
-
     }
 
 }

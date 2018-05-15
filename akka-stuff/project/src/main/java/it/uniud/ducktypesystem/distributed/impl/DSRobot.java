@@ -119,13 +119,12 @@ public class DSRobot extends AbstractActor {
                 .match(String.class, x -> {
                     log.info("From: {}   ----- To:"+myName, x);
                     boolean localAffinity = false;
-
                     mediator.tell(new DistributedPubSubMediator.Unsubscribe("destination",getSelf()),ActorRef.noSender());
+
                     mediator.tell(new DistributedPubSubMediator.Remove("/user/destination"),getSelf());
                     Thread.sleep(1000);
                     mediator.tell(new DistributedPubSubMediator.Send("/user/destination", myName,
                             localAffinity), getSelf());
-
                 })
                 .match(DSInterface.hello.class, in -> {
                     boolean localAffinity = false;
@@ -137,7 +136,6 @@ public class DSRobot extends AbstractActor {
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
     }
-
     static public Props props(String message) {
         return Props.create(DSRobot.class, () -> new DSRobot(message));
     }
