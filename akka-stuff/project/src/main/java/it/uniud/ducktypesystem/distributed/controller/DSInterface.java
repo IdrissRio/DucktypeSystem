@@ -41,7 +41,8 @@ public class DSInterface implements DSAbstractInterface {
         ActorSystem node4 = ActorSystem.create("ClusterSystem",
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=2554").withFallback(config));
 
-        node1.actorOf(DSRobot.props("Nodo1"), "destination");
+        ActorRef x = node1.actorOf(DSRobot.props("Nodo1"), "destination");
+
         //another node
         node2.actorOf(DSRobot.props("Nodo2"), "destination");
         //another node

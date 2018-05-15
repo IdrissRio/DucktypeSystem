@@ -60,18 +60,6 @@ public class DSView implements DSAbstractView {
         logger.log("Inizializzazione grafo", greenForest);
         welcomeGraph();
         mainFrame.setVisible(true);
-        gen.begin();
-        for(int i=0; i<20; i++) {
-            gen.nextEvents();
-            viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-            try {
-                Thread.sleep(0);
-            }catch(Throwable e){
-
-            }
-            viewer.addDefaultView(false);
-        }
-        gen.end();
         logger.log("Inzializzazione completata", greenForest);
     }
 
@@ -127,8 +115,15 @@ public class DSView implements DSAbstractView {
         startComputation.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                logger.log("Let's start the computation", greenForest);
-                DSAbstractInterface computation = new DSInterface(logger,graph,graph);
+                Thread thread = new Thread(() -> {
+                    logger.log("Let's start the computation", greenForest);
+                    DSAbstractInterface computation = new DSInterface(logger,graph,graph);
+                });
+                thread.start();
+                graph.removeEdge("CF");
+                graph.removeEdge("CD");
+                graph.removeEdge("CE");
+
 
             }
         });
@@ -174,12 +169,20 @@ public class DSView implements DSAbstractView {
 
     private void welcomeGraph(){
         graph = new SingleGraph("Welcome Graph");
-        gen = new BananaTreeGenerator();
-        graph.addAttribute("ui.stylesheet", getGraphAttribute());
-        gen.addSink(graph);
+        //graph.addAttribute("ui.stylesheet", getGraphAttribute());
+        graph.setStrict(false);
+        graph.setAutoCreate( true );
+        graph.addEdge( "AB", "A", "B" );
+        graph.addEdge( "BC", "B", "C" );
+        graph.addEdge( "CA", "C", "A" );
+        graph.addEdge( "CD", "C", "D" );
+        graph.addEdge( "CE", "C", "E" );
+        graph.addEdge( "CF", "C", "F" );
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
         ViewPanel view = viewer.addDefaultView(false);
         graphPanel.add(view);
+
     }
 }
 

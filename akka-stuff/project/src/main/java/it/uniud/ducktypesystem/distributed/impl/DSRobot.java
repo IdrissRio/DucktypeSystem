@@ -80,13 +80,16 @@ public class DSRobot extends AbstractActor {
     }
     public DSRobot(){
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
+
     }
+
     public DSRobot(/*DSAbstractGraph.Node myNode*/String msg) {
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         this.myNode = myNode;
         this.myGraph = new DSGraph(myNode);
         myName=msg;
         // FIXME: this.supervisor = system.ActorOf(Supervisor.class) ?? è lui che lo deve creare?
+
     }
 
 
@@ -119,8 +122,7 @@ public class DSRobot extends AbstractActor {
                 .match(String.class, x -> {
                     log.info("From: {}   ----- To:"+myName, x);
                     boolean localAffinity = false;
-                    mediator.tell(new DistributedPubSubMediator.Unsubscribe("destination",getSelf()),ActorRef.noSender());
-
+                    //mediator.tell(new DistributedPubSubMediator.Unsubscribe("destination",getSelf()),ActorRef.noSender());
                     mediator.tell(new DistributedPubSubMediator.Remove("/user/destination"),getSelf());
                     Thread.sleep(1000);
                     mediator.tell(new DistributedPubSubMediator.Send("/user/destination", myName,
