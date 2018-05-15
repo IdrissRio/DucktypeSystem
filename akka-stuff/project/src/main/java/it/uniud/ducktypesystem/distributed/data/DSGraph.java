@@ -1,34 +1,26 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-public class DSGraph implements DSAbstractGraph{
-    // Load from general_graph.
-    public DSGraph() { /* TODO: */ }
-    public DSGraph(Node node) { /* TODO: */ }
+import java.util.ArrayList;
 
-    @Override
-    public Nodes getNodes() { /* TODO: */ return null; }
+public interface DSGraph {
+    class Node {
+        String label;
+        Node(String label) {
+            this.label = label;
+        }
+    }
 
-    @Override
-    public Nodes adjNodes(Node node) { /* TODO: */ return null; }
+    ArrayList<Node> getNodes();
+    ArrayList<Node> adjNodes(Node node);
+    void addNode(Node node);
+    void removeNode(Node node);
+    void removeEdge(Node n1, Node n2); // Don't remove trailing nodes!
 
-    @Override
-    public void addNode(Node node) { /* TODO: */ }
+    // remove nodes whose adj info are empty.
+    void shrinkRedundancies();
 
-    @Override
-    public void removeNode(Node node) { /* TODO: */ }
+    Node chooseNext(Node current);
 
-    @Override
-    public void removeEdge(Node n1, Node n2) { /* TODO: */ }
-
-    @Override
-    public void shrinkRedundancies() { /* TODO: */ }
-
-    @Override
-    public Node chooseNext(Node current) { /* TODO: */ return null; }
-
-    @Override
-    public boolean isEmpty() { /* TODO: */ return false; }
-
-    @Override
-    public boolean isRedundant() { /* TODO: */ return false; }
+    boolean isEmpty();
+    boolean isRedundant();
 }

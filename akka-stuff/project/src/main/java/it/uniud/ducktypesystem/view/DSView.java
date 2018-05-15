@@ -5,7 +5,6 @@ import it.uniud.ducktypesystem.distributed.controller.DSAbstractInterface;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
-import org.graphstream.algorithm.generator.BananaTreeGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -22,6 +21,7 @@ public class DSView implements DSAbstractView {
     private DSAbstractLog logger;
     private JScrollPane logScroll;
     private JPanel graphPanel;
+
     private Graph graph;
     private Generator gen;
     private Viewer viewer;
@@ -32,10 +32,10 @@ public class DSView implements DSAbstractView {
             System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "ted" );
             System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
             System.setProperty( "apple.laf.useScreenMenuBar", "true" );
-            com.apple.eawt.Application macOS = com.apple.eawt.Application.getApplication();
-            ImageIcon img=new ImageIcon(this.getClass().getResource("/DucktypeIcon.png"));
+            // com.apple.eawt.Application macOS = com.apple.eawt.Application.getApplication();
+            // ImageIcon img=new ImageIcon(this.getClass().getResource("/DucktypeIcon.png"));
 
-            macOS.setDockIconImage(img.getImage());
+            // macOS.setDockIconImage(img.getImage());
         } catch ( Throwable e ) {
             e.printStackTrace();
         }
@@ -63,18 +63,19 @@ public class DSView implements DSAbstractView {
         logger.log("Inzializzazione completata", greenForest);
     }
 
-    protected void exit() {
+    @Override
+    public void exit() {
         if(confirmExit())
             App.exit();
     }
 
-    protected boolean confirmExit() {
+    private boolean confirmExit() {
         return JOptionPane.showConfirmDialog(mainFrame,
                 "Do you reallly want to Exit?",
                 "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
     }
 
-    protected void setMenuItem(){
+    private void setMenuItem(){
         JMenuItem openMenuItem = new JMenuItem("Open...");
         openMenuItem.setMnemonic(KeyEvent.VK_O);
         openMenuItem.addActionListener(new ActionListener() {

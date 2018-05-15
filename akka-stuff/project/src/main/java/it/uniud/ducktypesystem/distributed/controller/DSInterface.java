@@ -32,7 +32,8 @@ public class DSInterface implements DSAbstractInterface {
                         "akka.actor.provider=cluster\n" +
                         "akka.remote.netty.tcp.port=2551\n" +
                         "akka.remote.netty.tcp.host=127.0.0.1\n" +
-                        "akka.cluster.seed-nodes = [ \"akka.tcp://ClusterSystem@127.0.0.1:2551\"]\n");
+                        "akka.cluster.seed-nodes = [ \"akka.tcp://ClusterSystem@127.0.0.1:2551\"]\n" +
+                        "akka.cluster.jmx.multi-mbeans-in-same-jvm = on\n");
         ActorSystem node1 = ActorSystem.create("ClusterSystem", config);
         ActorSystem node2 = ActorSystem.create("ClusterSystem",
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=2552").withFallback(config));

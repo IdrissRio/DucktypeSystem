@@ -1,11 +1,10 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-public class DSQuery extends DSGraph{
+public class DSQuery extends DSGraphImpl {
     public DSQuery cloneQuery() { /* TODO: */ return null; }
 
-    // FIXME:
     public class Version {
-        // ClusterRef ???
+        String versionName;
     }
     public Version version;
 }

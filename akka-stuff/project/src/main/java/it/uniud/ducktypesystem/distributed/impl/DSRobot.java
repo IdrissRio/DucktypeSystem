@@ -8,19 +8,19 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
-import it.uniud.ducktypesystem.distributed.data.DSAbstractGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.message.*;
 
 public class DSRobot extends AbstractActor {
     private String myName;
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    private ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     private ActorRef supervisor;
 
     private DSGraph myGraph;
-    private DSAbstractGraph.Node myNode;
+    private DSGraph.Node myNode;
     /* FIXME:
      * we need to save MORE than one current Query if it has to hold the current Query
      * until it it correctly forwarded. This could be a List<Query> indexed by version hash nr?
@@ -86,7 +86,7 @@ public class DSRobot extends AbstractActor {
     public DSRobot(/*DSAbstractGraph.Node myNode*/String msg) {
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         this.myNode = myNode;
-        this.myGraph = new DSGraph(myNode);
+        this.myGraph = new DSGraphImpl();
         myName=msg;
         // FIXME: this.supervisor = system.ActorOf(Supervisor.class) ?? è lui che lo deve creare?
 
@@ -119,6 +119,7 @@ public class DSRobot extends AbstractActor {
                 .match(DSAskNewSend.class, x -> {
                     secureSend(x.version);
                 })
+                /***********************************/
                 .match(String.class, x -> {
                     log.info("From: {}   ----- To:"+myName, x);
                     boolean localAffinity = false;
