@@ -3,6 +3,9 @@ package it.uniud.ducktypesystem.view;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.controller.DSAbstractInterface;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
+import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DataFacade;
+import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
 import org.graphstream.algorithm.generator.Generator;
@@ -13,6 +16,7 @@ import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 
 public class DSView implements DSAbstractView {
@@ -21,6 +25,10 @@ public class DSView implements DSAbstractView {
     private DSAbstractLog logger;
     private JScrollPane logScroll;
     private JPanel graphPanel;
+
+    // The DSGraph is accessible by `facade.getGraph()' *after* configureSystem() is called.
+    // or NullPointerException will be thrown.
+    private DataFacade facade;
 
     private Graph graph;
     private Generator gen;
@@ -58,6 +66,7 @@ public class DSView implements DSAbstractView {
         initMainFrame();
         setMenuItem();
         logger.log("Inizializzazione grafo", greenForest);
+        facade = null;
         welcomeGraph();
         mainFrame.setVisible(true);
         logger.log("Inzializzazione completata", greenForest);
@@ -183,7 +192,32 @@ public class DSView implements DSAbstractView {
         viewer.enableAutoLayout();
         ViewPanel view = viewer.addDefaultView(false);
         graphPanel.add(view);
+    }
 
+    // Initialize graph and system parameters got from visual interface.
+    // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
+    private void configureSystem(String filePath, int numRobot, int numSearchGroup) {
+        try {
+            facade = DataFacade.create(filePath);
+            facade.setNumSearchGroups(numSearchGroup);
+            facade.setOccupied(numRobot);
+        } catch (SystemError e) {
+            showErrorMessage("An error occurred in System Configuration.");
+        }
+    }
+    // Configure occupied vector: this should be called *after* configureSystem().
+    // This allows the initialization of the robots' position by selecting nodes on visual interface.
+    private void configureOccupied(ArrayList<DSGraph.Node> occupied) {
+        if (facade == null || facade.getMap() == null ) {
+            showErrorMessage("An error occurred in System Configuration.");
+            return;
+        }
+        facade.setOccupied(occupied);
+
+    }
+
+    private void showErrorMessage(String s) {
+        // TODO: show window insulting the user with `s' message.
     }
 }
 

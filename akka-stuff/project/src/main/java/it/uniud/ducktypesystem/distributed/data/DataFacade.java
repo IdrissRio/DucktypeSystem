@@ -1,6 +1,7 @@
 package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
+import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.Sink;
 import org.graphstream.stream.file.FileSource;
 import org.graphstream.stream.file.FileSourceFactory;
@@ -21,7 +22,7 @@ public class DataFacade {
     private int numSearchGroups;
 
     // Returns a singleton instance of DataFacade given the graph file path.
-    public static DataFacade create(String filePath, int numSearchGroups) throws SystemError {
+    public static DataFacade create(String filePath) throws SystemError {
         return new DataFacade(filePath);
     }
 
