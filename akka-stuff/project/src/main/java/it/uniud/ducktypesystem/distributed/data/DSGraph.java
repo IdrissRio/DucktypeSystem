@@ -23,4 +23,6 @@ public interface DSGraph {
 
     boolean isEmpty();
     boolean isRedundant();
+
+    Object getGraph();
 }

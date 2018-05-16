@@ -73,4 +73,9 @@ public class DSGraphImpl implements DSGraph {
             if (n.getDegree() == 0) return false;
         return true;
     }
+
+    @Override
+    public Object getGraph() {
+        return graph;
+    }
 }

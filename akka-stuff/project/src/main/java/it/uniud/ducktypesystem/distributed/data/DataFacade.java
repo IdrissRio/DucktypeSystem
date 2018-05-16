@@ -29,7 +29,7 @@ public class DataFacade {
         try {
             map = new DSGraphImpl();
             FileSource fs = FileSourceFactory.sourceFor(filePath);
-            fs.addSink((Sink) map);
+            fs.addSink((Sink) map.getGraph());
             try {
                 fs.readAll(filePath);
             } catch (Throwable t) {
