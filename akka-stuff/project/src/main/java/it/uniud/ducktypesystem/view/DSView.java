@@ -8,7 +8,6 @@ import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
-import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;

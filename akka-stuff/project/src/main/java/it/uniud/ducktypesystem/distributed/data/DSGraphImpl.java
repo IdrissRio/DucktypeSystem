@@ -1,5 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
+import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
@@ -8,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/***
+* DSGraphImpl:
+* Implements the required method for the system
+* providing a wrapper for the graphstream `DefaultGraph' low level implementation.
+*/
 public class DSGraphImpl implements DSGraph {
     private DefaultGraph impl;
 
@@ -125,7 +131,7 @@ public class DSGraphImpl implements DSGraph {
             if (!hasNode(n1) || !hasNode(n2)) return false;
             impl.addEdge(n1+n2, n1, n2);
             return true;
-        } catch (IdAlreadyInUseException e) {
+        } catch (EdgeRejectedException e) {
             return false;
         }
     }
@@ -136,7 +142,7 @@ public class DSGraphImpl implements DSGraph {
             if (n1 >= numNodes() || n2 >= numNodes()) return false;
             impl.addEdge(getNode(n1)+getNode(n2), n1, n2);
             return true;
-        } catch (IdAlreadyInUseException e) {
+        } catch (EdgeRejectedException e) {
             return false;
         }
     }

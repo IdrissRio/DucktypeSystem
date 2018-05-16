@@ -11,9 +11,11 @@ import org.junit.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GraphTest1 {
     private DataFacade facade;
+    private DSGraph graph;
     private DefaultGraph realGraph;
     private String fileName;
 
@@ -21,6 +23,7 @@ public class GraphTest1 {
         String basePath = new File("").getAbsolutePath();
         fileName = basePath + "/src/test/resources/graphTest01.DGS";
         facade = DataFacade.create(fileName);
+        graph = facade.getMap();
 
         realGraph = new DefaultGraph("g");
         FileSource fs = FileSourceFactory.sourceFor(fileName);
@@ -52,6 +55,7 @@ public class GraphTest1 {
     @Test
     public void initFacade02() throws SystemError {
         facade = DataFacade.create(fileName);
+        graph = facade.getMap();
 
         Assert.assertEquals(facade.getNumSearchGroups(), 3);
         Assert.assertEquals(facade.getOccupied().size(), 0);
@@ -62,42 +66,125 @@ public class GraphTest1 {
         DSGraph graph = facade.getMap();
         Assert.assertEquals(graph.numNodes(), realGraph.getNodeCount());
         for (int i = graph.numNodes(); i-- > 0; ) {
-            Assert.assertEquals(graph.getNode(i).getLabel(), realGraph.getNode(i).getId());
-            Assert.assertEquals(graph.numAdjNodes(graph.getNode(i)), realGraph.getNode(i).getDegree());
+            Assert.assertEquals(graph.getNode(i), realGraph.getNode(i).getId());
+            Assert.assertEquals(graph.numAdjNodes(i), realGraph.getNode(i).getDegree());
             for (int j = graph.numNodes(); j-- > 0; ) {
-                Assert.assertEquals(graph.areAdj(graph.getNode(i), graph.getNode(j)),
-                        realGraph.getNode(i).hasEdgeBetween(j));
+                Assert.assertEquals(graph.areAdj(i, j), realGraph.getNode(i).hasEdgeBetween(j));
             }
         }
     }
 
     @Test
     public void graph01() {
-        DSGraph graph = facade.getMap();
-        DSGraph.Node n;
         Assert.assertEquals(graph.numNodes(), realGraph.getNodeCount());
         for (int i = graph.numNodes(); i-- > 0; ) {
-            n = graph.getNode(i);
-            System.out.println(n.getLabel());
-            Assert.assertEquals(n.getLabel(), realGraph.getNode(i).getId());
+            String n = graph.getNode(i);
+            System.out.println(n);
+            Assert.assertEquals(n, realGraph.getNode(i).getId());
         }
     }
 
     @Test
     public void graph02() {
-        DSGraph graph = facade.getMap();
-        ArrayList<DSGraph.Node> nodes = graph.getNodes();
-        for (DSGraph.Node n : nodes) {
-            System.out.println(n.getLabel());
-            Assert.assertNotNull(realGraph.getNode(n.getLabel()));
+        List<String> nodes = graph.getNodes();
+        for (String n : nodes) {
+            System.out.println(n);
         }
     }
 
-
     @Test
     public void graph03() {
-        DSGraph graph = facade.getMap();
-        ArrayList<DSGraph.Node> nodes = graph.getNodes();
+        graph.addNode("D");
+        realGraph.addNode("D");
         graphEquals();
+    }
+
+    @Test
+    public void graph04() {
+        graph.removeNode("A");
+        realGraph.removeNode("A");
+        graphEquals();
+    }
+
+    @Test
+    public void graph05() {
+        Assert.assertFalse(graph.removeNode("F"));
+        Assert.assertFalse(graph.addNode("A"));
+        Assert.assertFalse(graph.removeEdge("F", "G"));
+        Assert.assertFalse(graph.addEdge(5, 7));
+        Assert.assertFalse(graph.addEdge("F", "G"));
+        graphEquals();
+    }
+
+    @Test
+    public void graph06() {
+        graph.addNode("D");
+        graph.addNode("E");
+        graph.addEdge("D", "E");
+        realGraph.addNode("D");
+        realGraph.addNode("E");
+        realGraph.addEdge("DE", "D", "E");
+        graphEquals();
+    }
+
+    @Test
+    public void graph07() {
+        for (String id : graph.getNodes())
+            graph.removeNode(id);
+        Assert.assertTrue(graph.isEmpty());
+
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+        graph.addEdge("A", "B");
+        graph.addEdge("B", "C");
+        graph.addEdge("A", "C");
+        Assert.assertFalse(graph.addEdge("C", "A"));
+        Assert.assertTrue(graph.removeEdge("C", "A"));
+        Assert.assertTrue(graph.removeEdge("B", "A"));
+
+        Assert.assertTrue(graph.isRedundant());
+        graph.shrinkRedundancies();
+        Assert.assertFalse(graph.isRedundant());
+        Assert.assertFalse(graph.isEmpty());
+    }
+
+    @Test
+    public void graph08() {
+        List<String> nodes = graph.getNodes();
+        List<Integer> indices = graph.getNodesIndexes();
+        Assert.assertEquals(nodes.size(), indices.size());
+        Assert.assertEquals(nodes.size(), graph.numNodes());
+
+        graph.addNode("R");
+        Assert.assertTrue(nodes.size() < graph.numNodes());
+        Assert.assertEquals(graph.getNodesIndexes().size(), graph.numNodes());
+    }
+
+    @Test
+    public void graph09() {
+        for (String id : graph.getNodes())
+            graph.removeNode(id);
+        Assert.assertTrue(graph.isEmpty());
+
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+        graph.addEdge("A", "B");
+        graph.addEdge("B", "C");
+        graph.addEdge("A", "C");
+
+        for (String s : graph.adjNodes("B"))
+            System.out.println(s);
+
+        graph.addNode("D");
+
+        for (Integer i : graph.getNodesIndexes()) {
+            if (i.equals(graph.getNodeIndex("D"))) continue;
+            graph.addEdge(i, graph.getNodeIndex("D"));
+        }
+        System.out.println();
+        for (String s : graph.adjNodes("D"))
+            System.out.println(s);
     }
 }
