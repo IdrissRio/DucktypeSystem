@@ -233,7 +233,7 @@ public class DSView implements DSAbstractView {
 
 
     private void graphVisualization(DSGraph x){
-        graph =(Graph) x.getGraph();
+        graph =(Graph) x.getGraphImpl();
     }
     private void welcomeGraph(){
         graph = new SingleGraph("Welcome Graph");
@@ -260,7 +260,7 @@ public class DSView implements DSAbstractView {
     }
     // Configure occupied vector: this should be called *after* configureSystem().
     // This allows the initialization of the robots' position by selecting nodes on visual interface.
-    private void configureOccupied(ArrayList<DSGraph.Node> occupied) {
+    private void configureOccupied(ArrayList<String> occupied) {
         if (facade == null || facade.getMap() == null ) {
             showErrorMessage("An error occurred in System Configuration.");
             return;

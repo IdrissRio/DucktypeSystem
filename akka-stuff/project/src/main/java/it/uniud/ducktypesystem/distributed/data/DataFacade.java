@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 public class DataFacade {
     private DSGraph map;
-    private ArrayList<DSGraph.Node> occupied;
+    private ArrayList<String> occupied;
     private int numSearchGroups;
 
     // Returns a singleton instance of DataFacade given the graph file path.
@@ -30,13 +30,13 @@ public class DataFacade {
         try {
             map = new DSGraphImpl();
             FileSource fs = FileSourceFactory.sourceFor(filePath);
-            fs.addSink((Sink) map.getGraph());
+            fs.addSink((Sink) map.getGraphImpl());
             try {
                 fs.readAll(filePath);
             } catch (Throwable t) {
                 throw new SystemError(t);
             } finally {
-                fs.removeSink((Sink) map.getGraph());
+                fs.removeSink((Sink) map.getGraphImpl());
             }
             occupied = new ArrayList<>();
             numSearchGroups = 3;
@@ -57,14 +57,14 @@ public class DataFacade {
             this.occupied.add(map.getNode(i));
         }
     }
-    public void setOccupied(ArrayList<DSGraph.Node> occupied) {
+    public void setOccupied(ArrayList<String> occupied) {
         this.occupied = occupied;
     }
 
     public DSGraph getMap() {
         return map;
     }
-    public ArrayList<DSGraph.Node> getOccupied() {
+    public ArrayList<String> getOccupied() {
         return occupied;
     }
     public int getNumSearchGroups() {

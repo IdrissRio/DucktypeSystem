@@ -20,7 +20,7 @@ public class DSRobot extends AbstractActor {
     private ActorRef supervisor;
 
     private DSGraph myGraph;
-    private DSGraph.Node myNode;
+    private String myNode;
     /* FIXME:
      * we need to save MORE than one current Query if it has to hold the current Query
      * until it it correctly forwarded. This could be a List<Query> indexed by version hash nr?
@@ -114,7 +114,7 @@ public class DSRobot extends AbstractActor {
                     supervisor.tell(new DSEndCriticalWork(), ActorRef.noSender());
                 })
                 .match(DSMove.class, x -> {
-                    myGraph.addNode(myGraph.chooseNext(myNode));
+                    // myGraph.addNode(myGraph.chooseNext(myNode));
                 })
                 .match(DSAskNewSend.class, x -> {
                     secureSend(x.version);
