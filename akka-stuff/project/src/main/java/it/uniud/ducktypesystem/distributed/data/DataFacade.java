@@ -36,7 +36,7 @@ public class DataFacade {
             } catch (Throwable t) {
                 throw new SystemError(t);
             } finally {
-                fs.removeSink((Sink) map);
+                fs.removeSink((Sink) map.getGraph());
             }
         } catch (Throwable t) {
             throw new SystemError(t);
