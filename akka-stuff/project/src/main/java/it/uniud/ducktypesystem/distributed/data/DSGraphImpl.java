@@ -4,6 +4,7 @@ import org.graphstream.graph.implementations.DefaultGraph;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
 /***
  * DSGraphImpl:
@@ -56,7 +57,15 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
-    public void shrinkRedundancies() { /* TODO: */ }
+    public void shrinkRedundancies() {
+        Stack<Integer> tbr = new Stack<Integer>();
+        for (org.graphstream.graph.Node n : graph.getEachNode())
+            if (n.getDegree() == 0)
+                tbr.push(n.getIndex());
+        for (Integer i : tbr)
+            graph.removeNode(i);
+        assert(!isRedundant());
+    }
 
     @Override
     public Node chooseNext(Node current) {
