@@ -10,6 +10,7 @@ public interface DSGraph {
         }
     }
 
+    Node getNode(int i);
     ArrayList<Node> getNodes();
     ArrayList<Node> adjNodes(Node node);
     void addNode(Node node);

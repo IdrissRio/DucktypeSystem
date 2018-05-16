@@ -20,6 +20,10 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
+    public Node getNode(int i) {
+        return new Node(graph.getNode(i).getId());
+    }
+    @Override
     public ArrayList<Node> getNodes() {
         ArrayList<Node> nodes = new ArrayList<>(graph.getNodeCount());
         int i = 0;

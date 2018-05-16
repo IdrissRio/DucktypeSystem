@@ -38,6 +38,8 @@ public class DataFacade {
             } finally {
                 fs.removeSink((Sink) map.getGraph());
             }
+            occupied = new ArrayList<>();
+            numSearchGroups = 3;
         } catch (Throwable t) {
             throw new SystemError(t);
         }
@@ -49,8 +51,11 @@ public class DataFacade {
 
     // Overloaded setters for `occupied'.
     public void setOccupied(int numRobot) {
-        this.occupied = new ArrayList<DSGraph.Node>(numRobot);
+        this.occupied = new ArrayList<>(numRobot);
         // TODO: randomly initialize occupied vector from map.getNodes()
+        for (int i = numRobot; i-- > 0; ) {
+            this.occupied.add(map.getNode(i));
+        }
     }
     public void setOccupied(ArrayList<DSGraph.Node> occupied) {
         this.occupied = occupied;
