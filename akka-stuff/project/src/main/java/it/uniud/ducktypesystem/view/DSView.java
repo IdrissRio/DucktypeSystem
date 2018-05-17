@@ -27,7 +27,7 @@ public class DSView implements DSAbstractView {
     private JScrollPane logScroll;
     private JPanel graphPanel;
     private ViewPanel graphView;
-    // The DSGraph is accessible by `facade.getGraph()' *after* configureSystem() is called.
+    // The DSGraph is accessible by `facade.getMap()' *after* configureSystem() is called.
     // or NullPointerException will be thrown.
     private DataFacade facade;
     private Integer processNumber;

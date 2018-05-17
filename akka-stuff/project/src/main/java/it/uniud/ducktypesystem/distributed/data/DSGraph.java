@@ -1,8 +1,12 @@
 package it.uniud.ducktypesystem.distributed.data;
 
+import it.uniud.ducktypesystem.errors.SystemError;
+
 import java.util.List;
 
 public interface DSGraph {
+    void loadGraphFromFile(String filePath) throws SystemError;
+
     int numNodes();
     String getNode(int i);
     int getNodeIndex(String id);
@@ -33,6 +37,9 @@ public interface DSGraph {
 
     boolean isEmpty();
     boolean isRedundant();
+
+    DSGraph getViewFromNode(String id);
+    DSGraph getViewFromNode(int n);
 
     Object getGraphImpl();
 }

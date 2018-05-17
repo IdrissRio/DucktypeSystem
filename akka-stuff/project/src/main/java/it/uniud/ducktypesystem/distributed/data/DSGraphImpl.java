@@ -1,9 +1,12 @@
 package it.uniud.ducktypesystem.distributed.data;
 
+import it.uniud.ducktypesystem.errors.SystemError;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
+import org.graphstream.stream.file.FileSource;
+import org.graphstream.stream.file.FileSourceFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,6 +25,29 @@ public class DSGraphImpl implements DSGraph {
     }
     public DSGraphImpl(DefaultGraph impl) {
         this.impl = impl;
+    }
+
+    public static DSGraph createGraphFromFile(String filePath) throws SystemError {
+        DSGraph g = new DSGraphImpl();
+        g.loadGraphFromFile(filePath);
+        return g;
+    }
+    
+    @Override
+    public void loadGraphFromFile(String filePath) throws SystemError {
+        try {
+            FileSource fs = FileSourceFactory.sourceFor(filePath);
+            fs.addSink(impl);
+            try {
+                fs.readAll(filePath);
+            } catch (Throwable t) {
+                throw new SystemError(t);
+            } finally {
+                fs.removeSink(impl);
+            }
+        } catch(Throwable t) {
+            throw new SystemError(t);
+        }
     }
 
     @Override
@@ -196,6 +222,23 @@ public class DSGraphImpl implements DSGraph {
             if (n.getDegree() == 0)
                 return true;
         return false;
+    }
+
+    @Override
+    public DSGraph getViewFromNode(String id) {
+        if (!hasNode(id)) return null;
+        DSGraphImpl view = new DSGraphImpl();
+        view.addNode(id);
+        for (String n : adjNodes(id)) {
+            view.addNode(n);
+            view.addEdge(id, n);
+        }
+        return view;
+    }
+    @Override
+    public DSGraph getViewFromNode(int n) {
+        if (n >= numNodes()) return null;
+        return getViewFromNode(getNode(n));
     }
 
     @Override

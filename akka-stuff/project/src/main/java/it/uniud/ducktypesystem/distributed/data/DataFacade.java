@@ -3,10 +3,6 @@ package it.uniud.ducktypesystem.distributed.data;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
-import org.graphstream.graph.implementations.DefaultGraph;
-import org.graphstream.stream.Sink;
-import org.graphstream.stream.file.FileSource;
-import org.graphstream.stream.file.FileSourceFactory;
 
 import java.util.ArrayList;
 
@@ -30,22 +26,10 @@ public class DataFacade {
     }
 
     private DataFacade(String filePath) throws SystemError {
-        try {
-            map = new DSGraphImpl();
-            FileSource fs = FileSourceFactory.sourceFor(filePath);
-            fs.addSink((Sink) map.getGraphImpl());
-            try {
-                fs.readAll(filePath);
-            } catch (Throwable t) {
-                throw new SystemError(t);
-            } finally {
-                fs.removeSink((Sink) map.getGraphImpl());
-            }
-            occupied = new ArrayList<>();
-            numSearchGroups = 3;
-        } catch (Throwable t) {
-            throw new SystemError(t);
-        }
+        map = DSGraphImpl.createGraphFromFile(filePath);
+        occupied= new ArrayList<>();
+        numSearchGroups = 3;
+        logger = null;
     }
 
     public void setNumSearchGroups(int numSearchGroups) {
@@ -56,8 +40,9 @@ public class DataFacade {
     public void setOccupied(int numRobot) {
         this.occupied = new ArrayList<>(numRobot);
         // TODO: randomly initialize occupied vector from map.getNodes()
+        int n = map.numNodes();
         for (int i = numRobot; i-- > 0; ) {
-            this.occupied.add(map.getNode(i));
+            this.occupied.add(map.getNode(i%n));
         }
     }
     public void setOccupied(ArrayList<String> occupied) {
