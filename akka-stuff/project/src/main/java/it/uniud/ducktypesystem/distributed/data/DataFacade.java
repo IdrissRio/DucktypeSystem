@@ -1,6 +1,8 @@
 package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.logger.DSAbstractLog;
+import it.uniud.ducktypesystem.logger.DSLog;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.Sink;
 import org.graphstream.stream.file.FileSource;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
  */
 public class DataFacade {
     private DSGraph map;
+    private DSAbstractLog logger;
     private ArrayList<String> occupied;
     private int numSearchGroups;
 
@@ -60,7 +63,8 @@ public class DataFacade {
     public void setOccupied(ArrayList<String> occupied) {
         this.occupied = occupied;
     }
-
+    public void setLogger(DSAbstractLog log){logger=log;}
+    public DSAbstractLog getLogger(){return logger;}
     public DSGraph getMap() {
         return map;
     }
