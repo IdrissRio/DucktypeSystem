@@ -57,8 +57,8 @@ public class DSView implements DSAbstractView {
         replicasNumber=new Integer(1);
         this.App = application;
         logger=new DSLog();
-        graphCheck=false;
-        queryCheck=false;
+        graphCheck=true; //This should be false, but in production we set it true.
+        queryCheck=true; //This should be false, but in production we set it true.
         logScroll=new JScrollPane(logger.getLog());
         logScroll.setSize(new Dimension(600,300));
         graphPanel=new JPanel(new GridLayout()){
@@ -131,12 +131,17 @@ public class DSView implements DSAbstractView {
                     processNumber = Integer.parseInt(numberProcess.getText());
                     replicasNumber = Integer.parseInt(numberReplica.getText());
                     mainPathField.setText(pathField.getText());
+                    configureSystem(graphPathString, processNumber, replicasNumber, logger);
                     graphVisualization(facade.getMap());
                     secondFrame.dispose();
                 }catch(NumberFormatException error){
                     showErrorMessage("SETTINGS: Inavlid number. Please check it!");
                 }catch(NullPointerException error){
                     showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
+                }catch(SystemError sError){
+                    showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                            " TLP, NET, graphML, GEXF.");
+                    pathField.setText("");
                 }
             });
 
@@ -145,16 +150,9 @@ public class DSView implements DSAbstractView {
                 fileChooser.showOpenDialog(mainFrame);
                 pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
                 graphPathString=pathField.getText();
-                try {
-                    configureSystem(graphPathString, processNumber, replicasNumber);
-                    showInformationMessage("SETTINGS: Graph reading complete.");
-                    setGraphCheck(true);
-                    startNewComputation.setEnabled(isStartEnable());
-                }catch(SystemError sError){
-                    showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
-                            " TLP, NET, graphML, GEXF.");
-                    pathField.setText("");
-                }
+                setGraphCheck(true);
+                startNewComputation.setEnabled(isStartEnable());
+
             });
             secondFrame.addWindowListener(new WindowAdapter() {
                 @Override
@@ -224,7 +222,7 @@ public class DSView implements DSAbstractView {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
                 showInformationMessage("INFO: starting the AKKA environment.");
-                DSAbstractInterface computation = new DSInterface(logger,graph,graph);
+                new DSInterface(facade);
             });
             thread.start();
         });
@@ -298,11 +296,13 @@ public class DSView implements DSAbstractView {
     }
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
-    private void configureSystem(String filePath, int numRobot, int numSearchGroup) throws SystemError {
+    private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
             facade = DataFacade.create(filePath);
             facade.setNumSearchGroups(numSearchGroup);
             facade.setOccupied(numRobot);
+            facade.setLogger(log);
     }
+
     // Configure occupied vector: this should be called *after* configureSystem().
     // This allows the initialization of the robots' position by selecting nodes on visual interface.
     private void configureOccupied(ArrayList<String> occupied) {
