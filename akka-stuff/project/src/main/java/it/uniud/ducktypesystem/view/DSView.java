@@ -8,8 +8,10 @@ import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
+import org.graphstream.algorithm.generator.FlowerSnarkGenerator;
+import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
@@ -24,17 +26,20 @@ public class DSView implements DSAbstractView {
     private DSAbstractLog logger;
     private JScrollPane logScroll;
     private JPanel graphPanel;
-
+    private ViewPanel graphView;
     // The DSGraph is accessible by `facade.getGraph()' *after* configureSystem() is called.
     // or NullPointerException will be thrown.
     private DataFacade facade;
-
     private Integer processNumber;
     private Integer replicasNumber;
     private Graph graph;
     private Viewer viewer;
     private Color greenForest= new Color(11,102,35);
     private String graphPathString;
+    private JTextField mainPathField;
+    private Boolean graphCheck;
+    private Boolean queryCheck;
+    private JButton startNewComputation;
 
     public DSView(DSApplication application) {
         try {
@@ -52,6 +57,8 @@ public class DSView implements DSAbstractView {
         replicasNumber=new Integer(1);
         this.App = application;
         logger=new DSLog();
+        graphCheck=false;
+        queryCheck=false;
         logScroll=new JScrollPane(logger.getLog());
         logScroll.setSize(new Dimension(600,300));
         graphPanel=new JPanel(new GridLayout()){
@@ -64,14 +71,12 @@ public class DSView implements DSAbstractView {
 
 
     public void openApplication() {
-        logger.log("Inizializzazione ambiente", greenForest);
         initMainFrame();
         setMenuItem();
-        logger.log("Inizializzazione grafo", greenForest);
         facade = null;
         welcomeGraph();
         mainFrame.setVisible(true);
-        logger.log("Inzializzazione completata", greenForest);
+        showInformationMessage("DucktypeSystem v 0.1");
     }
 
     @Override
@@ -82,7 +87,7 @@ public class DSView implements DSAbstractView {
 
     private boolean confirmExit() {
         return JOptionPane.showConfirmDialog(mainFrame,
-                "Do you reallly want to Exit?",
+                "Do you really want to Exit?",
                 "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
     }
 
@@ -91,9 +96,6 @@ public class DSView implements DSAbstractView {
         openMenuItem.setMnemonic(KeyEvent.VK_O);
         openMenuItem.addActionListener(l -> {
             JDialog secondFrame = new JDialog(mainFrame);
-
-
-
             JTextField numberReplica = new JTextField(replicasNumber.toString(),10);
             JTextField numberProcess = new JTextField(processNumber.toString(),10);
             JLabel numberProcessLbl  = new JLabel("Number of process:");
@@ -101,7 +103,14 @@ public class DSView implements DSAbstractView {
             JPanel panelProcess = new JPanel(new FlowLayout());
             JPanel panelReplica=new JPanel(new FlowLayout());
             JPanel settingPanel=new JPanel();
+            JPanel northPanel= new JPanel(new FlowLayout());
             JButton confirmButton = new JButton("Confirm");
+            JTextField pathField=new JTextField("",13);
+            JButton pathButton =new JButton("Source...");
+            northPanel.add(pathButton);
+            northPanel.add(pathField);
+            pathField.setEditable(false);
+            settingPanel.add(northPanel);
             settingPanel.setLayout(new BoxLayout(settingPanel, BoxLayout.Y_AXIS));
             panelProcess.add(numberProcessLbl);
             panelProcess.add(numberProcess);
@@ -113,7 +122,7 @@ public class DSView implements DSAbstractView {
             settingPanel.add(confirmButton);
             secondFrame.getContentPane().add(settingPanel);
             secondFrame.setTitle("Settings");
-            secondFrame.setBounds(200, 200, 300, 150);
+            secondFrame.setBounds(100, 200, 350, 170);
             secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             secondFrame.setVisible(true);
             secondFrame.setResizable(false);
@@ -121,9 +130,30 @@ public class DSView implements DSAbstractView {
                 try {
                     processNumber = Integer.parseInt(numberProcess.getText());
                     replicasNumber = Integer.parseInt(numberReplica.getText());
+                    mainPathField.setText(pathField.getText());
+                    graphVisualization(facade.getMap());
                     secondFrame.dispose();
                 }catch(NumberFormatException error){
-                    showErrorMessage("Inavlid number. Please check it!");
+                    showErrorMessage("SETTINGS: Inavlid number. Please check it!");
+                }catch(NullPointerException error){
+                    showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
+                }
+            });
+
+            pathButton.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.showOpenDialog(mainFrame);
+                pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                graphPathString=pathField.getText();
+                try {
+                    configureSystem(graphPathString, processNumber, replicasNumber);
+                    showInformationMessage("SETTINGS: Graph reading complete.");
+                    setGraphCheck(true);
+                    startNewComputation.setEnabled(isStartEnable());
+                }catch(SystemError sError){
+                    showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                            " TLP, NET, graphML, GEXF.");
+                    pathField.setText("");
                 }
             });
             secondFrame.addWindowListener(new WindowAdapter() {
@@ -131,15 +161,13 @@ public class DSView implements DSAbstractView {
                 public void windowClosing(WindowEvent evento) {
                     if(JOptionPane.showConfirmDialog(secondFrame,
                             "Do you rellay want to exit?\n" +
-                                    "If you exit, the changes to the settings will not be applied.",
-                            "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) secondFrame.dispose();
-
+                                    "If you exit, the changes of the settings will not be applied.",
+                            "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+                        secondFrame.dispose();
+                    }
                 }
             });
-
-
         });
-
         JMenuItem exitMenuItem = new JMenuItem("Exit");
         exitMenuItem.setMnemonic(KeyEvent.VK_E);
         exitMenuItem.addActionListener(evento -> exit());
@@ -158,34 +186,32 @@ public class DSView implements DSAbstractView {
         JPanel southPanel=new JPanel(new BorderLayout());
         JPanel northPanel=new JPanel(new BorderLayout());
         JPanel graphAndNorthPanel = new JPanel(new BorderLayout());
-        JTextField pathField=new JTextField();
-        pathField.setEditable(false);
-        JButton pathButton=new JButton("Graph path");
-        northPanel.add(pathField,BorderLayout.CENTER);
-        northPanel.add(pathButton,BorderLayout.EAST);
-
-        JButton startComputation = new JButton("Submit a new query");
-        southPanel.add(startComputation,BorderLayout.CENTER);
+        JLabel pathLbl =new JLabel("Graph path:");
+        JButton queryButton = new JButton("Query source");
+        JTextField queryField = new JTextField();
+        JPanel soutWithStartPanel = new JPanel(new BorderLayout());
+        startNewComputation = new JButton("Start");
+        startNewComputation.setEnabled(isStartEnable());
+        mainPathField=new JTextField();
+        mainPathField.setEditable(false);
+        northPanel.add(mainPathField,BorderLayout.CENTER);
+        northPanel.add(pathLbl,BorderLayout.WEST);
+        queryField.setEditable(false);
+        southPanel.add(queryButton,BorderLayout.EAST);
+        southPanel.add(queryField,BorderLayout.CENTER);
+        soutWithStartPanel.add(southPanel, BorderLayout.CENTER);
+        soutWithStartPanel.add(startNewComputation,BorderLayout.EAST);
         graphAndNorthPanel.add(northPanel,BorderLayout.NORTH);
         graphAndNorthPanel.add(graphPanel, BorderLayout.CENTER);
         mainPanel.add(graphAndNorthPanel, BorderLayout.NORTH);
         mainPanel.add(logScroll, BorderLayout.CENTER);
-        mainPanel.add(southPanel,BorderLayout.SOUTH);
+        mainPanel.add(soutWithStartPanel,BorderLayout.SOUTH);
         mainFrame = new JFrame();
         mainFrame.getContentPane().add(mainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
-        mainFrame.setBounds(0, 0, 700, 750);
+        mainFrame.setBounds(20, 00, 700, 750);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        pathField.setFont(Font.getFont("Bariol"));
-        //PathButton listener
-        pathButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.showOpenDialog(mainFrame);
-            pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-            graphPathString=pathField.getText();
-            configureSystem(graphPathString, processNumber, replicasNumber);
-            graphVisualization(facade.getMap());
-        });
+        mainPathField.setFont(Font.getFont("Bariol"));
 
         // MainFrame window listener
         mainFrame.addWindowListener(new WindowAdapter() {
@@ -194,20 +220,35 @@ public class DSView implements DSAbstractView {
                 exit();
             }
         });
-
-        // Start computation listener.
-        startComputation.addActionListener(e -> {
+        startNewComputation.addActionListener(e -> {
+            //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                logger.log("Let's start the computation", greenForest);
+                showInformationMessage("INFO: starting the AKKA environment.");
                 DSAbstractInterface computation = new DSInterface(logger,graph,graph);
             });
             thread.start();
-            graph.removeEdge("CF");
-            graph.removeEdge("CD");
-            graph.removeEdge("CE");
         });
 
+        // Start computation listener.
+        queryButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.showOpenDialog(mainFrame);
+            queryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            graphPathString=queryField.getText();
+            //If there is no exception enable startButton
+            setQueryCheck(true);
+            startNewComputation.setEnabled(isStartEnable());
+            //try {
+                //Here we should create a new query.
+                showInformationMessage("SETTINGS: Graph reading complete.");
+            /*//}catch(SystemError sError){
+            showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                        " TLP, NET, graphML, GEXF.");
+                queryField.setText("");
+            //}*/
+        });
     }
+
     private String getGraphAttribute(){
         return "" +
                 "graph {\n" +
@@ -230,32 +271,37 @@ public class DSView implements DSAbstractView {
                 "}";
     }
 
-
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
-    }
-    private void welcomeGraph(){
-        graph = new SingleGraph("Welcome Graph");
-        //graph.addAttribute("ui.stylesheet", getGraphAttribute());
-
-
+        graph.setStrict(false);
+        graph.setAutoCreate( true );
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
-        ViewPanel view = viewer.addDefaultView(false);
-        graphPanel.add(view);
+        graphPanel.remove(graphView);
+        graphView = viewer.addDefaultView(false);
+        graphPanel.add(graphView);
+        graphPanel.updateUI();
     }
 
+    private void welcomeGraph(){
+        graph=new DefaultGraph("WelcomeGraph");
+        Generator gen = new FlowerSnarkGenerator();
+        gen.addSink(graph);
+        gen.begin();
+        for(int i=0; i<100; i++)
+            gen.nextEvents();
+        gen.end();
+        viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
+        graphView=viewer.addDefaultView(false);
+        graphPanel.add(graphView);
+    }
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
-    private void configureSystem(String filePath, int numRobot, int numSearchGroup) {
-        try {
+    private void configureSystem(String filePath, int numRobot, int numSearchGroup) throws SystemError {
             facade = DataFacade.create(filePath);
             facade.setNumSearchGroups(numSearchGroup);
             facade.setOccupied(numRobot);
-        } catch (SystemError e) {
-            showErrorMessage("An error occurred in System Configuration.");
-            e.printStackTrace();
-        }
     }
     // Configure occupied vector: this should be called *after* configureSystem().
     // This allows the initialization of the robots' position by selecting nodes on visual interface.
@@ -265,8 +311,12 @@ public class DSView implements DSAbstractView {
             return;
         }
         facade.setOccupied(occupied);
-
     }
+    private void setGraphCheck(Boolean b){graphCheck=b;}
+    private void setQueryCheck(Boolean b){queryCheck=b;}
+    private Boolean getGraphCheck(){return graphCheck;}
+    private Boolean getQueryCheck(){return queryCheck;}
+    private Boolean isStartEnable(){return getGraphCheck() && getQueryCheck();}
     private void showInformationMessage(String s){
         logger.log(s,greenForest);
     }
