@@ -11,6 +11,7 @@ import it.uniud.ducktypesystem.logger.DSLog;
 import org.graphstream.algorithm.generator.FlowerSnarkGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
@@ -18,6 +19,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+
+import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
 
 
 public class DSView implements DSAbstractView {
@@ -132,6 +135,11 @@ public class DSView implements DSAbstractView {
                     replicasNumber = Integer.parseInt(numberReplica.getText());
                     mainPathField.setText(pathField.getText());
                     configureSystem(graphPathString, processNumber, replicasNumber, logger);
+                    Thread thread = new Thread(() -> {
+                        showInformationMessage("INFO: starting the AKKA environment.");
+                        akkaEnvironment(facade);
+                    });
+                    thread.start();
                     graphVisualization(facade.getMap());
                     secondFrame.dispose();
                 }catch(NumberFormatException error){
@@ -221,7 +229,6 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                showInformationMessage("INFO: starting the AKKA environment.");
                 new DSInterface(facade);
             });
             thread.start();
@@ -273,6 +280,7 @@ public class DSView implements DSAbstractView {
         graph =(Graph) x.getGraphImpl();
         graph.setStrict(false);
         graph.setAutoCreate( true );
+        for (Node node : graph) node.addAttribute("ui.label", node.getId());
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         graphPanel.remove(graphView);
@@ -283,6 +291,7 @@ public class DSView implements DSAbstractView {
 
     private void welcomeGraph(){
         graph=new DefaultGraph("WelcomeGraph");
+        graph.setAttribute("ui.class", "marked");
         Generator gen = new FlowerSnarkGenerator();
         gen.addSink(graph);
         gen.begin();
