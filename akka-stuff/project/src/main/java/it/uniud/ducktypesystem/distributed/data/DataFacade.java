@@ -15,6 +15,7 @@ import java.util.ArrayList;
  * it has no impact on the algorithm (i.e., generally we don't claim to know the robots positions).
  */
 public class DataFacade {
+    private static DataFacade instance = null;
     private DSGraph map;
     private DSAbstractLog logger;
     private ArrayList<String> occupied;
@@ -22,6 +23,7 @@ public class DataFacade {
 
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws SystemError {
+        if (instance != null ) return instance;
         return new DataFacade(filePath);
     }
 
