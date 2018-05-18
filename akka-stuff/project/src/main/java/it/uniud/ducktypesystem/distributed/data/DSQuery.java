@@ -1,5 +1,7 @@
 package it.uniud.ducktypesystem.distributed.data;
 
+import it.uniud.ducktypesystem.errors.SystemError;
+
 public class DSQuery extends DSGraphImpl {
     private String version;
 
@@ -8,6 +10,12 @@ public class DSQuery extends DSGraphImpl {
         FAIL,
         NEW,
         DONTKNOW
+    }
+
+    public static DSQuery createQueryFromFile(String filePath) throws SystemError {
+        DSQuery q = new DSQuery();
+        q.loadGraphFromFile(filePath);
+        return q;
     }
 
     public DSQuery clone() {
