@@ -29,7 +29,6 @@ public class DSCluster {
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
         try {
-           // actorSystemTmp.add(ActorSystem.create("ClusterSystem", conf));
             for (int i = 0; i < proc_number; ++i)
                 actorSystemTmp.add(ActorSystem.create("ClusterSystem",
                         ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(conf)));
@@ -47,7 +46,7 @@ public class DSCluster {
         int i = 0;
         for (String localNode : facade.getOccupied()) {
             DSGraph localView = facade.getMap().getViewFromNode(localNode);
-            robotMainActorArray.add(actorSystemTmp.get(i).actorOf(DSRobot.props(localView, localNode), "ROBOT"));
+            robotMainActorArray.add(actorSystemTmp.get(i).actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT"));
             ++i;
         }
     }
@@ -63,7 +62,8 @@ public class DSCluster {
 
     private DSCluster(DataFacade facade, DSAbstractView view, DSApplication app) {
         this.application=app;
-        this.maxRecovery=5;
+        this.maxRecovery=5; //Maybe this should be in the setting.
+        this.portSeed = 2551;//Maybe also this.
         this.actualRecovery=0;
         this.view=view;
         this.facade = facade;
@@ -71,7 +71,7 @@ public class DSCluster {
         actorSystemArray = new ArrayList<ActorSystem>(proc_number);
         robotMainActorArray = new ArrayList<ActorRef>(proc_number);
         final Config config = ConfigFactory.load("akka.conf");
-        portSeed = 2551;
+
         actorSystemInitialization(actorSystemArray, config);
 
     }

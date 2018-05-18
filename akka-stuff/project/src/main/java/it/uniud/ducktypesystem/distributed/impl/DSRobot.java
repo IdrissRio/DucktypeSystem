@@ -19,13 +19,14 @@ public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     // private ActorRef supervisor;
-
+    private String myName;
     private DSGraph myView;
     private String myNode;
     private int memory;
 
-    public DSRobot(DSGraph view, String node) {
+    public DSRobot(DSGraph view, String node, String name) {
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
+        this.myName = name;
         this.myView = view;
         this.myNode = node;
         this.memory = 2;
@@ -39,7 +40,7 @@ public class DSRobot extends AbstractActor {
                 })
                 /***********************************/
                 .match(String.class, x -> {
-                    log.info("From: {}   ----- To:"+myNode, x);
+                    log.info("From: {}   ----- To:"+myView.getNodes()+myNode, x);
                     boolean localAffinity = false;
                     //mediator.tell(new DistributedPubSubMediator.Unsubscribe("destination",getSelf()),ActorRef.noSender());
                     mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT"),getSelf());
@@ -57,7 +58,7 @@ public class DSRobot extends AbstractActor {
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
     }
-    static public Props props(DSGraph view, String node) {
-        return Props.create(DSRobot.class, () -> new DSRobot(view, node));
+    static public Props props(DSGraph view, String node, String name) {
+        return Props.create(DSRobot.class, () -> new DSRobot(view, node,name));
     }
 }
