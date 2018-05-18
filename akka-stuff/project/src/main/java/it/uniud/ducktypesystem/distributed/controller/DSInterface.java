@@ -6,6 +6,8 @@ import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
+import it.uniud.ducktypesystem.view.DSAbstractView;
+import it.uniud.ducktypesystem.view.DSView;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class DSInterface implements DSAbstractInterface {
     private Integer proc_number;
     private Integer portSeed;
     private Color greenForest= new Color(11,102,35);
+    private DSAbstractView view;
 
     public class hello {
         public String msg;
@@ -29,7 +32,8 @@ public class DSInterface implements DSAbstractInterface {
         }
     }
 
-    public DSInterface(DataFacade facade) {
+    public DSInterface(DataFacade facade, DSAbstractView view) {
+        this.view=view;
         logger = facade.getLogger();
         graph = facade.getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
@@ -43,11 +47,7 @@ public class DSInterface implements DSAbstractInterface {
 // after a while the destinations are replicated
         sender.tell(new hello(sender.path().name()), sender);
     }
-    private void showInformationMessage(String s){
-        logger.log(s,greenForest);
-    }
-    private void showErrorMessage(String s) {
-        logger.log(s, Color.RED);
-    }
+
+
 
 }

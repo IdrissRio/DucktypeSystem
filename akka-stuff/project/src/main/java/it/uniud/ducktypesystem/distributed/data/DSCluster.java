@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
+import it.uniud.ducktypesystem.view.DSAbstractView;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class DSCluster {
     private ArrayList<ActorRef> robotMainActorArray;
     private Integer proc_number;
     private Integer portSeed;
-    private Color greenForest= new Color(11,102,35);
+    private DSAbstractView view;
 
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
@@ -26,7 +27,7 @@ public class DSCluster {
         for (int i = 1; i < proc_number ; ++i)
             actorSystemTmp.add(ActorSystem.create("ClusterSystem",
                     ConfigFactory.parseString("akka.remote.netty.tcp.port="+(portSeed+i)).withFallback(conf)));
-        showInformationMessage("AKKA: Every node is connected"); //FIXME: Supercazzola. Ma ci piace così.
+        view.showInformationMessage("AKKA: Every node is connected"); //FIXME: Supercazzola. Ma ci piace così.
     }
 
     private void robotMainActorInitialization(ArrayList<ActorSystem> actorSystemTmp) {
@@ -38,16 +39,17 @@ public class DSCluster {
         }
     }
 
-    public static void akkaEnvironment(DataFacade facade){
+    public static void akkaEnvironment(DataFacade facade, DSAbstractView view){
         if(cluster==null)
-            cluster=new DSCluster(facade);
+            cluster=new DSCluster(facade, view);
     }
 
     public static DSCluster getInstance() {
         return cluster;
     }
 
-    private DSCluster(DataFacade facade) {
+    private DSCluster(DataFacade facade, DSAbstractView view) {
+        this.view=view;
         this.facade = facade;
         logger = facade.getLogger();
         proc_number = facade.getOccupied().size();
@@ -68,10 +70,4 @@ public class DSCluster {
     }
 
 
-    private void showInformationMessage(String s){
-        logger.log(s,greenForest);
-    }
-    private void showErrorMessage(String s) {
-        logger.log(s, Color.RED);
-    }
 }

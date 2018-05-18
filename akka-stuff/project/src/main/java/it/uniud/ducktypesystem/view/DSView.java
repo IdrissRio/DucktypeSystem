@@ -1,7 +1,6 @@
 package it.uniud.ducktypesystem.view;
 
 import it.uniud.ducktypesystem.controller.DSApplication;
-import it.uniud.ducktypesystem.distributed.controller.DSAbstractInterface;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
@@ -137,7 +136,7 @@ public class DSView implements DSAbstractView {
                     configureSystem(graphPathString, processNumber, replicasNumber, logger);
                     Thread thread = new Thread(() -> {
                         showInformationMessage("INFO: starting the AKKA environment.");
-                        akkaEnvironment(facade);
+                        akkaEnvironment(facade, this);
                     });
                     thread.start();
                     graphVisualization(facade.getMap());
@@ -229,7 +228,7 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                new DSInterface(facade);
+                new DSInterface(facade, this);
             });
             thread.start();
         });
@@ -326,11 +325,12 @@ public class DSView implements DSAbstractView {
     private Boolean getGraphCheck(){return graphCheck;}
     private Boolean getQueryCheck(){return queryCheck;}
     private Boolean isStartEnable(){return getGraphCheck() && getQueryCheck();}
-    private void showInformationMessage(String s){
+    public void showInformationMessage(String s){
         logger.log(s,greenForest);
     }
-    private void showErrorMessage(String s) {
+    public void showErrorMessage(String s) {
         logger.log(s, Color.RED);
     }
+
 }
 
