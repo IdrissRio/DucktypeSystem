@@ -1,6 +1,7 @@
 package it.uniud.ducktypesystem.tests.data;
 
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
 import org.graphstream.graph.implementations.DefaultGraph;
@@ -186,5 +187,18 @@ public class GraphTest1 {
         System.out.println();
         for (String s : graph.adjNodes("D"))
             System.out.println(s);
+    }
+
+    @Test
+    public void graph10() {
+        DSGraph g = new DSGraphImpl();
+        g.addNode("A");
+        g.addNode("B");
+        Assert.assertEquals(g.numNodes(), 2);
+        g.addEdge("A", "B");
+        g.addEdge("B", "A");
+        Assert.assertTrue(g.areAdj("A", "B"));
+        g.removeEdge("B", "A");
+        Assert.assertTrue(g.isRedundant());
     }
 }

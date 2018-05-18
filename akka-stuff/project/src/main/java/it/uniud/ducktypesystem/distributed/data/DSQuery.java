@@ -1,10 +1,15 @@
 package it.uniud.ducktypesystem.distributed.data;
 
 public class DSQuery extends DSGraphImpl {
-    public DSQuery cloneQuery() { /* TODO: */ return null; }
+    private String version;
 
-    public class Version {
-        String versionName;
+    public DSQuery clone() {
+        DSQuery q = (DSQuery) super.clone();
+        q.version = this.version;
+        return null;
     }
-    public Version version;
+
+    public String getVersion() {
+        return version;
+    }
 }

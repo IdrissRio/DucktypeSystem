@@ -30,7 +30,7 @@ public class DSCluster {
 
     private void robotMainActorInitialization(ActorSystem[] actorSystemTmp){
         for (int i=0;i<actorSystemTmp.length;++i)
-            robotMainActorArray[i]=actorSystemTmp[i].actorOf(DSRobot.props("Robot"+i),"ROBOT");
+            robotMainActorArray[i]=actorSystemTmp[i].actorOf(DSRobot.props(null,"Robot"+i),"ROBOT");
     }
 public static void akkaEnvironment(DataFacade facade){
         if(cluster==null)

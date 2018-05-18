@@ -1,8 +1,6 @@
 package it.uniud.ducktypesystem.distributed.controller;
 
 import akka.actor.*;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import it.uniud.ducktypesystem.distributed.data.DSCluster;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
@@ -35,7 +33,7 @@ public class DSInterface implements DSAbstractInterface {
         graph = facade.getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        ActorRef sender = actorSystemInstance[0].actorOf(DSRobot.props("Sender"), "sender");
+        ActorRef sender = actorSystemInstance[0].actorOf(DSRobot.props(null, "Sender"), "sender");
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {

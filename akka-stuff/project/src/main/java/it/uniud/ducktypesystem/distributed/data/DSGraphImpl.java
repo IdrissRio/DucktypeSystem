@@ -2,6 +2,7 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 import org.graphstream.graph.EdgeRejectedException;
+import org.graphstream.graph.Graph;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
@@ -242,7 +243,30 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
+    public void mergeView(DSGraph newView, int memory) {
+        for (String s : newView.getNodes())
+            addNode(s);
+        // FIXME: Dummy implementation... could be done better?
+        for (String s1 : newView.getNodes())
+            for (String s2 : newView.getNodes())
+                if (newView.areAdj(s1, s2))
+                    addEdge(s1, s2);
+        // FIXME: forget old nodes.. how to choose?
+    }
+
+    @Override
     public Object getGraphImpl() {
         return impl;
+    }
+
+    public DSGraphImpl clone() {
+        // FIXME: Dummy implementation... could be done better?
+        DSGraphImpl g = new DSGraphImpl();
+        for (String s : getNodes())
+            g.addNode(s);
+        for (String s1 : getNodes())
+            for (String s2 : getNodes())
+                if (areAdj(s1, s2)) g.addEdge(s1, s2);
+        return g;
     }
 }

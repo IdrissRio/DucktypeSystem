@@ -42,4 +42,6 @@ public interface DSGraph {
     DSGraph getViewFromNode(int n);
 
     Object getGraphImpl();
+
+    void mergeView(DSGraph newView, int memory);
 }

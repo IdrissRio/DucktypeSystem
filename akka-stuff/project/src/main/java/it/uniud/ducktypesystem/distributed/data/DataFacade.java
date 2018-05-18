@@ -2,7 +2,6 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
-import it.uniud.ducktypesystem.logger.DSLog;
 
 import java.util.ArrayList;
 
@@ -25,6 +24,11 @@ public class DataFacade {
     public static DataFacade create(String filePath) throws SystemError {
         if (instance != null ) return instance;
         return new DataFacade(filePath);
+    }
+
+    public static DataFacade getInstance() throws SystemError {
+        if (instance != null) return instance;
+        throw new SystemError("Invalid access to uninitialized DataFacade.");
     }
 
     private DataFacade(String filePath) throws SystemError {
