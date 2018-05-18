@@ -13,7 +13,7 @@ public class DSQuery extends DSGraphImpl {
     public DSQuery clone() {
         DSQuery q = (DSQuery) super.clone();
         q.version = this.version;
-        return null;
+        return q;
     }
 
     public void setVersion(String version) {
