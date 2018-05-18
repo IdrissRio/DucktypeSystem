@@ -308,7 +308,6 @@ public class DSView implements DSAbstractView {
             facade = DataFacade.create(filePath);
             facade.setNumSearchGroups(numSearchGroup);
             facade.setOccupied(numRobot);
-            facade.setLogger(log);
     }
 
     // Configure occupied vector: this should be called *after* configureSystem().

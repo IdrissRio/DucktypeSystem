@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class DataFacade {
     private static DataFacade instance = null;
     private DSGraph map;
-    private DSAbstractLog logger;
     private ArrayList<String> occupied;
     private int numSearchGroups;
 
@@ -35,7 +34,6 @@ public class DataFacade {
         map = DSGraphImpl.createGraphFromFile(filePath);
         occupied= new ArrayList<>();
         numSearchGroups = 3;
-        logger = null;
     }
 
     public void setNumSearchGroups(int numSearchGroups) {
@@ -54,8 +52,6 @@ public class DataFacade {
     public void setOccupied(ArrayList<String> occupied) {
         this.occupied = occupied;
     }
-    public void setLogger(DSAbstractLog log){logger=log;}
-    public DSAbstractLog getLogger(){return logger;}
     public DSGraph getMap() {
         return map;
     }

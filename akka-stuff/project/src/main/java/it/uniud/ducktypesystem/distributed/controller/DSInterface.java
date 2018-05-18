@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 public class DSInterface implements DSAbstractInterface {
 
-    private DSAbstractLog logger;
     private DSGraph graph;
     private ArrayList<ActorSystem> actorSystemInstance;
     private ArrayList<ActorRef> robotMainActorInstance;
@@ -34,7 +33,6 @@ public class DSInterface implements DSAbstractInterface {
 
     public DSInterface(DataFacade facade, DSAbstractView view) {
         this.view=view;
-        logger = facade.getLogger();
         graph = facade.getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();

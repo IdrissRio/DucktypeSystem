@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public class DSCluster {
     private DataFacade facade;
-    private DSAbstractLog logger;
     private static DSCluster cluster = null;
     private ArrayList<ActorSystem> actorSystemArray;
     private ArrayList<ActorRef> robotMainActorArray;
@@ -51,7 +50,6 @@ public class DSCluster {
     private DSCluster(DataFacade facade, DSAbstractView view) {
         this.view=view;
         this.facade = facade;
-        logger = facade.getLogger();
         proc_number = facade.getOccupied().size();
         actorSystemArray = new ArrayList<ActorSystem>(proc_number);
         robotMainActorArray = new ArrayList<ActorRef>(proc_number);
