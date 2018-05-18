@@ -197,9 +197,12 @@ public class DSGraphImpl implements DSGraph {
 
     @Override
     public void shrinkRedundancies() {
+        ArrayList<String> tbr = new ArrayList<>();
         for (Node n : impl.getNodeSet())
             if (n.getDegree() == 0)
-                removeNode(n.getId());
+                tbr.add(n.getId());
+        for (String s : tbr)
+            removeNode(s);
     }
 
     @Override
@@ -268,5 +271,19 @@ public class DSGraphImpl implements DSGraph {
             for (String s2 : getNodes())
                 if (areAdj(s1, s2)) g.addEdge(s1, s2);
         return g;
+    }
+
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        for (String s : getNodes()) {
+            b.append(" ");
+            b.append(s);
+        }
+        b.append("\n");
+        for (String s1 : getNodes())
+            for (String s2 : getNodes())
+                if (areAdj(s1, s2))
+                    b.append("["+s1+","+s2+"]");
+        return b.toString();
     }
 }

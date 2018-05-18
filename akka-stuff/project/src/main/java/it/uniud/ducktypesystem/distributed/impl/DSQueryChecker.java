@@ -18,13 +18,6 @@ public class DSQueryChecker extends AbstractActor {
     private ActorRef mediator;
     private ActorRef robot;
 
-    private enum QueryStatus {
-        MATCH,
-        FAIL,
-        NEW,
-        DONTKNOW
-    }
-
     public DSQueryChecker(DSGraph myView, String myNode, String version) {
         this.myView = myView;
         this.myNode = myNode;
@@ -32,37 +25,6 @@ public class DSQueryChecker extends AbstractActor {
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Subscribe(
                 version, getSelf()), getSelf());
-    }
-
-    // Graph manage methods
-    private QueryStatus checkAndReduce() {
-        assert(!query.isRedundant());
-        boolean newHypothesis = false;
-
-        for (String qN : query.getNodes()) {
-            if (!myView.hasNode(qN)) continue;
-            // If my knowledge about `qN' is complete and more edges are required, then query fails.
-            if (qN.equals(myNode) && !myView.adjNodes(qN).containsAll(query.adjNodes(qN)))
-                return QueryStatus.FAIL;
-            // Remove verified edges
-            for (String qN2 : query.adjNodes(qN)) {
-                if (!myView.hasNode(qN2)) continue;
-                query.removeEdge(qN, qN2);
-                newHypothesis = true;
-            }
-        }
-        query.shrinkRedundancies();
-
-        // If I was able to verify it all, then query mathces.
-        if (query.isEmpty())
-            return QueryStatus.MATCH;
-
-        // My knowledge let me simplify the query.
-        if (newHypothesis)
-            return QueryStatus.NEW;
-
-        // I had nothing to say about it.
-        return QueryStatus.DONTKNOW;
     }
 
     // Communication methods
@@ -81,7 +43,7 @@ public class DSQueryChecker extends AbstractActor {
                     query = msg.query.clone();
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
                     msg.sender.tell(new DSAck(), ActorRef.noSender());
-                    switch (checkAndReduce()) {
+                    switch (query.checkAndReduce(myView, myNode)) {
                         case FAIL:
                             publishFail(); break;
                         case MATCH:

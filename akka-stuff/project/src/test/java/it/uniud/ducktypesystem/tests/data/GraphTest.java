@@ -11,16 +11,15 @@ import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class GraphTest1 {
+public class GraphTest {
     private DataFacade facade;
     private DSGraph graph;
     private DefaultGraph realGraph;
     private String fileName;
 
-    public GraphTest1() throws SystemError, IOException {
+    public GraphTest() throws SystemError, IOException {
         String basePath = new File("").getAbsolutePath();
         fileName = basePath + "/src/test/resources/graphTest01.DGS";
         facade = DataFacade.create(fileName);
