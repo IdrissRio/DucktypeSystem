@@ -3,7 +3,6 @@ package it.uniud.ducktypesystem.view;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
@@ -76,11 +75,12 @@ public class DSView implements DSAbstractView {
 
 
     public void openApplication() {
+        welcomeFrame();
+        setup();
         initMainFrame();
         setMenuItem();
         facade = null;
-        welcomeGraph();
-        mainFrame.setVisible(true);
+        graphViewInit();
         showInformationMessage("DucktypeSystem v 0.1");
     }
 
@@ -96,85 +96,101 @@ public class DSView implements DSAbstractView {
                 "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
     }
 
+    private void setup(){
+        JDialog secondFrame = new JDialog();
+        JTextField numberReplica = new JTextField(replicasNumber.toString(),10);
+        JTextField numberProcess = new JTextField(processNumber.toString(),10);
+        JLabel numberProcessLbl  = new JLabel("Number of process:");
+        JLabel numberReplicaLbl = new JLabel("Number of replicas:");
+        JPanel panelProcess = new JPanel(new FlowLayout());
+        JPanel panelReplica=new JPanel(new FlowLayout());
+        JPanel settingPanel=new JPanel();
+        JPanel northPanel= new JPanel(new FlowLayout());
+        JButton confirmButton = new JButton("Confirm");
+        JTextField pathField=new JTextField("",13);
+        JButton pathButton =new JButton("Source...");
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        northPanel.add(pathButton);
+        northPanel.add(pathField);
+        pathField.setEditable(false);
+        settingPanel.add(northPanel);
+        settingPanel.setLayout(new BoxLayout(settingPanel, BoxLayout.Y_AXIS));
+        panelProcess.add(numberProcessLbl);
+        panelProcess.add(numberProcess);
+        panelReplica.add(numberReplicaLbl);
+        panelReplica.add(numberReplica);
+        settingPanel.add(panelProcess);
+        settingPanel.add(panelReplica);
+        confirmButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingPanel.add(confirmButton);
+        secondFrame.getContentPane().add(settingPanel);
+        secondFrame.setTitle("Settings");
+        secondFrame.setBounds(0, 0, 350, 170);
+        secondFrame.setLocation(dim.width/2-secondFrame.getSize().width/2, dim.height/2-secondFrame.getSize().height/2);
+        secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        secondFrame.setVisible(true);
+        secondFrame.setResizable(false);
+        confirmButton.addActionListener(e -> {
+            try {
+                processNumber = Integer.parseInt(numberProcess.getText());
+                replicasNumber = Integer.parseInt(numberReplica.getText());
+                mainPathField.setText(pathField.getText());
+                configureSystem(graphPathString, processNumber, replicasNumber, logger);
+                Thread thread = new Thread(() -> {
+                    showInformationMessage("INFO: starting the AKKA environment.");
+                    akkaEnvironment(facade, this, this.App);
+                });
+                thread.start();
+                graphVisualization(facade.getMap());
+                secondFrame.dispose();
+                mainFrame.setVisible(true);
+            }catch(NumberFormatException error){
+                JOptionPane.showMessageDialog(null,
+                        "Invalid number.\n Please check it!","Error !",JOptionPane.ERROR_MESSAGE);
+                //showErrorMessage("SETTINGS: Inavlid number. Please check it!");
+            }catch(NullPointerException error){
+                JOptionPane.showMessageDialog(null,
+                        " You have to choose a file description for the graph.","Error !",JOptionPane.ERROR_MESSAGE);
+                //showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
+            }catch(SystemError sError){
+                JOptionPane.showMessageDialog(null,
+                        " SETTINGS: I cannot read this file.\n" +
+                                " Accepted extensions: DOT, DGS, GML,\" +\n" +
+                                "                        \" TLP, NET, graphML, GEXF.","Error !",JOptionPane.ERROR_MESSAGE);
+                //showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                        //" TLP, NET, graphML, GEXF.");
+                pathField.setText("");
+            }
+        });
+
+        pathButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.showOpenDialog(mainFrame);
+            try {
+                pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            }catch(NullPointerException f){}
+            graphPathString=pathField.getText();
+            setGraphCheck(true);
+            startNewComputation.setEnabled(isStartEnable());
+
+        });
+        secondFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evento) {
+                if(JOptionPane.showConfirmDialog(secondFrame,
+                        "Do you rellay want to exit?\n",
+                        "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+                    App.exit();
+                }
+            }
+        });
+    }
+
     private void setMenuItem(){
         JMenuItem openMenuItem = new JMenuItem("Settings...");
         openMenuItem.setMnemonic(KeyEvent.VK_O);
         openMenuItem.addActionListener(l -> {
-            JDialog secondFrame = new JDialog(mainFrame);
-            JTextField numberReplica = new JTextField(replicasNumber.toString(),10);
-            JTextField numberProcess = new JTextField(processNumber.toString(),10);
-            JLabel numberProcessLbl  = new JLabel("Number of process:");
-            JLabel numberReplicaLbl = new JLabel("Number of replicas:");
-            JPanel panelProcess = new JPanel(new FlowLayout());
-            JPanel panelReplica=new JPanel(new FlowLayout());
-            JPanel settingPanel=new JPanel();
-            JPanel northPanel= new JPanel(new FlowLayout());
-            JButton confirmButton = new JButton("Confirm");
-            JTextField pathField=new JTextField("",13);
-            JButton pathButton =new JButton("Source...");
-            northPanel.add(pathButton);
-            northPanel.add(pathField);
-            pathField.setEditable(false);
-            settingPanel.add(northPanel);
-            settingPanel.setLayout(new BoxLayout(settingPanel, BoxLayout.Y_AXIS));
-            panelProcess.add(numberProcessLbl);
-            panelProcess.add(numberProcess);
-            panelReplica.add(numberReplicaLbl);
-            panelReplica.add(numberReplica);
-            settingPanel.add(panelProcess);
-            settingPanel.add(panelReplica);
-            confirmButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-            settingPanel.add(confirmButton);
-            secondFrame.getContentPane().add(settingPanel);
-            secondFrame.setTitle("Settings");
-            secondFrame.setBounds(100, 200, 350, 170);
-            secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-            secondFrame.setVisible(true);
-            secondFrame.setResizable(false);
-            confirmButton.addActionListener(e -> {
-                try {
-                    processNumber = Integer.parseInt(numberProcess.getText());
-                    replicasNumber = Integer.parseInt(numberReplica.getText());
-                    mainPathField.setText(pathField.getText());
-                    configureSystem(graphPathString, processNumber, replicasNumber, logger);
-                    Thread thread = new Thread(() -> {
-                        showInformationMessage("INFO: starting the AKKA environment.");
-                        akkaEnvironment(facade, this, this.App);
-                    });
-                    thread.start();
-                    graphVisualization(facade.getMap());
-                    secondFrame.dispose();
-                }catch(NumberFormatException error){
-                    showErrorMessage("SETTINGS: Inavlid number. Please check it!");
-                }catch(NullPointerException error){
-                    showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
-                }catch(SystemError sError){
-                    showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
-                            " TLP, NET, graphML, GEXF.");
-                    pathField.setText("");
-                }
-            });
 
-            pathButton.addActionListener(e -> {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.showOpenDialog(mainFrame);
-                pathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                graphPathString=pathField.getText();
-                setGraphCheck(true);
-                startNewComputation.setEnabled(isStartEnable());
-
-            });
-            secondFrame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent evento) {
-                    if(JOptionPane.showConfirmDialog(secondFrame,
-                            "Do you rellay want to exit?\n" +
-                                    "If you exit, the changes of the settings will not be applied.",
-                            "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
-                        secondFrame.dispose();
-                    }
-                }
-            });
         });
         JMenuItem exitMenuItem = new JMenuItem("Exit");
         exitMenuItem.setMnemonic(KeyEvent.VK_E);
@@ -189,6 +205,48 @@ public class DSView implements DSAbstractView {
         mainFrame.setJMenuBar(menuBar);
     }
 
+    private void welcomeFrame(){
+        JPanel mainPanel=new JPanel(new BorderLayout());
+        ViewPanel graphViewNew;
+        JPanel panelGraphNew=new JPanel(new BorderLayout());
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
+        JFrame mainFrame = new JFrame();
+        mainPanel.add(panelGraphNew, BorderLayout.CENTER);
+        DucktypeSystemLbl.setSize(200, 200);
+        DucktypeSystemLbl.setFont(new Font("Bariol", Font.PLAIN,30));
+        DucktypeSystemLbl.setForeground(Color.WHITE);
+        DucktypeSystemLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.setBackground(Color.BLACK);
+        mainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
+        graph=new DefaultGraph("WelcomeGraph");
+        graph.setAttribute("ui.class", "marked");
+        graph.addAttribute("ui.stylesheet",getGraphAttribute());
+        Generator gen = new FlowerSnarkGenerator();
+        gen.addSink(graph);
+        gen.begin();
+        for(int i=0; i<100; i++)
+            gen.nextEvents();
+        gen.end();
+        viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
+        graphViewNew=viewer.addDefaultView(false);
+        panelGraphNew.add(graphViewNew);
+        mainFrame.getContentPane().add(mainPanel);
+        mainFrame.setTitle("A distributed subgraph isomorphism");
+        mainFrame.setUndecorated(true);
+        mainFrame.setBounds(00, 00, 700, 500);
+        mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
+        mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        mainFrame.setVisible(true);
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mainFrame.dispose();
+    }
+
     private void initMainFrame(){
         JPanel mainPanel=new JPanel(new BorderLayout());
         JPanel southPanel=new JPanel(new BorderLayout());
@@ -198,6 +256,7 @@ public class DSView implements DSAbstractView {
         JButton queryButton = new JButton("Query source");
         JTextField queryField = new JTextField();
         JPanel soutWithStartPanel = new JPanel(new BorderLayout());
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         startNewComputation = new JButton("Start");
         startNewComputation.setEnabled(isStartEnable());
         mainPathField=new JTextField();
@@ -218,6 +277,7 @@ public class DSView implements DSAbstractView {
         mainFrame.getContentPane().add(mainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
         mainFrame.setBounds(20, 00, 700, 750);
+        mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainPathField.setFont(Font.getFont("Bariol"));
 
@@ -267,22 +327,21 @@ public class DSView implements DSAbstractView {
     private String getGraphAttribute(){
         return "" +
                 "graph {\n" +
-                "\tfill-color: #175676;\n" +
+                "\tfill-color: #000000;\n" +
                 "}\n" +
                 "\n" +
                 "edge {\n" +
-                "\tfill-color: #C9A690;\n" +
+                "\tfill-color: #DC143C;\n" +
                 "}\n" +
                 "node {\n" +
-                "\tsize: 10px, 15px;\n" +
-                "\tshape: box;\n" +
-                "\tfill-color: #EF6F6C;\n" +
+                "\tsize: 5px, 5px;\n" +
+                "\tfill-color: #FFFFFF;\n" +
                 "\tstroke-mode: plain;\n" +
-                "\tstroke-color: yellow;\n" +
+                "\tstroke-color: #FFFFFF;\n" +
                 "}\n"+
                 "\n" +
                 "node:clicked {\n" +
-                "\tfill-color: #FFEECF ;\n" +
+                "\tfill-color: #FFFFFF ;\n" +
                 "}";
     }
 
@@ -299,20 +358,15 @@ public class DSView implements DSAbstractView {
         graphPanel.updateUI();
     }
 
-    private void welcomeGraph(){
+    private void graphViewInit(){
         graph=new DefaultGraph("WelcomeGraph");
         graph.setAttribute("ui.class", "marked");
-        Generator gen = new FlowerSnarkGenerator();
-        gen.addSink(graph);
-        gen.begin();
-        for(int i=0; i<100; i++)
-            gen.nextEvents();
-        gen.end();
         viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         graphView=viewer.addDefaultView(false);
         graphPanel.add(graphView);
     }
+
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
     private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
