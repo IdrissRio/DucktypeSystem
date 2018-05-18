@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
+import akka.cluster.pubsub.DistributedPubSub$;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
@@ -18,6 +19,7 @@ import java.awt.*;
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+
     // private ActorRef supervisor;
     private String myName;
     private DSGraph myView;
@@ -35,23 +37,35 @@ public class DSRobot extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
+                .match(DSTryNewQuery.class, x->{
+
+                })
                 .match(DSMove.class, x -> {
                     // FIXME: should access to the main graph through static facade.getInstance()?
                 })
                 /***********************************/
-                .match(String.class, x -> {
+                /*.match(String.class, x -> {
                     log.info("From: {}   ----- To:"+myView.getNodes()+myNode, x);
                     boolean localAffinity = false;
-                    //mediator.tell(new DistributedPubSubMediator.Unsubscribe("destination",getSelf()),ActorRef.noSender());
                     mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT"),getSelf());
                     Thread.sleep(1000);
-                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode,
-                            localAffinity), getSelf());
-                })
+                    mediator.tell(new DistributedPubSubMediator.CountSubscribers("/user/ROBOT"), getSelf());
+                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode, localAffinity), getSelf());
+                })*/
                 .match(DSInterface.hello.class, in -> {
                     boolean localAffinity = false;
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode,
                             localAffinity), getSelf());
+                })
+                .match(DSCreateChild.class, in ->{
+                    if(in.getFlag()==false && getSender()==getSelf() ) {
+                        log.info("Io: " + myName +" Sono stato incaricato da Idriss il grande per aumentare la popolazione globale (del cluster)." );
+                        in.setFlag(true);
+                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, false), getSelf());
+
+                    }
+                    else
+                        log.info("OK FACCIO UN FIGLIO, O ALMENTO CI PROVO: " + myName);
                 })
 
                 // FIXME: .match(Subscibe.class, x -> { subscribe() }

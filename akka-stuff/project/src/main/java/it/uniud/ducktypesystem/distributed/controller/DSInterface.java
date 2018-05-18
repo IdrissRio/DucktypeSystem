@@ -3,8 +3,12 @@ package it.uniud.ducktypesystem.distributed.controller;
 import akka.actor.*;
 import it.uniud.ducktypesystem.distributed.data.DSCluster;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
+import it.uniud.ducktypesystem.distributed.impl.DSQueryChecker;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
+import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
+import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.view.DSAbstractView;
 import it.uniud.ducktypesystem.view.DSView;
@@ -25,26 +29,21 @@ public class DSInterface implements DSAbstractInterface {
 
     public class hello {
         public String msg;
-
         public hello(String x) {
             msg = x;
         }
     }
 
-    public DSInterface(DataFacade facade, DSAbstractView view) {
+    public DSInterface(DSAbstractView view, DSQuery query) throws SystemError {
         this.view=view;
-        graph = facade.getMap();
+        graph = DataFacade.getInstance().getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        ActorRef sender = actorSystemInstance.get(0).actorOf(DSRobot.props(null, "Sender", "RobotSender"), "sender");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-// after a while the destinations are replicated
-        sender.tell(new hello(sender.path().name()), sender);
+        DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(), query);
+        robotMainActorInstance.get(1).tell(tmp,robotMainActorInstance.get(1));
     }
+
+
 
 
 

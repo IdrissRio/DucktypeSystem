@@ -19,6 +19,7 @@ public class DSCluster {
     private static DSCluster cluster = null;
     private ArrayList<ActorSystem> actorSystemArray;
     private ArrayList<ActorRef> robotMainActorArray;
+    private ActorRef initzializer;
     private Integer proc_number;
     private Integer portSeed;
     private DSAbstractView view;
@@ -70,6 +71,7 @@ public class DSCluster {
         proc_number = facade.getOccupied().size();
         actorSystemArray = new ArrayList<ActorSystem>(proc_number);
         robotMainActorArray = new ArrayList<ActorRef>(proc_number);
+
         final Config config = ConfigFactory.load("akka.conf");
 
         actorSystemInitialization(actorSystemArray, config);

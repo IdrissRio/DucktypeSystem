@@ -22,7 +22,7 @@ public class DataFacade {
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws SystemError {
         if (instance != null ) return instance;
-        return new DataFacade(filePath);
+        return instance=new DataFacade(filePath);
     }
 
     public static DataFacade getInstance() throws SystemError {

@@ -2,7 +2,10 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 
-public class DSQuery extends DSGraphImpl {
+import java.io.Serializable;
+
+
+public class DSQuery extends DSGraphImpl implements Serializable {
     private String version;
 
     public enum QueryStatus {

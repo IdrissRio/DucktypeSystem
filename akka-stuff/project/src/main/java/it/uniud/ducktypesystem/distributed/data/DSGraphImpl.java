@@ -7,6 +7,8 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.file.FileSource;
 import org.graphstream.stream.file.FileSourceFactory;
+import scala.Serializable;
+
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,7 +19,7 @@ import java.util.List;
 * Implements the required method for the system
 * providing a wrapper for the graphstream `DefaultGraph' low level implementation.
 */
-public class DSGraphImpl implements DSGraph {
+public class DSGraphImpl implements DSGraph{
     private DefaultGraph impl;
 
     public DSGraphImpl() {

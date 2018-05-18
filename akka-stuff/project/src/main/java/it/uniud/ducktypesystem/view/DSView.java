@@ -3,6 +3,8 @@ package it.uniud.ducktypesystem.view;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
+import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
@@ -42,6 +44,7 @@ public class DSView implements DSAbstractView {
     private Boolean graphCheck;
     private Boolean queryCheck;
     private JButton startNewComputation;
+    private DSQuery newQuery;
 
     public DSView(DSApplication application) {
         try {
@@ -55,18 +58,18 @@ public class DSView implements DSAbstractView {
         } catch ( Throwable e ) {
             e.printStackTrace();
         }
-        processNumber=new Integer(3);
-        replicasNumber=new Integer(1);
+        processNumber=3;
+        replicasNumber=1;
         this.App = application;
         logger=new DSLog();
-        graphCheck=true; //This should be false, but in production we set it true.
-        queryCheck=true; //This should be false, but in production we set it true.
+        graphCheck=false;
+        queryCheck=false;
         logScroll=new JScrollPane(logger.getLog());
         logScroll.setSize(new Dimension(600,300));
         graphPanel=new JPanel(new GridLayout()){
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(640, 480);
+                return new Dimension(640, 530);
             }
         };
     }
@@ -228,7 +231,13 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                new DSInterface(facade, this);
+                try {
+                    new DSInterface(this, newQuery);
+                    setQueryCheck(false);
+                    startNewComputation.setEnabled(isStartEnable());
+                }catch (SystemError f){
+                    showErrorMessage("SETTINGS: "+f.getMessage());
+                }
             });
             thread.start();
         });
@@ -242,14 +251,16 @@ public class DSView implements DSAbstractView {
             //If there is no exception enable startButton
             setQueryCheck(true);
             startNewComputation.setEnabled(isStartEnable());
-            //try {
-                //Here we should create a new query.
+            try {
+                newQuery = DSQuery.createQueryFromFile(graphPathString);
                 showInformationMessage("SETTINGS: Graph reading complete.");
-            /*//}catch(SystemError sError){
+            }catch(NullPointerException error) {
+                showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
+            }catch(SystemError sError){
             showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
                         " TLP, NET, graphML, GEXF.");
                 queryField.setText("");
-            //}*/
+            }
         });
     }
 
@@ -305,10 +316,11 @@ public class DSView implements DSAbstractView {
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
     private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
-            facade = DataFacade.create(filePath);
+            facade=DataFacade.create(filePath);
             facade.setNumSearchGroups(numSearchGroup);
             facade.setOccupied(numRobot);
     }
+
 
     // Configure occupied vector: this should be called *after* configureSystem().
     // This allows the initialization of the robots' position by selecting nodes on visual interface.

@@ -2,6 +2,7 @@ package it.uniud.ducktypesystem.distributed.impl;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
@@ -59,5 +60,9 @@ public class DSQueryChecker extends AbstractActor {
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
+    }
+
+    static public Props props(DSGraph myView, String myNode, String version) {
+        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode,version));
     }
 }
