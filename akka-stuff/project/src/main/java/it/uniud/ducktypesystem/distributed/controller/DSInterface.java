@@ -36,7 +36,7 @@ public class DSInterface implements DSAbstractInterface {
         graph = facade.getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        ActorRef sender = actorSystemInstance.get(0).actorOf(DSRobot.props(null, "Sender"), "sender");
+        ActorRef sender = actorSystemInstance.get(0).actorOf(DSRobot.props(null, "Sender", "RobotSender"), "sender");
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
