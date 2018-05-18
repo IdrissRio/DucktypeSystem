@@ -4,10 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.view.DSAbstractView;
+import org.jboss.netty.channel.ChannelException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -19,14 +22,25 @@ public class DSCluster {
     private Integer proc_number;
     private Integer portSeed;
     private DSAbstractView view;
+    private Integer maxRecovery;
+    private Integer actualRecovery;
+    private DSApplication application;
 
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
-        actorSystemTmp.add(ActorSystem.create("ClusterSystem", conf));
-        for (int i = 1; i < proc_number ; ++i)
-            actorSystemTmp.add(ActorSystem.create("ClusterSystem",
-                    ConfigFactory.parseString("akka.remote.netty.tcp.port="+(portSeed+i)).withFallback(conf)));
-        view.showInformationMessage("AKKA: Every node is connected"); //FIXME: Supercazzola. Ma ci piace così.
+        try {
+           // actorSystemTmp.add(ActorSystem.create("ClusterSystem", conf));
+            for (int i = 0; i < proc_number; ++i)
+                actorSystemTmp.add(ActorSystem.create("ClusterSystem",
+                        ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(conf)));
+            view.showInformationMessage("AKKA: Every node is connected"); //FIXME: Supercazzola. Ma ci piace così.
+            robotMainActorInitialization(actorSystemArray);
+        }catch(ChannelException e){
+            exceptionFound();
+            portSeed+=proc_number;
+            for(int i=0;i<actorSystemTmp.size();++i) actorSystemTmp.remove(i);
+            actorSystemInitialization(actorSystemTmp, conf);
+        }
     }
 
     private void robotMainActorInitialization(ArrayList<ActorSystem> actorSystemTmp) {
@@ -38,16 +52,19 @@ public class DSCluster {
         }
     }
 
-    public static void akkaEnvironment(DataFacade facade, DSAbstractView view){
+    public static void akkaEnvironment(DataFacade facade, DSAbstractView view, DSApplication app){
         if(cluster==null)
-            cluster=new DSCluster(facade, view);
+            cluster=new DSCluster(facade, view, app);
     }
 
     public static DSCluster getInstance() {
         return cluster;
     }
 
-    private DSCluster(DataFacade facade, DSAbstractView view) {
+    private DSCluster(DataFacade facade, DSAbstractView view, DSApplication app) {
+        this.application=app;
+        this.maxRecovery=5;
+        this.actualRecovery=0;
         this.view=view;
         this.facade = facade;
         proc_number = facade.getOccupied().size();
@@ -56,9 +73,21 @@ public class DSCluster {
         final Config config = ConfigFactory.load("akka.conf");
         portSeed = 2551;
         actorSystemInitialization(actorSystemArray, config);
-        robotMainActorInitialization(actorSystemArray);
-    }
 
+    }
+    private void exceptionFound(){
+        if (this.maxRecovery<actualRecovery) {
+            JOptionPane.showMessageDialog(view.getMainFrame(),
+                    "The error recovery procedure failed.\n" +
+                            " The system is corrupt. Self-destruction activated!",
+                    "Adios !",
+                    JOptionPane.ERROR_MESSAGE);
+            application.exit();
+        }
+        if(actualRecovery==0)
+            view.showErrorMessage("AKKA: Error in cluster initialization. Starting recovery mode.");
+        ++actualRecovery;
+    }
     public ArrayList<ActorRef> getRobotMainActorArray(){
         return robotMainActorArray;
     }

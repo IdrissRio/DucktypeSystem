@@ -136,7 +136,7 @@ public class DSView implements DSAbstractView {
                     configureSystem(graphPathString, processNumber, replicasNumber, logger);
                     Thread thread = new Thread(() -> {
                         showInformationMessage("INFO: starting the AKKA environment.");
-                        akkaEnvironment(facade, this);
+                        akkaEnvironment(facade, this, this.App);
                     });
                     thread.start();
                     graphVisualization(facade.getMap());
@@ -330,6 +330,7 @@ public class DSView implements DSAbstractView {
     public void showErrorMessage(String s) {
         logger.log(s, Color.RED);
     }
+    public JFrame getMainFrame(){return mainFrame;}
 
 }
 
