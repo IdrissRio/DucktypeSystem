@@ -8,14 +8,15 @@ import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 
 public class DSInterface implements DSAbstractInterface {
 
     private DSAbstractLog logger;
     private DSGraph graph;
-    private ActorSystem actorSystemInstance[];
-    private ActorRef robotMainActorInstance[];
+    private ArrayList<ActorSystem> actorSystemInstance;
+    private ArrayList<ActorRef> robotMainActorInstance;
     private Integer proc_number;
     private Integer portSeed;
     private Color greenForest= new Color(11,102,35);
@@ -33,7 +34,7 @@ public class DSInterface implements DSAbstractInterface {
         graph = facade.getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        ActorRef sender = actorSystemInstance[0].actorOf(DSRobot.props(null, "Sender"), "sender");
+        ActorRef sender = actorSystemInstance.get(0).actorOf(DSRobot.props(null, "Sender"), "sender");
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
