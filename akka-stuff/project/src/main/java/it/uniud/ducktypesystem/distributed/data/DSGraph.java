@@ -41,7 +41,9 @@ public interface DSGraph {
     DSGraph getViewFromNode(String id);
     DSGraph getViewFromNode(int n);
 
+    void mergeView(DSGraph newView, int memory);
+
     Object getGraphImpl();
 
-    void mergeView(DSGraph newView, int memory);
+    boolean isEqual(DSGraph graph);
 }

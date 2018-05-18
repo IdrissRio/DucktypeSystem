@@ -40,7 +40,7 @@ public class DSQueryChecker extends AbstractActor {
         return receiveBuilder()
                 .match(DSTryNewQuery.class, msg -> {
                     // FIXME: is this clone necessary? Can I steal the messages resources?
-                    query = msg.query.clone();
+                    query = new DSQuery(msg.query);
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
                     msg.sender.tell(new DSAck(), ActorRef.noSender());
                     switch (query.checkAndReduce(myView, myNode)) {

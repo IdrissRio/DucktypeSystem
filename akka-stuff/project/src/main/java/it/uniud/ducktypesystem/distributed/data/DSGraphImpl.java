@@ -2,7 +2,6 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 import org.graphstream.graph.EdgeRejectedException;
-import org.graphstream.graph.Graph;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
@@ -26,6 +25,14 @@ public class DSGraphImpl implements DSGraph {
     }
     public DSGraphImpl(DefaultGraph impl) {
         this.impl = impl;
+    }
+    public DSGraphImpl(DSGraphImpl graph) {
+        this();
+        for (String s : graph.getNodes())
+            addNode(s);
+        for (String s1 : graph.getNodes())
+            for (String s2 : getNodes())
+                if (graph.areAdj(s1, s2)) addEdge(s1, s2);
     }
 
     public static DSGraph createGraphFromFile(String filePath) throws SystemError {
@@ -262,15 +269,18 @@ public class DSGraphImpl implements DSGraph {
         return impl;
     }
 
-    public DSGraphImpl clone() {
-        // FIXME: Dummy implementation... could be done better?
-        DSGraphImpl g = new DSGraphImpl();
-        for (String s : getNodes())
-            g.addNode(s);
+    @Override
+    public boolean isEqual(DSGraph graph) {
+        if (graph == null) return false;
+        if (!getNodes().containsAll(graph.getNodes())) return false;
+        if (!graph.getNodes().containsAll(getNodes())) return false;
         for (String s1 : getNodes())
-            for (String s2 : getNodes())
-                if (areAdj(s1, s2)) g.addEdge(s1, s2);
-        return g;
+            for (String s2 : adjNodes(s1))
+                if (!graph.areAdj(s1, s2)) return false;
+        for (String s1 : graph.getNodes())
+            for (String s2 : graph.adjNodes(s1))
+                if (!areAdj(s1, s2)) return false;
+        return true;
     }
 
     public String toString() {

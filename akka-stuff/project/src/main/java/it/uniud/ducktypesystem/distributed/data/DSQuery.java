@@ -12,15 +12,18 @@ public class DSQuery extends DSGraphImpl {
         DONTKNOW
     }
 
+    public DSQuery() {
+        super();
+        version = null;
+    }
+    public DSQuery(DSGraphImpl g) {
+        super(g);
+        version = null;
+    }
+
     public static DSQuery createQueryFromFile(String filePath) throws SystemError {
         DSQuery q = new DSQuery();
         q.loadGraphFromFile(filePath);
-        return q;
-    }
-
-    public DSQuery clone() {
-        DSQuery q = (DSQuery) super.clone();
-        q.version = this.version;
         return q;
     }
 
@@ -42,7 +45,7 @@ public class DSQuery extends DSGraphImpl {
                 return QueryStatus.FAIL;
             // Remove verified edges
             for (String qN2 : adjNodes(qN)) {
-                if (!myView.hasNode(qN2)) continue;
+                if (!myView.hasNode(qN2) || !myView.areAdj(qN, qN2)) continue;
                 removeEdge(qN, qN2);
                 newHypothesis = true;
             }
