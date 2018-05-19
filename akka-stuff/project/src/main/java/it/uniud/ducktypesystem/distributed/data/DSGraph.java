@@ -2,9 +2,10 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface DSGraph {
+public interface DSGraph extends Serializable {
     void loadGraphFromFile(String filePath) throws SystemError;
 
     int numNodes();
@@ -46,4 +47,7 @@ public interface DSGraph {
     Object getGraphImpl();
 
     boolean isEqual(DSGraph graph);
+
+    String serializeToString();
+    void loadFromSerializedString(String serialized);
 }

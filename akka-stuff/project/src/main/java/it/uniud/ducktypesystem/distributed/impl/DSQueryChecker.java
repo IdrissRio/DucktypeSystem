@@ -29,15 +29,21 @@ public class DSQueryChecker extends AbstractActor {
         this.version = version;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
-        log.info("SONO NATO: "+getSelf().path());
+        log.info("QC: SONO NATO: "+getSelf().path()+ " con vista: "+myView.toString());
     }
 
     // Communication methods
-    private void publishMatch() { /* TODO: */ }
-    private void publishFail() { /* TODO: */ }
+    private void publishMatch() {
+        log.info("MATCH da: "+ myNode);
+    }
+    private void publishFail() {
+        log.info("FAIL da: "+ myNode);
+    }
     private void forwardQuery(boolean unsubscribe) { /* TODO:
         if (unsubscribe) unsubscribe group "query.getVersion()"
         Send to that group this.query.  */
+        // if (unsubscribe) mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+
     }
 
     @Override
@@ -46,8 +52,9 @@ public class DSQueryChecker extends AbstractActor {
                 .match(DSTryNewQuery.class, msg -> {
                     // FIXME: is this clone necessary? Can I steal the messages resources?
                     query = new DSQueryImpl(msg.query);
+
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
-                    msg.sender.tell(new DSAck(), ActorRef.noSender());
+                    // msg.sender.tell(new DSAck(), ActorRef.noSender());
                     switch (query.checkAndReduce(myView, myNode)) {
                         case FAIL:
                             publishFail(); break;
@@ -61,9 +68,13 @@ public class DSQueryChecker extends AbstractActor {
                 .match(DSAskNewSend.class, x -> {
                     forwardQuery(false);
                 })
-                .match(String.class, x->{
-                    String z = myNode + " has: " + myView.toString();
-                    log.info(z);
+                .match(DSQueryImpl.class, x-> {
+                    // TRY FORWARDING:
+                    mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+                    Thread.sleep(1000);
+                    log.info(myNode + "ho ricevuto: " + x.toString());
+                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
+                            new DSQueryImpl(x), false), getSelf());
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();

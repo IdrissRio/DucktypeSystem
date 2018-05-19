@@ -277,7 +277,7 @@ public class QueryTest {
 
     @Test
     public void query06() {
-        System.out.println("=== query05 ===");
+        System.out.println("=== query06 ===");
 
         for (String s : graph.getNodes()) {
             DSQuery q = new DSQueryImpl(graph);
@@ -287,4 +287,16 @@ public class QueryTest {
             Assert.assertFalse(q.isEmpty());
         }
     }
+
+    @Test
+    public void query07() {
+        System.out.println("=== query07 ===");
+
+        String serialized = graph.serializeToString();
+        System.out.println(serialized);
+        DSGraph g = new DSGraphImpl();
+        g.loadFromSerializedString(serialized);
+        System.out.println(g.toString());
+    }
+
 }

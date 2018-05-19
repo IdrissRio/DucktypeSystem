@@ -9,6 +9,8 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSQuery;
+import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.message.*;
 
 public class DSRobot extends AbstractActor {
@@ -56,14 +58,23 @@ public class DSRobot extends AbstractActor {
                     if(in.getFlag()==false && getSender()==getSelf() ) {
                         log.info("ORDINE: creare figli;" );
                         in.setFlag(true);
-                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, false), getSelf());
-
+                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, true), getSelf());
+                        log.info("Figli creati:" + myName);
+                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),
+                                "prova");
+                        Thread.sleep(2000);
+                        // PRIMA SEND:
+                        DSQuery q = new DSQueryImpl(in.getQuery());
+                        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
+                                q, false), getSelf());
+                        log.info(myNode + " ho fatto la prima send di "+q.toString());
                     }
                     else {
-                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"), "prova");
+                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),
+                                "prova");
                         log.info("Figli creati:" + myName);
                         Thread.sleep(1000);
-                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
+                        // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
                     }
                 })
 

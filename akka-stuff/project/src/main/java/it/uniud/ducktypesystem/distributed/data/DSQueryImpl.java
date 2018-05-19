@@ -5,7 +5,7 @@ import it.uniud.ducktypesystem.errors.SystemError;
 import java.io.Serializable;
 
 
-public class DSQueryImpl extends DSGraphImpl implements DSQuery, Serializable {
+public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     private String version;
 
     public DSQueryImpl() {

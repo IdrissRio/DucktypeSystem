@@ -19,7 +19,7 @@ import java.util.List;
 * Implements the required method for the system
 * providing a wrapper for the graphstream `DefaultGraph' low level implementation.
 */
-public class DSGraphImpl implements DSGraph{
+public class DSGraphImpl implements DSGraph {
     private DefaultGraph impl;
 
     public DSGraphImpl() {
@@ -295,5 +295,31 @@ public class DSGraphImpl implements DSGraph{
             b.append("\n");
         }
         return b.toString();
+    }
+
+    @Override
+    public String serializeToString() {
+        StringBuilder b = new StringBuilder();
+        for (String n : getNodes())
+            b.append(n+"\t");
+        b.append("\n");
+        for (String n1 : getNodes())
+            for (String n2 : adjNodes(n1))
+                b.append(n1+" "+n2+"\t");
+        return b.toString();
+    }
+
+    @Override
+    public void loadFromSerializedString(String serialized) {
+        String[] ne = serialized.split("\n");
+        String[] nodes = ne[0].split("\t");
+        String[] edges = ne[1].split("\t");
+        for (String n : nodes) {
+            addNode(n);
+        }
+        for (String e : edges) {
+            String[] n1n2 = e.split(" ");
+            addEdge(n1n2[0], n1n2[1]);
+        }
     }
 }

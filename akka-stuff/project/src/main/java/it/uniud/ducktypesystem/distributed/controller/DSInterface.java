@@ -1,10 +1,7 @@
 package it.uniud.ducktypesystem.distributed.controller;
 
 import akka.actor.*;
-import it.uniud.ducktypesystem.distributed.data.DSCluster;
-import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-import it.uniud.ducktypesystem.distributed.data.DataFacade;
+import it.uniud.ducktypesystem.distributed.data.*;
 import it.uniud.ducktypesystem.distributed.impl.DSQueryChecker;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
@@ -33,7 +30,7 @@ public class DSInterface implements DSAbstractInterface {
         graph = DataFacade.getInstance().getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(), query);
+        DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(), new DSQueryImpl(query));
         robotMainActorInstance.get(1).tell(tmp,robotMainActorInstance.get(1));
     }
 
