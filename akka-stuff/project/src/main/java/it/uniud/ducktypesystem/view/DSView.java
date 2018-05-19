@@ -221,7 +221,7 @@ public class DSView implements DSAbstractView {
         mainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
         graph=new DefaultGraph("WelcomeGraph");
         graph.setAttribute("ui.class", "marked");
-        graph.addAttribute("ui.stylesheet",getGraphAttribute());
+        graph.addAttribute("ui.stylesheet","url(welcomeGraphStyleSheet.css)");
         Generator gen = new FlowerSnarkGenerator();
         gen.addSink(graph);
         gen.begin();
@@ -323,27 +323,7 @@ public class DSView implements DSAbstractView {
             }
         });
     }
-
-    private String getGraphAttribute(){
-        return "" +
-                "graph {\n" +
-                "\tfill-color: #000000;\n" +
-                "}\n" +
-                "\n" +
-                "edge {\n" +
-                "\tfill-color: #DC143C;\n" +
-                "}\n" +
-                "node {\n" +
-                "\tsize: 5px, 5px;\n" +
-                "\tfill-color: #FFFFFF;\n" +
-                "\tstroke-mode: plain;\n" +
-                "\tstroke-color: #FFFFFF;\n" +
-                "}\n"+
-                "\n" +
-                "node:clicked {\n" +
-                "\tfill-color: #FFFFFF ;\n" +
-                "}";
-    }
+    
 
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
