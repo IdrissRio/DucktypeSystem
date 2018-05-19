@@ -274,4 +274,17 @@ public class QueryTest {
             }
         }
     }
+
+    @Test
+    public void query06() {
+        System.out.println("=== query05 ===");
+
+        for (String s : graph.getNodes()) {
+            DSQuery q = new DSQueryImpl(graph);
+            DSQuery.QueryStatus status = q.checkAndReduce(graph.getViewFromNode(s), s);
+            Assert.assertTrue(status == DSQuery.QueryStatus.DONTKNOW ||
+                    status == DSQuery.QueryStatus.NEW);
+            Assert.assertFalse(q.isEmpty());
+        }
+    }
 }

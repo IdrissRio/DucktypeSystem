@@ -53,9 +53,8 @@ public class DSQueryChecker extends AbstractActor {
                             publishFail(); break;
                         case MATCH:
                             publishMatch(); break;
-                        case NEW:
-                            forwardQuery(true); break;
-                        default: break; // case DONTKNOW
+                        default: // case NEW or DONTKNOW
+                            forwardQuery(true);
                     }
                     // robot.tell(new DSEndCriticalWork(), ActorRef.noSender());
                 })

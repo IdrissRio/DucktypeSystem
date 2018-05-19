@@ -57,6 +57,7 @@ public class DSRobot extends AbstractActor {
                         log.info("ORDINE: creare figli;" );
                         in.setFlag(true);
                         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, false), getSelf());
+
                     }
                     else {
                         context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"), "prova");

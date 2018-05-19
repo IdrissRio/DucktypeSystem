@@ -30,8 +30,8 @@ public class DSGraphImpl implements DSGraph{
         for (String s : graph.getNodes())
             addNode(s);
         for (String s1 : graph.getNodes())
-            for (String s2 : getNodes())
-                if (graph.areAdj(s1, s2)) addEdge(s1, s2);
+            for (String s2 : graph.adjNodes(s1))
+                addEdge(s1, s2);
     }
 
     public static DSGraph createGraphFromFile(String filePath) throws SystemError {

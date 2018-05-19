@@ -33,7 +33,7 @@ public class DSCluster {
             for (int i = 0; i < proc_number; ++i)
                 actorSystemTmp.add(ActorSystem.create("ClusterSystem",
                         ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(conf)));
-            view.showInformationMessage("AKKA: Every node is connected"); //FIXME: Supercazzola. Ma ci piace così.
+            view.showInformationMessage("AKKA: Every node is connected");
             robotMainActorInitialization(actorSystemArray);
         }catch(ChannelException e){
             exceptionFound();

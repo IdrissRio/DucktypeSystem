@@ -1,6 +1,5 @@
 package it.uniud.ducktypesystem.distributed.message;
 
-import akka.actor.Props;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 
 import java.io.Serializable;

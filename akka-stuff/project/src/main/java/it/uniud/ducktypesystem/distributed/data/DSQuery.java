@@ -1,7 +1,5 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.SystemError;
-
 public interface DSQuery extends DSGraph {
     enum QueryStatus {
         MATCH,
