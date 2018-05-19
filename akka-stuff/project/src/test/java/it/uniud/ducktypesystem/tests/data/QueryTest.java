@@ -3,6 +3,7 @@ package it.uniud.ducktypesystem.tests.data;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
+import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class QueryTest {
     @Test
     public void query01() {
         System.out.println("=== query01 ===");
-        DSQuery q = new DSQuery();
+        DSQuery q = new DSQueryImpl();
         System.out.println(q.toString());
         Assert.assertTrue(q.isEmpty());
         q.addNode("A");
@@ -75,7 +76,7 @@ public class QueryTest {
         expected.addEdge("D", "F");
         Assert.assertTrue(expected.isEqual(view));
 
-        DSQuery q1 = new DSQuery();
+        DSQuery q1 = new DSQueryImpl();
         q1.addNode("A");
         q1.addNode("D");
         q1.addNode("C");
@@ -84,7 +85,7 @@ public class QueryTest {
         Assert.assertEquals(q1.checkAndReduce(view, "D"), DSQuery.QueryStatus.MATCH);
         Assert.assertTrue(q1.isEmpty());
 
-        DSQuery q2 = new DSQuery();
+        DSQuery q2 = new DSQueryImpl();
         q2.addNode("A");
         q2.addNode("D");
         q2.addNode("E");
@@ -93,12 +94,12 @@ public class QueryTest {
         Assert.assertEquals(q2.checkAndReduce(view, "D"), DSQuery.QueryStatus.FAIL);
 
 
-        DSQuery q3 = new DSQuery();
+        DSQuery q3 = new DSQueryImpl();
         Assert.assertEquals(q3.checkAndReduce(view, "D"), DSQuery.QueryStatus.MATCH);
         Assert.assertTrue(q3.isEmpty());
 
 
-        DSQuery q4 = new DSQuery();
+        DSQuery q4 = new DSQueryImpl();
         q4.addNode("A");
         q4.addNode("D");
         q4.addNode("B");
@@ -107,7 +108,7 @@ public class QueryTest {
         q4.addEdge("A", "B");
         Assert.assertEquals(q4.checkAndReduce(view, "D"), DSQuery.QueryStatus.NEW);
 
-        DSQuery q5 = new DSQuery();
+        DSQuery q5 = new DSQueryImpl();
         q5.addNode("A");
         q5.addNode("B");
         q5.addNode("C");
@@ -117,7 +118,7 @@ public class QueryTest {
     }
 
     @Test
-    public void query03() throws CloneNotSupportedException {
+    public void query03() {
         System.out.println("=== query03 ===");
         DSGraph view = graph.getViewFromNode("F");
         System.out.println("View from F:\n" + view.toString());
@@ -134,7 +135,7 @@ public class QueryTest {
         expected.addEdge("F", "H");
         Assert.assertTrue(expected.isEqual(view));
 
-        DSQuery q1 = new DSQuery();
+        DSQuery q1 = new DSQueryImpl();
         q1.addNode("A");
         q1.addNode("D");
         q1.addNode("C");
@@ -142,7 +143,7 @@ public class QueryTest {
         q1.addEdge("D", "C");
         Assert.assertEquals(q1.checkAndReduce(view, "F"), DSQuery.QueryStatus.DONTKNOW);
 
-        DSQuery q2 = new DSQuery();
+        DSQuery q2 = new DSQueryImpl();
         q2.addNode("F");
         q2.addNode("D");
         q2.addNode("E");
@@ -154,7 +155,7 @@ public class QueryTest {
         q2.addEdge("D", "E");
         q2.addEdge("D", "G");
         Assert.assertEquals(q2.checkAndReduce(view, "F"), DSQuery.QueryStatus.NEW);
-        DSQuery expectedNew = new DSQuery();
+        DSQuery expectedNew = new DSQueryImpl();
         expectedNew.addNode("D");
         expectedNew.addNode("E");
         expectedNew.addNode("G");
@@ -163,12 +164,12 @@ public class QueryTest {
         Assert.assertTrue(q2.isEqual(expectedNew));
 
 
-        DSQuery q3 = new DSQuery();
+        DSQuery q3 = new DSQueryImpl();
         Assert.assertEquals(q3.checkAndReduce(new DSGraphImpl(), "F"), DSQuery.QueryStatus.MATCH);
         Assert.assertTrue(q3.isEmpty());
 
 
-        DSQuery q4 = new DSQuery();
+        DSQuery q4 = new DSQueryImpl();
         q4.addNode("A");
         q4.addNode("D");
         q4.addNode("F");
@@ -178,7 +179,7 @@ public class QueryTest {
         q4.addEdge("D", "F");
         q4.addEdge("F", "H");
         q4.addEdge("F", "G");
-        DSQuery q5 = new DSQuery(q4);
+        DSQuery q5 = new DSQueryImpl(q4);
 
         Assert.assertEquals(q4.checkAndReduce(graph.getViewFromNode("D"), "D"), DSQuery.QueryStatus.NEW);
         Assert.assertEquals(q4.checkAndReduce(graph.getViewFromNode("F"), "F"), DSQuery.QueryStatus.MATCH);
@@ -188,10 +189,10 @@ public class QueryTest {
     }
 
     @Test
-    public void query04() throws CloneNotSupportedException {
+    public void query04() {
         System.out.println("=== query04 ===");
 
-        DSQuery q1 = new DSQuery();
+        DSQuery q1 = new DSQueryImpl();
         q1.addNode("A");
         q1.addNode("B");
         q1.addNode("D");
@@ -201,15 +202,76 @@ public class QueryTest {
         q1.addEdge("B", "D");
         q1.addEdge("D", "F");
         q1.addEdge("F", "H");
+        DSQuery q2 = new DSQueryImpl(q1);
+        DSQuery q3 = new DSQueryImpl(q1);
+        DSQuery q4 = new DSQueryImpl(q1);
 
         DSQuery.QueryStatus status = DSQuery.QueryStatus.DONTKNOW;
-
-        for (String n : graph.getNodes()) {
+        for (int i = graph.numNodes(); i-- > 0; ) {
+            String n = graph.getNode(i);
             status = q1.checkAndReduce(graph.getViewFromNode(n), n);
             if (status == DSQuery.QueryStatus.FAIL
-                    || status == DSQuery.QueryStatus.MATCH) break;
+                    || status == DSQuery.QueryStatus.MATCH) {
+                System.out.println("Query 1 ended with: "+ n);
+                break;
+            }
         }
-
         Assert.assertEquals(status, DSQuery.QueryStatus.MATCH);
+
+        status = DSQuery.QueryStatus.DONTKNOW;
+        for (int i = 0; i < graph.numNodes(); ++i) {
+            String n = graph.getNode(i);
+            status = q2.checkAndReduce(graph.getViewFromNode(n), n);
+            if (status == DSQuery.QueryStatus.FAIL
+                    || status == DSQuery.QueryStatus.MATCH) {
+                System.out.println("Query 2 ended with: "+ n);
+                break;
+            }
+        }
+        Assert.assertEquals(status, DSQuery.QueryStatus.MATCH);
+
+        status = DSQuery.QueryStatus.DONTKNOW;
+        for (int i = 0; true ; i = (i + 2) % graph.numNodes()) {
+            String n = graph.getNode(i);
+            status = q3.checkAndReduce(graph.getViewFromNode(n), n);
+            if (status == DSQuery.QueryStatus.FAIL
+                    || status == DSQuery.QueryStatus.MATCH) {
+                System.out.println("Query 3 ended with: "+ n);
+                break;
+            }
+        }
+        Assert.assertEquals(status, DSQuery.QueryStatus.MATCH);
+
+        status = DSQuery.QueryStatus.DONTKNOW;
+        for (int i = 0; true ; i = (i + 8) % graph.numNodes() ) {
+            String n = graph.getNode(i);
+            status = q4.checkAndReduce(graph.getViewFromNode(n), n);
+            if (status == DSQuery.QueryStatus.FAIL
+                    || status == DSQuery.QueryStatus.MATCH) {
+                System.out.println("Query 4 ended with: "+ n);
+                break;
+            }
+        }
+        Assert.assertEquals(status, DSQuery.QueryStatus.MATCH);
+    }
+
+    @Test
+    public void query05() {
+        System.out.println("=== query05 ===");
+
+        for (String node : graph.getNodes()) {
+            DSQuery q = new DSQueryImpl(graph.getViewFromNode(node));
+            for (String other : graph.getNodes()) {
+                DSQuery qTest = new DSQueryImpl(q);
+                if (other.equals(node))
+                    Assert.assertEquals(qTest.checkAndReduce(graph.getViewFromNode(other), other),
+                            DSQuery.QueryStatus.MATCH);
+                else {
+                    DSQuery.QueryStatus status = qTest.checkAndReduce(graph.getViewFromNode(other), other);
+                    Assert.assertTrue((status == DSQuery.QueryStatus.DONTKNOW)
+                            || (status == DSQuery.QueryStatus.NEW));
+                }
+            }
+        }
     }
 }

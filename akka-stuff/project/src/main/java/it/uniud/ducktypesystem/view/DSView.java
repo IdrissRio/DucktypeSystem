@@ -4,6 +4,7 @@ import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
+import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
@@ -312,7 +313,7 @@ public class DSView implements DSAbstractView {
             setQueryCheck(true);
             startNewComputation.setEnabled(isStartEnable());
             try {
-                newQuery = DSQuery.createQueryFromFile(graphPathString);
+                newQuery = DSQueryImpl.createQueryFromFile(graphPathString);
                 showInformationMessage("SETTINGS: Graph reading complete.");
             }catch(NullPointerException error) {
                 showErrorMessage("SETTINGS: You have to choose a file description for the graph.");

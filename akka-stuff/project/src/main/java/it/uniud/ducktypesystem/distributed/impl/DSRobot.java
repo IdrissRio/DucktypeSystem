@@ -4,18 +4,12 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
-import akka.cluster.pubsub.DistributedPubSub$;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.message.*;
-import sun.plugin2.message.Serializer;
-
-import java.awt.*;
 
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);

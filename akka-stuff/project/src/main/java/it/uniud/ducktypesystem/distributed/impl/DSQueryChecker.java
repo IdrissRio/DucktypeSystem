@@ -9,6 +9,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
+import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.message.*;
 
 public class DSQueryChecker extends AbstractActor {
@@ -44,7 +45,7 @@ public class DSQueryChecker extends AbstractActor {
         return receiveBuilder()
                 .match(DSTryNewQuery.class, msg -> {
                     // FIXME: is this clone necessary? Can I steal the messages resources?
-                    query = new DSQuery(msg.query);
+                    query = new DSQueryImpl(msg.query);
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
                     msg.sender.tell(new DSAck(), ActorRef.noSender());
                     switch (query.checkAndReduce(myView, myNode)) {
@@ -62,12 +63,7 @@ public class DSQueryChecker extends AbstractActor {
                     forwardQuery(false);
                 })
                 .match(String.class, x->{
-                    String z;
-                    z="[";
-                    for (String y:this.myView.getNodes()) {
-                        z+=y+" ";
-                    }
-                    z+="] myNodes("+this.myNode+ ")";
+                    String z = myNode + " has: " + myView.toString();
                     log.info(z);
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })

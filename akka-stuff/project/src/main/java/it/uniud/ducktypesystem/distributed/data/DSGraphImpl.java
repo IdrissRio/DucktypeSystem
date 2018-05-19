@@ -25,10 +25,7 @@ public class DSGraphImpl implements DSGraph{
     public DSGraphImpl() {
         impl = new DefaultGraph("g");
     }
-    public DSGraphImpl(DefaultGraph impl) {
-        this.impl = impl;
-    }
-    public DSGraphImpl(DSGraphImpl graph) {
+    public DSGraphImpl(DSGraph graph) {
         this();
         for (String s : graph.getNodes())
             addNode(s);
@@ -287,15 +284,16 @@ public class DSGraphImpl implements DSGraph{
 
     public String toString() {
         StringBuilder b = new StringBuilder();
-        for (String s : getNodes()) {
-            b.append(" ");
-            b.append(s);
-        }
+        b.append("Graph: numNodes: ");
+        b.append(numNodes());
         b.append("\n");
-        for (String s1 : getNodes())
-            for (String s2 : getNodes())
-                if (areAdj(s1, s2))
-                    b.append("["+s1+","+s2+"]");
+        for (String s : getNodes()) {
+            b.append(s + ":");
+            for (String adj : adjNodes(s)) {
+                b.append(" " + adj);
+            }
+            b.append("\n");
+        }
         return b.toString();
     }
 }
