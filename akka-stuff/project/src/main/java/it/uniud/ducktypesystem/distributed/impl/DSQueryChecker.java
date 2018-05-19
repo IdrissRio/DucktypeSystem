@@ -5,11 +5,14 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.message.*;
 
 public class DSQueryChecker extends AbstractActor {
+    private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     // CHECKME: DSQueryChecker and MainRobot are on the same node: they can share resources.
     // Reference to the MainRobot view: the MainRobot must not clone its own view in its Checkers when constructing them.
     private DSGraph myView;
@@ -24,8 +27,8 @@ public class DSQueryChecker extends AbstractActor {
         this.myNode = myNode;
         this.version = version;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
-        this.mediator.tell(new DistributedPubSubMediator.Subscribe(
-                version, getSelf()), getSelf());
+        this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
+        log.info("SONO NATO: "+getSelf().path());
     }
 
     // Communication methods
@@ -57,6 +60,15 @@ public class DSQueryChecker extends AbstractActor {
                 })
                 .match(DSAskNewSend.class, x -> {
                     forwardQuery(false);
+                })
+                .match(String.class, x->{
+                    String z;
+                    z="[";
+                    for (String y:this.myView.getNodes()) {
+                        z+=y+" ";
+                    }
+                    z+="] myNodes("+this.myNode+ ")";
+                    log.info(z);
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();

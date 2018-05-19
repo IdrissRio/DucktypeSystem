@@ -13,6 +13,7 @@ import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.message.*;
+import sun.plugin2.message.Serializer;
 
 import java.awt.*;
 
@@ -52,20 +53,23 @@ public class DSRobot extends AbstractActor {
                     mediator.tell(new DistributedPubSubMediator.CountSubscribers("/user/ROBOT"), getSelf());
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode, localAffinity), getSelf());
                 })*/
-                .match(DSInterface.hello.class, in -> {
+                .match(DSInterface./*hello*/class, in -> {
                     boolean localAffinity = false;
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode,
                             localAffinity), getSelf());
                 })
                 .match(DSCreateChild.class, in ->{
                     if(in.getFlag()==false && getSender()==getSelf() ) {
-                        log.info("Io: " + myName +" Sono stato incaricato da Idriss il grande per aumentare la popolazione globale (del cluster)." );
+                        log.info("ORDINE: creare figli;" );
                         in.setFlag(true);
                         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, false), getSelf());
-
                     }
-                    else
-                        log.info("OK FACCIO UN FIGLIO, O ALMENTO CI PROVO: " + myName);
+                    else {
+                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"), "prova");
+                        log.info("Figli creati:" + myName);
+                        Thread.sleep(1000);
+                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
+                    }
                 })
 
                 // FIXME: .match(Subscibe.class, x -> { subscribe() }

@@ -27,12 +27,6 @@ public class DSInterface implements DSAbstractInterface {
     private Color greenForest= new Color(11,102,35);
     private DSAbstractView view;
 
-    public class hello {
-        public String msg;
-        public hello(String x) {
-            msg = x;
-        }
-    }
 
     public DSInterface(DSAbstractView view, DSQuery query) throws SystemError {
         this.view=view;

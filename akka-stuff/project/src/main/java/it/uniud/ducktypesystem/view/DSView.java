@@ -323,7 +323,7 @@ public class DSView implements DSAbstractView {
             }
         });
     }
-    
+
 
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
