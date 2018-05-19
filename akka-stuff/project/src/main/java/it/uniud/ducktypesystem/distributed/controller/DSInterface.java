@@ -30,7 +30,8 @@ public class DSInterface implements DSAbstractInterface {
         graph = DataFacade.getInstance().getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
-        DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(), new DSQueryImpl(query));
+        DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(),
+                query.serializeToString());
         robotMainActorInstance.get(1).tell(tmp,robotMainActorInstance.get(1));
     }
 

@@ -7,6 +7,6 @@ import java.io.Serializable;
 
 
 public class DSTryNewQuery implements Serializable {
-    public DSQuery query;
+    public String serializedQuery;
     public ActorRef sender;
 }

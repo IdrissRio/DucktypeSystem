@@ -55,19 +55,20 @@ public class DSRobot extends AbstractActor {
                             localAffinity), getSelf());
                 })
                 .match(DSCreateChild.class, in ->{
-                    if(in.getFlag()==false && getSender()==getSelf() ) {
+                    if(in.haveToForward()) {
                         log.info("ORDINE: creare figli;" );
-                        in.setFlag(true);
+                        in.setHaveToForward(false);
                         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, true), getSelf());
                         log.info("Figli creati:" + myName);
                         context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),
                                 "prova");
                         Thread.sleep(2000);
                         // PRIMA SEND:
-                        DSQuery q = new DSQueryImpl(in.getQuery());
+                        DSTryNewQuery msg = new DSTryNewQuery();
+                        msg.sender = getSelf();
+                        msg.serializedQuery = in.getSerializedQuery();
                         mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
-                                q, false), getSelf());
-                        log.info(myNode + " ho fatto la prima send di "+q.toString());
+                                msg, false), getSelf());
                     }
                     else {
                         context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),

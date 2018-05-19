@@ -35,24 +35,39 @@ public class DSQueryChecker extends AbstractActor {
     // Communication methods
     private void publishMatch() {
         log.info("MATCH da: "+ myNode);
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova",
+                new DSMissionAccomplished(), true), getSelf());
     }
     private void publishFail() {
         log.info("FAIL da: "+ myNode);
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova",
+                new DSMissionAccomplished(), true), getSelf());
     }
-    private void forwardQuery(boolean unsubscribe) { /* TODO:
-        if (unsubscribe) unsubscribe group "query.getVersion()"
-        Send to that group this.query.  */
-        // if (unsubscribe) mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
-
+    private void forwardQuery(boolean unsubscribe) {
+        log.info("FORWARDING da: "+myNode);
+        if (unsubscribe) {
+            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        DSTryNewQuery msg = new DSTryNewQuery();
+        msg.sender = getSelf();
+        msg.serializedQuery = this.query.serializeToString();
+        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
+                msg , false), getSelf());
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DSTryNewQuery.class, msg -> {
-                    // FIXME: is this clone necessary? Can I steal the messages resources?
-                    query = new DSQueryImpl(msg.query);
-
+                    this.query = new DSQueryImpl();
+                    this.query.loadFromSerializedString(msg.serializedQuery);
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
                     // msg.sender.tell(new DSAck(), ActorRef.noSender());
                     switch (query.checkAndReduce(myView, myNode)) {
@@ -68,13 +83,9 @@ public class DSQueryChecker extends AbstractActor {
                 .match(DSAskNewSend.class, x -> {
                     forwardQuery(false);
                 })
-                .match(DSQueryImpl.class, x-> {
-                    // TRY FORWARDING:
+                .match(DSMissionAccomplished.class, x -> {
+                    log.info(myNode + ": qualcuno ha finito: mi disinscrivo.");
                     mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
-                    Thread.sleep(1000);
-                    log.info(myNode + "ho ricevuto: " + x.toString());
-                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
-                            new DSQueryImpl(x), false), getSelf());
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();

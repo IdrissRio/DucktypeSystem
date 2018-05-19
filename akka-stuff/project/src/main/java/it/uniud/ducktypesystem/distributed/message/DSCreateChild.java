@@ -1,22 +1,19 @@
 package it.uniud.ducktypesystem.distributed.message;
 
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-
 import java.io.Serializable;
-
 
 public class DSCreateChild implements Serializable {
     private Integer numChild;
-    private DSQuery query;
-    private Boolean flag;
+    private String serializedQuery;
+    private Boolean haveToForward;
 
 
-    public Boolean getFlag() {
-        return flag;
+    public Boolean haveToForward() {
+        return haveToForward;
     }
 
-    public void setFlag(Boolean flag) {
-        this.flag = flag;
+    public void setHaveToForward(Boolean flag) {
+        this.haveToForward = flag;
     }
 
     public Integer getNumChild() {
@@ -27,18 +24,18 @@ public class DSCreateChild implements Serializable {
         this.numChild = numChild;
     }
 
-    public DSQuery getQuery() {
-        return query;
+    public String getSerializedQuery() {
+        return serializedQuery;
     }
 
-    public void setQuery(DSQuery query) {
-        this.query = query;
+    public void setSeralizedQuery(String serializedQuery) {
+        this.serializedQuery = serializedQuery;
     }
 
-    public DSCreateChild(Integer numChild, DSQuery query) {
+    public DSCreateChild(Integer numChild, String serializedQuery) {
         this.numChild = numChild;
-        this.query = query;
-        this.flag=false;
+        this.serializedQuery = serializedQuery;
+        this.haveToForward = true;
     }
 
 }
