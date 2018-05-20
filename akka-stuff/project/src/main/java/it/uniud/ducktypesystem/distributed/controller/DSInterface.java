@@ -25,15 +25,15 @@ public class DSInterface implements DSAbstractInterface {
     private DSAbstractView view;
 
 
-    public DSInterface(DSAbstractView view, DSQuery query) throws SystemError {
+    /*public DSInterface(DSAbstractView view, DSQuery query) throws SystemError {
         this.view=view;
         graph = DataFacade.getInstance().getMap();
         actorSystemInstance=DSCluster.getInstance().getActorSystemArray();
         robotMainActorInstance=DSCluster.getInstance().getRobotMainActorArray();
         DSCreateChild tmp = new DSCreateChild(DataFacade.getInstance().getNumSearchGroups(),
-                query.serializeToString());
+                query.serializeToString(), proc_number);
         robotMainActorInstance.get(1).tell(tmp,robotMainActorInstance.get(1));
-    }
+    }*/
 
 
 

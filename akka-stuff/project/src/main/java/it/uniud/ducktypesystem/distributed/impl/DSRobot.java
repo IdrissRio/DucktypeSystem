@@ -9,8 +9,6 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.message.*;
 
 public class DSRobot extends AbstractActor {
@@ -54,33 +52,13 @@ public class DSRobot extends AbstractActor {
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode,
                             localAffinity), getSelf());
                 })
-                .match(DSCreateChild.class, in ->{
-                    if(in.haveToForward()) {
-                        log.info("ORDINE: creare figli;" );
-                        in.setHaveToForward(false);
-                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT", in, true), getSelf());
-                        log.info("Figli creati:" + myName);
-                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),
-                                "prova");
-                        Thread.sleep(2000);
-                        // PRIMA SEND:
-                        DSTryNewQuery msg = new DSTryNewQuery();
-                        msg.sender = getSelf();
-                        msg.serializedQuery = in.getSerializedQuery();
-                        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
-                                msg, false), getSelf());
-                    }
-                    else {
-                        context().actorOf(DSQueryChecker.props(this.myView, this.myNode, "This is my version"),
-                                "prova");
-                        log.info("Figli creati:" + myName);
-                        Thread.sleep(1000);
-                        // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
-                    }
+                .match(DSCreateChild.class, in -> {
+                    context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion()),
+                            in.getVersion());
+                    log.info("Figli creati:" + myName);
+                    Thread.sleep(1000);
+                    // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
                 })
-
-                // FIXME: .match(Subscibe.class, x -> { subscribe() }
-                // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
     }
     static public Props props(DSGraph view, String node, String name) {

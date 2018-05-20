@@ -9,4 +9,5 @@ import java.io.Serializable;
 public class DSTryNewQuery implements Serializable {
     public String serializedQuery;
     public ActorRef sender;
+    public Integer left;
 }

@@ -19,6 +19,7 @@ public class DataFacade {
     private DSGraph map;
     private ArrayList<String> occupied;
     private int numSearchGroups;
+    private int numRobot;
 
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws SystemError {
@@ -43,6 +44,7 @@ public class DataFacade {
 
     // Overloaded setters for `occupied'.
     public void setOccupied(int numRobot) {
+        this.numRobot = numRobot;
         this.occupied = new ArrayList<>(numRobot);
         // TODO: randomly initialize occupied vector from map.getNodes()
         int n = map.numNodes();
@@ -52,6 +54,7 @@ public class DataFacade {
         }
     }
     public void setOccupied(ArrayList<String> occupied) {
+        this.numRobot = occupied.size();
         this.occupied = occupied;
     }
     public DSGraph getMap() {
@@ -62,5 +65,9 @@ public class DataFacade {
     }
     public int getNumSearchGroups() {
         return numSearchGroups;
+    }
+
+    public int getNumRobot() {
+        return numRobot;
     }
 }

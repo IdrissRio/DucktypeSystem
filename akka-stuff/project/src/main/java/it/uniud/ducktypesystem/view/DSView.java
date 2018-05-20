@@ -2,10 +2,7 @@ package it.uniud.ducktypesystem.view;
 
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.controller.DSInterface;
-import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
-import it.uniud.ducktypesystem.distributed.data.DataFacade;
+import it.uniud.ducktypesystem.distributed.data.*;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
@@ -292,13 +289,14 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                try {
-                    new DSInterface(this, newQuery);
+                // try {
+                    // new DSInterface(this, newQuery);
+                    DSCluster.getInstance().startNewComputation(newQuery);
                     setQueryCheck(false);
                     startNewComputation.setEnabled(isStartEnable());
-                }catch (SystemError f){
-                    showErrorMessage("SETTINGS: "+f.getMessage());
-                }
+                // }catch (SystemError f){
+                //    showErrorMessage("SETTINGS: "+f.getMessage());
+                // }
             });
             thread.start();
         });

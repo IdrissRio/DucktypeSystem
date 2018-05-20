@@ -33,22 +33,20 @@ public class DSQueryChecker extends AbstractActor {
     }
 
     // Communication methods
-    private void publishMatch() {
-        log.info("MATCH da: "+ myNode);
-        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
-        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova",
-                new DSMissionAccomplished(), true), getSelf());
+    private void publishQueryResult(DSQuery.QueryStatus status) {
+        log.info((status == DSQuery.QueryStatus.MATCH) ?
+                "MATCH da: "+ myNode : "FAIL da: "+ myNode);
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.version,
+                new DSMissionAccomplished(status), true), getSelf());
+        mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
+                new DSMissionAccomplished(status), false), getSelf());
     }
-    private void publishFail() {
-        log.info("FAIL da: "+ myNode);
-        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
-        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova",
-                new DSMissionAccomplished(), true), getSelf());
-    }
-    private void forwardQuery(boolean unsubscribe) {
+
+    private void forwardQuery(boolean unsubscribe, int left) {
         log.info("FORWARDING da "+myNode+": query: "+query.toString());
         if (unsubscribe) {
-            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -58,7 +56,8 @@ public class DSQueryChecker extends AbstractActor {
         DSTryNewQuery msg = new DSTryNewQuery();
         msg.sender = getSelf();
         msg.serializedQuery = this.query.serializeToString();
-        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/prova",
+        msg.left = unsubscribe ? left - 1 : left;
+        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.version,
                 msg , false), getSelf());
     }
 
@@ -70,22 +69,30 @@ public class DSQueryChecker extends AbstractActor {
                     this.query.loadFromSerializedString(msg.serializedQuery);
                     // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
                     // msg.sender.tell(new DSAck(), ActorRef.noSender());
-                    switch (query.checkAndReduce(myView, myNode)) {
+                    DSQuery.QueryStatus status = query.checkAndReduce(myView, myNode);
+                    switch (status) {
                         case FAIL:
-                            publishFail(); break;
                         case MATCH:
-                            publishMatch(); break;
+                            publishQueryResult(status); break;
                         default: // case NEW or DONTKNOW
-                            forwardQuery(true);
+                            if (msg.left == 0) {
+                                mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
+                                // FIXME: let mainActor kill its child instead?
+                                mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
+                                        new DSMissionAccomplished(DSQuery.QueryStatus.DONTKNOW), false), getSelf());
+                            }
+                            else
+                                forwardQuery(true, msg.left);
                     }
                     // robot.tell(new DSEndCriticalWork(), ActorRef.noSender());
                 })
-                .match(DSAskNewSend.class, x -> {
+                /*.match(DSAskNewSend.class, x -> {
                     forwardQuery(false);
-                })
+                })*/
                 .match(DSMissionAccomplished.class, x -> {
                     log.info(myNode + ": qualcuno ha finito: mi disinscrivo.");
-                    mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
+                    mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
+                    // FIXME : kill myself?
                 })
                 // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
