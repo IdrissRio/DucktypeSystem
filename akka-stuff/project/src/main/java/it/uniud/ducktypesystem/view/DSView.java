@@ -381,5 +381,10 @@ public class DSView implements DSAbstractView {
         // TODO: ask the user
         return true;
     }
+
+    @Override
+    public void updateRobotsPosition() {
+        // TODO: get occupied vector from facade: it should be up to date.
+    }
 }
 

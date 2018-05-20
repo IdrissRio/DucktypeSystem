@@ -44,7 +44,9 @@ public class DSClusterManagerActor extends AbstractActor {
                     log.info("Moving...");
                     mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                             new DSMove(), true), getSelf());
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
+                    // FIXME: again, this is just for debugging purposes.
+                    DSCluster.getInstance().getView().updateRobotsPosition();
                     DSCluster.getInstance().retryQuery(msg.getVersion(), msg.getSerializedQuery());
                 })
                 .match(DSCreateChild.class, create -> {

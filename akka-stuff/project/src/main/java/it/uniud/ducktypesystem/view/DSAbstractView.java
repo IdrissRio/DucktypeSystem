@@ -10,4 +10,6 @@ public interface DSAbstractView {
     public JFrame getMainFrame();
 
     boolean askMoveAndRetry(String version);
+
+    void updateRobotsPosition();
 }

@@ -8,7 +8,10 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.message.*;
+
+import java.util.ArrayList;
 
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -37,6 +40,17 @@ public class DSRobot extends AbstractActor {
                 .match(DSMove.class, x -> {
                     lastStep = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
+                    /* FIXME: This is just for debugging purposes:
+                     * We DON'T claim to know the exact position of every robot:
+                     * in a real distributed context this static access would be illegal,
+                     * but we do it here just to improve the visualization and to ease the debugging phase.
+                     */
+                    ArrayList<String> occupied = DataFacade.getInstance().getOccupied();
+                    for (int i = occupied.size(); i-- > 0; )
+                        if (occupied.get(i).equals(lastStep)) {
+                            occupied.set(i, myNode);
+                            break;
+                        }
                 })
                 /***********************************/
                 /*.match(String.class, x -> {
