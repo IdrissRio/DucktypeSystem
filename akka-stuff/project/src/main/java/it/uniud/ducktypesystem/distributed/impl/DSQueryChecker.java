@@ -46,7 +46,7 @@ public class DSQueryChecker extends AbstractActor {
                 new DSMissionAccomplished(), true), getSelf());
     }
     private void forwardQuery(boolean unsubscribe) {
-        log.info("FORWARDING da: "+myNode);
+        log.info("FORWARDING da "+myNode+": query: "+query.toString());
         if (unsubscribe) {
             mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/prova"), getSelf());
             try {

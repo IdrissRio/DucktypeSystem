@@ -4,6 +4,7 @@ import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /***
  * DataFacade:
@@ -46,7 +47,8 @@ public class DataFacade {
         // TODO: randomly initialize occupied vector from map.getNodes()
         int n = map.numNodes();
         for (int i = numRobot; i-- > 0; ) {
-            this.occupied.add(map.getNode(i%n));
+            int randomNum = ThreadLocalRandom.current().nextInt(0, n + 1);
+            this.occupied.add(map.getNode(randomNum));
         }
     }
     public void setOccupied(ArrayList<String> occupied) {

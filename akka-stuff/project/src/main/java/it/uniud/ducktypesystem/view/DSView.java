@@ -354,6 +354,11 @@ public class DSView implements DSAbstractView {
             facade=DataFacade.create(filePath);
             facade.setNumSearchGroups(numSearchGroup);
             facade.setOccupied(numRobot);
+            StringBuilder b = new StringBuilder();
+            b.append("Robot posizionati in: ");
+            for (String s : facade.getOccupied())
+                b.append(s + " ");
+            showInformationMessage(b.toString());
     }
 
 
