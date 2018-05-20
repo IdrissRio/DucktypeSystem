@@ -242,16 +242,33 @@ public class DSGraphImpl implements DSGraph {
         return getViewFromNode(getNode(n));
     }
 
-    @Override
-    public void mergeView(DSGraph newView) {
-        for (String s : newView.getNodes())
+    private String chooseNext(DSGraph mainGraph, String whereIAm, String alreadyBeen1) {
+        // FIXME: with this heuristic nodes with few adj are never explored...
+        int max = 0; String next = whereIAm; int adjNum;
+        for (String s : mainGraph.adjNodes(whereIAm)) {
+            // Don't go back;
+            if (s.equals(alreadyBeen1)) continue;
+            adjNum = mainGraph.adjNodes(s).size();
+            if (adjNum > max) {
+                max = adjNum;
+                next = s;
+            }
+        }
+        return next;
+    }
+
+    private void mergeView(DSGraph view1, DSGraph view2) {
+        // Add newView
+        for (String s : view2.getNodes())
             addNode(s);
-        // FIXME: Dummy implementation... could be done better?
-        for (String s1 : newView.getNodes())
-            for (String s2 : newView.getNodes())
-                if (newView.areAdj(s1, s2))
-                    addEdge(s1, s2);
-        // FIXME: forget old nodes.. how to choose?
+        for (String s1 : view2.getNodes())
+            for (String s2 : view2.adjNodes(s1))
+                addEdge(s1, s2);
+        // Remove old nodes
+        for (String s : getNodes())
+            if (!view1.hasNode(s) && !view2.hasNode(s))
+                removeNode(s);
+        removeUnconnectedNodes();
     }
 
     @Override
@@ -259,17 +276,8 @@ public class DSGraphImpl implements DSGraph {
         try {
             DSGraph mainGraph = DataFacade.getInstance().getMap();
             // Choose the most informative node from its adjacent
-            int max = 0; String next = whereIAm; int adjNum;
-            for (String s : mainGraph.adjNodes(whereIAm)) {
-                // Don't go back;
-                if (s.equals(alreadyBeen)) continue;
-                adjNum = mainGraph.adjNodes(s).size();
-                if (adjNum > max) {
-                    max = adjNum;
-                    next = s;
-                }
-            }
-            mergeView(mainGraph.getViewFromNode(next));
+            String next = chooseNext(mainGraph, whereIAm, alreadyBeen);
+            mergeView(mainGraph.getViewFromNode(whereIAm), mainGraph.getViewFromNode(next));
             return next;
         } catch (SystemError systemError) {
             systemError.printStackTrace();

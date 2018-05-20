@@ -46,6 +46,8 @@ public class MoveTest {
     public void move01() {
         System.out.println("=== move01 ===");
         DSGraph viewA = graph.getViewFromNode("A");
+        System.out.println(viewA.toString());
+
         Assert.assertEquals("F", viewA.obtainNewView("A",null));
         System.out.println("After first move: ");
         System.out.println(viewA.toString());
@@ -63,6 +65,8 @@ public class MoveTest {
     public void move02() {
         System.out.println("=== move02 ===");
         DSGraph viewI = graph.getViewFromNode("I");
+        System.out.println(viewI.toString());
+
         Assert.assertEquals("D", viewI.obtainNewView("I",null));
         System.out.println("After first move: ");
         System.out.println(viewI.toString());
@@ -73,14 +77,6 @@ public class MoveTest {
 
         Assert.assertEquals("F", viewI.obtainNewView("E","D"));
         System.out.println("After third move: ");
-        System.out.println(viewI.toString());
-
-        Assert.assertEquals("A", viewI.obtainNewView("F","E"));
-        System.out.println("After fourth move: ");
-        System.out.println(viewI.toString());
-
-        Assert.assertEquals("B", viewI.obtainNewView("A","F"));
-        System.out.println("After fifth move: ");
         System.out.println(viewI.toString());
     }
 }
