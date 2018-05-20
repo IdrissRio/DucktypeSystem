@@ -30,18 +30,16 @@ public interface DSGraph extends Serializable {
     boolean removeEdge(String n1, String n2);
     boolean removeEdge(int n1, int n2);
 
-    // remove nodes whose adj info are empty.
-    void shrinkRedundancies();
-
-    String chooseNext(String id);
-    String chooseNext(int n);
+    // Remove nodes whose adj info are empty.
+    void removeUnconnectedNodes();
 
     boolean isEmpty();
-    boolean isRedundant();
+    boolean hasUnconnectedNodes();
 
     DSGraph getViewFromNode(String id);
     DSGraph getViewFromNode(int n);
 
+    String obtainNewView(String whereIAm, String alreadyBeen, int memory);
     void mergeView(DSGraph newView, int memory);
 
     Object getGraphImpl();

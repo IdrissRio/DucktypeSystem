@@ -8,12 +8,10 @@ import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.impl.DSClusterManagerActor;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
-import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.view.DSAbstractView;
 import org.jboss.netty.channel.ChannelException;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 
 public class DSCluster {
@@ -28,7 +26,6 @@ public class DSCluster {
     private Integer maxRecovery;
     private Integer actualRecovery;
     private DSApplication application;
-
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
         try {
@@ -111,6 +108,16 @@ public class DSCluster {
         query.setVersion("versioneProva");
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
                  facade.getNumRobot() - 1, query.serializeToString(), query.getVersion());
+        clusterManager.tell(tmp, ActorRef.noSender());
+    }
+
+    public DSAbstractView getView() {
+        return this.view;
+    }
+
+    public void retryQuery(String version, String serializedNewQuery) {
+        DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
+                facade.getNumRobot() - 1, serializedNewQuery, version+".1");
         clusterManager.tell(tmp, ActorRef.noSender());
     }
 }

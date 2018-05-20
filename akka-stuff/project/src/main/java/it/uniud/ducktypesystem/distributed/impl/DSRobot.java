@@ -19,6 +19,7 @@ public class DSRobot extends AbstractActor {
     private String myName;
     private DSGraph myView;
     private String myNode;
+    private String lastStep;
     private int memory;
 
     public DSRobot(DSGraph view, String node, String name) {
@@ -27,6 +28,7 @@ public class DSRobot extends AbstractActor {
         this.myView = view;
         this.myNode = node;
         this.memory = 2;
+        this.lastStep = null;
     }
 
     @Override
@@ -36,7 +38,8 @@ public class DSRobot extends AbstractActor {
 
                 })
                 .match(DSMove.class, x -> {
-                    // FIXME: should access to the main graph through static facade.getInstance()?
+                    lastStep = myNode;
+                    myNode = myView.obtainNewView(myNode, lastStep, memory);
                 })
                 /***********************************/
                 /*.match(String.class, x -> {
@@ -56,7 +59,7 @@ public class DSRobot extends AbstractActor {
                     context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion()),
                             in.getVersion());
                     log.info("Figli creati:" + myName);
-                    Thread.sleep(1000);
+                    // Thread.sleep(1000);
                     // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());
                 })
                 .build();

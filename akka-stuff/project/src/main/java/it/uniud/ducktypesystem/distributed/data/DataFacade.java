@@ -46,7 +46,6 @@ public class DataFacade {
     public void setOccupied(int numRobot) {
         this.numRobot = numRobot;
         this.occupied = new ArrayList<>(numRobot);
-        // TODO: randomly initialize occupied vector from map.getNodes()
         int n = map.numNodes();
         for (int i = numRobot; i-- > 0; ) {
             int randomNum = ThreadLocalRandom.current().nextInt(0, n + 1);

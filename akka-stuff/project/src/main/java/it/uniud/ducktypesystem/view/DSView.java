@@ -1,7 +1,6 @@
 package it.uniud.ducktypesystem.view;
 
 import it.uniud.ducktypesystem.controller.DSApplication;
-import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.*;
 import it.uniud.ducktypesystem.errors.SystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
@@ -382,5 +381,10 @@ public class DSView implements DSAbstractView {
     }
     public JFrame getMainFrame(){return mainFrame;}
 
+    @Override
+    public boolean askMoveAndRetry(String version) {
+        // TODO: ask the user
+        return true;
+    }
 }
 

@@ -33,7 +33,7 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     }
 
     public DSQuery.QueryStatus checkAndReduce(DSGraph myView, String myNode) {
-        // assert(!isRedundant());
+        assert(!hasUnconnectedNodes());
         boolean newHypothesis = false;
 
         for (String qN : getNodes()) {
@@ -48,7 +48,7 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
                 newHypothesis = true;
             }
         }
-        shrinkRedundancies();
+        removeUnconnectedNodes();
 
         // `myView' verified it all.
         if (isEmpty())

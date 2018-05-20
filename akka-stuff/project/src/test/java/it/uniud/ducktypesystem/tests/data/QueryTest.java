@@ -52,8 +52,8 @@ public class QueryTest {
         System.out.println("After add edge:\n" + q.toString());
         q.removeEdge("B", "A");
         System.out.println("After remove edge:\n" + q.toString());
-        Assert.assertTrue(q.isRedundant());
-        q.shrinkRedundancies();
+        Assert.assertTrue(q.hasUnconnectedNodes());
+        q.removeUnconnectedNodes();
         System.out.println("After shrink:\n" + q.toString());
         Assert.assertTrue(q.isEmpty());
     }

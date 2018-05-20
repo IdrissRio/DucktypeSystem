@@ -143,9 +143,9 @@ public class GraphTest {
         Assert.assertTrue(graph.removeEdge("C", "A"));
         Assert.assertTrue(graph.removeEdge("B", "A"));
 
-        Assert.assertTrue(graph.isRedundant());
-        graph.shrinkRedundancies();
-        Assert.assertFalse(graph.isRedundant());
+        Assert.assertTrue(graph.hasUnconnectedNodes());
+        graph.removeUnconnectedNodes();
+        Assert.assertFalse(graph.hasUnconnectedNodes());
         Assert.assertFalse(graph.isEmpty());
     }
 
@@ -198,6 +198,6 @@ public class GraphTest {
         g.addEdge("B", "A");
         Assert.assertTrue(g.areAdj("A", "B"));
         g.removeEdge("B", "A");
-        Assert.assertTrue(g.isRedundant());
+        Assert.assertTrue(g.hasUnconnectedNodes());
     }
 }

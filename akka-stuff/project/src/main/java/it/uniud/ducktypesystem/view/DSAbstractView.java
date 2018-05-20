@@ -8,4 +8,6 @@ public interface DSAbstractView {
     public void showInformationMessage(String s);
     public void showErrorMessage(String s);
     public JFrame getMainFrame();
+
+    boolean askMoveAndRetry(String version);
 }

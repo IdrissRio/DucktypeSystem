@@ -7,7 +7,6 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.file.FileSource;
 import org.graphstream.stream.file.FileSourceFactory;
-import scala.Serializable;
 
 
 import java.util.ArrayList;
@@ -162,6 +161,7 @@ public class DSGraphImpl implements DSGraph {
     public boolean addEdge(String n1, String n2) {
         try {
             if (!hasNode(n1) || !hasNode(n2)) return false;
+            if (areAdj(n1, n2)) return false;
             impl.addEdge(n1+n2, n1, n2);
             return true;
         } catch (EdgeRejectedException e) {
@@ -173,6 +173,7 @@ public class DSGraphImpl implements DSGraph {
     public boolean addEdge(int n1, int n2) {
         try {
             if (n1 >= numNodes() || n2 >= numNodes()) return false;
+            if (areAdj(n1, n2)) return false;
             impl.addEdge(getNode(n1)+getNode(n2), n1, n2);
             return true;
         } catch (EdgeRejectedException e) {
@@ -202,7 +203,7 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
-    public void shrinkRedundancies() {
+    public void removeUnconnectedNodes() {
         ArrayList<String> tbr = new ArrayList<>();
         for (Node n : impl.getNodeSet())
             if (n.getDegree() == 0)
@@ -212,22 +213,12 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
-    public String chooseNext(int current) {
-        // FIXME: choose random or following some heuristics from getNodes.
-        return current == 0 ? getNode(1) : getNode(0);
-    }
-    @Override
-    public String chooseNext(String node) {
-        return chooseNext(getNodeIndex(node));
-    }
-
-    @Override
     public boolean isEmpty() {
         return numNodes() == 0;
     }
 
     @Override
-    public boolean isRedundant() {
+    public boolean hasUnconnectedNodes() {
         for (Node n : impl.getNodeSet())
             if (n.getDegree() == 0)
                 return true;
@@ -261,6 +252,26 @@ public class DSGraphImpl implements DSGraph {
                 if (newView.areAdj(s1, s2))
                     addEdge(s1, s2);
         // FIXME: forget old nodes.. how to choose?
+    }
+
+    @Override
+    public String obtainNewView(String whereIAm, String alreadyBeen, int memory) {
+        try {
+            DSGraph mainGraph = DataFacade.getInstance().getMap();
+            // Choose the most informative node from its adjacent
+            int max = 0; String next = whereIAm;
+            for (String s : adjNodes(whereIAm)) {
+                // Don't go back;
+                if (s.equals(alreadyBeen)) continue;
+                if (adjNodes(s).size() > max)
+                    next = s;
+            }
+            mergeView(mainGraph.getViewFromNode(next), memory);
+            return next;
+        } catch (SystemError systemError) {
+            systemError.printStackTrace();
+            return whereIAm;
+        }
     }
 
     @Override
@@ -322,4 +333,6 @@ public class DSGraphImpl implements DSGraph {
             addEdge(n1n2[0], n1n2[1]);
         }
     }
+
+
 }

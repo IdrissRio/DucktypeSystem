@@ -1,4 +1,6 @@
 package it.uniud.ducktypesystem.distributed.message;
 
-public class DSMove {
+import java.io.Serializable;
+
+public class DSMove implements Serializable {
 }

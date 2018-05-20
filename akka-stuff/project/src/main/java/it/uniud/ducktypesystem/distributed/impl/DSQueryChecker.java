@@ -21,7 +21,6 @@ public class DSQueryChecker extends AbstractActor {
     private String version;
     private DSQuery query;
     private ActorRef mediator;
-    private ActorRef robot;
 
     public DSQueryChecker(DSGraph myView, String myNode, String version) {
         this.myView = myView;
@@ -38,9 +37,9 @@ public class DSQueryChecker extends AbstractActor {
                 "MATCH da: "+ myNode : "FAIL da: "+ myNode);
         mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.version,
-                new DSMissionAccomplished(status), true), getSelf());
+                new DSMissionAccomplished(this.version, null, status), true), getSelf());
         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
-                new DSMissionAccomplished(status), false), getSelf());
+                new DSMissionAccomplished(this.version, null, status), false), getSelf());
     }
 
     private void forwardQuery(boolean unsubscribe, int left) {
@@ -79,7 +78,7 @@ public class DSQueryChecker extends AbstractActor {
                                 mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
                                 // FIXME: let mainActor kill its child instead?
                                 mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
-                                        new DSMissionAccomplished(DSQuery.QueryStatus.DONTKNOW), false), getSelf());
+                                        new DSMissionAccomplished(this.version, this.query.serializeToString(), DSQuery.QueryStatus.DONTKNOW), false), getSelf());
                             }
                             else
                                 forwardQuery(true, msg.left);
