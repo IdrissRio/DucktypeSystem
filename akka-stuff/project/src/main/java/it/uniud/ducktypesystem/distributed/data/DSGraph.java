@@ -39,8 +39,8 @@ public interface DSGraph extends Serializable {
     DSGraph getViewFromNode(String id);
     DSGraph getViewFromNode(int n);
 
-    String obtainNewView(String whereIAm, String alreadyBeen, int memory);
-    void mergeView(DSGraph newView, int memory);
+    String obtainNewView(String whereIAm, String alreadyBeen);
+    void mergeView(DSGraph newView);
 
     Object getGraphImpl();
 

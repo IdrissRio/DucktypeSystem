@@ -21,6 +21,12 @@ public class DataFacade {
     private int numSearchGroups;
     private int numRobot;
 
+    /* Just for debugging Move() */
+    public DataFacade(DSGraph graph) {
+        instance = this;
+        this.map = graph;
+    }
+
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws SystemError {
         if (instance != null ) return instance;

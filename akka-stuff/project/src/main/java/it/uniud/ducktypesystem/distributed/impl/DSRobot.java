@@ -20,14 +20,12 @@ public class DSRobot extends AbstractActor {
     private DSGraph myView;
     private String myNode;
     private String lastStep;
-    private int memory;
 
     public DSRobot(DSGraph view, String node, String name) {
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         this.myName = name;
         this.myView = view;
         this.myNode = node;
-        this.memory = 2;
         this.lastStep = null;
     }
 
@@ -39,7 +37,7 @@ public class DSRobot extends AbstractActor {
                 })
                 .match(DSMove.class, x -> {
                     lastStep = myNode;
-                    myNode = myView.obtainNewView(myNode, lastStep, memory);
+                    myNode = myView.obtainNewView(myNode, lastStep);
                 })
                 /***********************************/
                 /*.match(String.class, x -> {

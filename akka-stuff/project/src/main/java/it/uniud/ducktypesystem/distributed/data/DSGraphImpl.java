@@ -243,7 +243,7 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
-    public void mergeView(DSGraph newView, int memory) {
+    public void mergeView(DSGraph newView) {
         for (String s : newView.getNodes())
             addNode(s);
         // FIXME: Dummy implementation... could be done better?
@@ -255,18 +255,21 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
-    public String obtainNewView(String whereIAm, String alreadyBeen, int memory) {
+    public String obtainNewView(String whereIAm, String alreadyBeen) {
         try {
             DSGraph mainGraph = DataFacade.getInstance().getMap();
             // Choose the most informative node from its adjacent
-            int max = 0; String next = whereIAm;
-            for (String s : adjNodes(whereIAm)) {
+            int max = 0; String next = whereIAm; int adjNum;
+            for (String s : mainGraph.adjNodes(whereIAm)) {
                 // Don't go back;
                 if (s.equals(alreadyBeen)) continue;
-                if (adjNodes(s).size() > max)
+                adjNum = mainGraph.adjNodes(s).size();
+                if (adjNum > max) {
+                    max = adjNum;
                     next = s;
+                }
             }
-            mergeView(mainGraph.getViewFromNode(next), memory);
+            mergeView(mainGraph.getViewFromNode(next));
             return next;
         } catch (SystemError systemError) {
             systemError.printStackTrace();
