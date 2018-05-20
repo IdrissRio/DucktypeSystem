@@ -7,7 +7,6 @@ import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import it.uniud.ducktypesystem.distributed.controller.DSInterface;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.message.*;
 
@@ -48,11 +47,6 @@ public class DSRobot extends AbstractActor {
                     mediator.tell(new DistributedPubSubMediator.CountSubscribers("/user/ROBOT"), getSelf());
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode, localAffinity), getSelf());
                 })*/
-                .match(DSInterface./*hello*/class, in -> {
-                    boolean localAffinity = false;
-                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode,
-                            localAffinity), getSelf());
-                })
                 .match(DSCreateChild.class, in -> {
                     context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion()),
                             in.getVersion());

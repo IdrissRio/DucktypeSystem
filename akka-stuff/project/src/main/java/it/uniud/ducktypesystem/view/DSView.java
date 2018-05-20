@@ -288,14 +288,9 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                // try {
-                    // new DSInterface(this, newQuery);
-                    DSCluster.getInstance().startNewComputation(newQuery);
-                    setQueryCheck(false);
-                    startNewComputation.setEnabled(isStartEnable());
-                // }catch (SystemError f){
-                //    showErrorMessage("SETTINGS: "+f.getMessage());
-                // }
+                DSCluster.getInstance().startNewComputation(newQuery);
+                setQueryCheck(false);
+                startNewComputation.setEnabled(isStartEnable());
             });
             thread.start();
         });
