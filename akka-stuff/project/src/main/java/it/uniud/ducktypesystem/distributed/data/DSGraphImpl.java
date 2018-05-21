@@ -12,6 +12,7 @@ import org.graphstream.stream.file.FileSourceFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /***
 * DSGraphImpl:
@@ -242,8 +243,8 @@ public class DSGraphImpl implements DSGraph {
         return getViewFromNode(getNode(n));
     }
 
-    private String chooseNext(DSGraph mainGraph, String whereIAm, String alreadyBeen1) {
-        // FIXME: with this heuristic nodes with few adj are never explored...
+    private String chooseNext(String whereIAm, String alreadyBeen) {
+        /* Finding the most informative node wouldn't let explore nodes with few adjs.
         int max = 0; String next = whereIAm; int adjNum;
         for (String s : mainGraph.adjNodes(whereIAm)) {
             // Don't go back;
@@ -253,8 +254,11 @@ public class DSGraphImpl implements DSGraph {
                 max = adjNum;
                 next = s;
             }
-        }
-        return next;
+        }*/
+        int n = adjNodes(whereIAm).size();
+        int randomNum = ThreadLocalRandom.current().nextInt(0, n);
+        String next = adjNodes(whereIAm).get(randomNum);
+        return next.equals(alreadyBeen) ? adjNodes(whereIAm).get((randomNum+1) % n) : next;
     }
 
     private void mergeView(DSGraph view1, DSGraph view2) {
@@ -276,7 +280,7 @@ public class DSGraphImpl implements DSGraph {
         try {
             DSGraph mainGraph = DataFacade.getInstance().getMap();
             // Choose the most informative node from its adjacent
-            String next = chooseNext(mainGraph, whereIAm, alreadyBeen);
+            String next = chooseNext(whereIAm, alreadyBeen);
             mergeView(mainGraph.getViewFromNode(whereIAm), mainGraph.getViewFromNode(next));
             return next;
         } catch (SystemError systemError) {

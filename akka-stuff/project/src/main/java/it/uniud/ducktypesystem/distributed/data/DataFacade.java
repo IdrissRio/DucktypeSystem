@@ -54,7 +54,7 @@ public class DataFacade {
         this.occupied = new ArrayList<>(numRobot);
         int n = map.numNodes();
         for (int i = numRobot; i-- > 0; ) {
-            int randomNum = ThreadLocalRandom.current().nextInt(0, n + 1);
+            int randomNum = ThreadLocalRandom.current().nextInt(0, n);
             this.occupied.add(map.getNode(randomNum));
         }
     }

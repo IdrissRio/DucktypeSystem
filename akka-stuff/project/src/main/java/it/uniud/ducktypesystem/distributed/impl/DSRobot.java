@@ -38,8 +38,9 @@ public class DSRobot extends AbstractActor {
 
                 })
                 .match(DSMove.class, x -> {
-                    lastStep = myNode;
+                    String tmp = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
+                    lastStep = tmp;
                     /* FIXME: This is just for debugging purposes:
                      * We DON'T claim to know the exact position of every robot:
                      * in a real distributed context this static access would be illegal,
