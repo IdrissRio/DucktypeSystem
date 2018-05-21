@@ -7,6 +7,7 @@ public class DSCreateChild implements Serializable {
     private String serializedQuery;
     private Integer numRobot;
     private String version;
+    private Integer nr;
 
     public Integer getNumChild() {
         return numChild;
@@ -24,22 +25,21 @@ public class DSCreateChild implements Serializable {
         this.serializedQuery = serializedQuery;
     }
 
-    public DSCreateChild(Integer numChild, Integer numRobot, String serializedQuery, String version) {
+    public DSCreateChild(Integer numChild, Integer numRobot, String serializedQuery, String version, int nr) {
         this.numChild = numChild;
         this.serializedQuery = serializedQuery;
         this.numRobot = numRobot;
         this.version = version;
+        this.nr = nr;
     }
 
     public Integer getNumRobot() {
         return numRobot;
     }
-
-    public void setNumRobot(Integer numRobot) {
-        this.numRobot = numRobot;
-    }
-
     public String getVersion() {
         return version;
+    }
+    public Integer getNr() {
+        return nr;
     }
 }

@@ -41,7 +41,7 @@ public class DSRobot extends AbstractActor {
                     String tmp = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
                     lastStep = tmp;
-                    /* FIXME: This is just for debugging purposes:
+                    /* Note: This is just for debugging purposes:
                      * We DON'T claim to know the exact position of every robot:
                      * in a real distributed context this static access would be illegal,
                      * but we do it here just to improve the visualization and to ease the debugging phase.
@@ -63,8 +63,8 @@ public class DSRobot extends AbstractActor {
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode, localAffinity), getSelf());
                 })*/
                 .match(DSCreateChild.class, in -> {
-                    context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion()),
-                            in.getVersion());
+                    context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion(), in.getNr()),
+                            in.getVersion()+"."+in.getNr());
                     log.info("Figli creati:" + myName);
                     // Thread.sleep(1000);
                     // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());

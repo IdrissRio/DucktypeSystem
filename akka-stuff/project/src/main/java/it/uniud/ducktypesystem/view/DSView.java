@@ -392,12 +392,6 @@ public class DSView implements DSAbstractView {
     public JFrame getMainFrame(){return mainFrame;}
 
     @Override
-    public boolean askMoveAndRetry(String version) {
-        // TODO: ask the user
-        return true;
-    }
-
-    @Override
     public void updateRobotsPosition() {
         StringBuilder b = new StringBuilder();
         b.append("Robot posizionati in: ");
@@ -415,7 +409,21 @@ public class DSView implements DSAbstractView {
         }
 
         graphPanel.updateUI();
-        // TODO: get occupied vector from facade: it should be up to date.
+    }
+
+    @Override
+    public void updateQuery(String version, DSQuery.QueryStatus status) {
+        // TODO: update view from DSCluster.getInstance().getActiveQueries()
+        switch(status) {
+            case MATCH: showInformationMessage("Query "+version+" ended: MATCH!"); break;
+            case FAIL: showInformationMessage("Query "+version+" ended: FAIL!"); break;
+            default:
+                showInformationMessage("Query "+version+" ended: DONTKNOW!");
+                // TODO: enable retry query button.
+                // retry query button action listener should invoke:
+                DSCluster.getInstance().makeMove();
+                DSCluster.getInstance().retryQuery(version);
+        }
     }
 }
 

@@ -8,6 +8,7 @@ import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.impl.DSClusterManagerActor;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
 import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
+import it.uniud.ducktypesystem.distributed.message.DSMove;
 import it.uniud.ducktypesystem.view.DSAbstractView;
 import org.jboss.netty.channel.ChannelException;
 
@@ -27,7 +28,7 @@ public class DSCluster {
     private int portSeed = 2551;
     private static final int maxRecovery = 5;
     private int actualRecovery = 0;
-    private HashMap activeQueries;
+    private HashMap activeQueries = new HashMap();
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
         try {
@@ -106,7 +107,7 @@ public class DSCluster {
         query.setVersion("versioneProva");
         activeQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
-                 facade.getNumRobot() - 1, query.serializeToString(), query.getVersion());
+                 facade.getNumRobot() - 1, query.serializeToString(), query.getVersion(), query.getVersionNr());
         clusterManager.tell(tmp, ActorRef.noSender());
     }
 
@@ -114,14 +115,24 @@ public class DSCluster {
         return this.view;
     }
 
-    public void retryQuery(String version, String serializedNewQuery) {
-        ((DSQueryWrapper) activeQueries.get(version)).setStillToVerify(serializedNewQuery);
+    public void retryQuery(String version) {
+        DSQueryWrapper wrapper = ((DSQueryWrapper) activeQueries.get(version));
+        wrapper.getQuery().incrementVersionNr();
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
-                facade.getNumRobot() - 1, serializedNewQuery, version+".1");
+                facade.getNumRobot() - 1, wrapper.getStillToVerify(),
+                version , wrapper.getQuery().getVersionNr());
         clusterManager.tell(tmp, ActorRef.noSender());
+    }
+
+    public void makeMove() {
+        clusterManager.tell(new DSMove(), ActorRef.noSender());
     }
 
     public HashMap getActiveQueries() {
         return this.activeQueries;
+    }
+
+    public void endedQuery(String version, String stillToVerify) {
+        ((DSQueryWrapper) activeQueries.get(version)).setStillToVerify(stillToVerify);
     }
 }

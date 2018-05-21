@@ -11,5 +11,8 @@ public interface DSQuery extends DSGraph {
     void setVersion(String version);
     String getVersion();
 
+    void incrementVersionNr();
+    int getVersionNr();
+
     QueryStatus checkAndReduce(DSGraph myView, String myNode);
 }

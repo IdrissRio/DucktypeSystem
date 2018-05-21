@@ -7,18 +7,22 @@ import java.io.Serializable;
 
 public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     private String version;
+    private int nr;
 
     public DSQueryImpl() {
         super();
         version = null;
+        nr = 0;
     }
     public DSQueryImpl(DSGraph g) {
         super(g);
         version = null;
+        nr = 0;
     }
     public DSQueryImpl(DSQuery q) {
         super(q);
         version = q.getVersion();
+        nr = q.getVersionNr();
     }
 
     public static DSQuery createQueryFromFile(String filePath) throws SystemError {
@@ -31,6 +35,8 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     public String getVersion() {
         return version;
     }
+    public void incrementVersionNr() { this.nr++; }
+    public int getVersionNr() {return this.nr; }
 
     public DSQuery.QueryStatus checkAndReduce(DSGraph myView, String myNode) {
         assert(!hasUnconnectedNodes());

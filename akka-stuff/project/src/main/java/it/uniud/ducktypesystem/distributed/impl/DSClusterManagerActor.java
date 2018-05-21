@@ -30,24 +30,16 @@ public class DSClusterManagerActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DSMissionAccomplished.class, msg -> {
-                    String message = "Query "+msg.getVersion()+" ended with: ";
-                    if (msg.getStatus() == DSQuery.QueryStatus.FAIL || msg.getStatus() == DSQuery.QueryStatus.MATCH) {
-                        DSCluster.getInstance().getView().showInformationMessage(message +
-                                ((msg.getStatus() == DSQuery.QueryStatus.MATCH) ? "MATCH!" : "FAIL!"));
-                        return;
-                    }
-                    // DONTKNOW: try again.
-                    log.info("DONTKNOW!");
-                    DSCluster.getInstance().getView().showInformationMessage(message+"DONTKNOW!");
-                    if (!DSCluster.getInstance().getView().askMoveAndRetry(msg.getVersion()))
-                        return;
+                    DSCluster.getInstance().endedQuery(msg.getVersion(), msg.getSerializedQuery());
+                    DSCluster.getInstance().getView().updateQuery(msg.getVersion(), msg.getStatus());
+                })
+                .match(DSMove.class, msg -> {
                     log.info("Moving...");
                     mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                             new DSMove(), true), getSelf());
                     Thread.sleep(2000);
                     // FIXME: again, this is just for debugging purposes.
                     DSCluster.getInstance().getView().updateRobotsPosition();
-                    DSCluster.getInstance().retryQuery(msg.getVersion(), msg.getSerializedQuery());
                 })
                 .match(DSCreateChild.class, create -> {
                     // Start a new Query.
@@ -57,7 +49,7 @@ public class DSClusterManagerActor extends AbstractActor {
                     msg.sender = getSelf();
                     msg.left = create.getNumRobot();
                     msg.serializedQuery = create.getSerializedQuery();
-                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+create.getVersion(),
+                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+create.getVersion()+"."+create.getNr(),
                                 msg, false), getSelf());
                 })
                 .match(DeadLetter.class, deadLetter -> {
