@@ -32,6 +32,7 @@ public class DSLog implements DSAbstractLog {
         logPane.setEditable(true);
         logPane.replaceSelection("<"+LocalDate.now().format(formatterDate) +" "+ LocalDateTime.now().format(formatterTime) +">: "+logMessage+"\n");
         logPane.setEditable(false);
+
     }
     public JTextPane getLog(){
         return logPane;
