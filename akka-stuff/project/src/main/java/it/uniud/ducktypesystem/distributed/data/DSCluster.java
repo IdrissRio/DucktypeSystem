@@ -102,13 +102,18 @@ public class DSCluster {
         return actorSystemArray;
     }
 
-    public void startNewComputation(DSQuery query) {
-        // TODO: set query version;
-        query.setVersion("versioneProva");
+    public String startNewComputation(DSQuery query) {
+        // If there is already a query with the same name, change its name.
+        if (activeQueries.get(query.getVersion()) != null) {
+            String attemptName = query.getVersion(); int i = 1;
+            while (activeQueries.get(attemptName+"-"+i) != null) ++i;
+            query.setVersion(attemptName+"-"+i);
+        }
         activeQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
                  facade.getNumRobot() - 1, query.serializeToString(), query.getVersion(), query.getVersionNr());
         clusterManager.tell(tmp, ActorRef.noSender());
+        return query.getVersion();
     }
 
     public DSAbstractView getView() {

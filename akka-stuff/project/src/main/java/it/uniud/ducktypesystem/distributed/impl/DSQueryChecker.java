@@ -20,6 +20,7 @@ public class DSQueryChecker extends AbstractActor {
     private String myNode;
     private String version;
     private int nr;
+    private String path;
     private DSQuery query;
     private ActorRef mediator;
 
@@ -28,6 +29,7 @@ public class DSQueryChecker extends AbstractActor {
         this.myNode = myNode;
         this.version = version;
         this.nr = nr;
+        this.path = ""+version+"."+nr;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         log.info("QC: SONO NATO: "+getSelf().path()+ " con vista: "+myView.toString());
@@ -37,8 +39,8 @@ public class DSQueryChecker extends AbstractActor {
     private void publishQueryResult(DSQuery.QueryStatus status) {
         log.info((status == DSQuery.QueryStatus.MATCH) ?
                 "MATCH da: "+ myNode : "FAIL da: "+ myNode);
-        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version+"."+this.nr), getSelf());
-        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.version+"."+this.nr,
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.path,
                 new DSMissionAccomplished(this.version, null, status), true), getSelf());
         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
                 new DSMissionAccomplished(this.version, null, status), false), getSelf());
@@ -47,7 +49,7 @@ public class DSQueryChecker extends AbstractActor {
     private void forwardQuery(boolean unsubscribe, int left) {
         log.info("FORWARDING da "+myNode+": query: "+query.toString());
         if (unsubscribe) {
-            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version+"."+this.nr), getSelf());
+            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -58,7 +60,7 @@ public class DSQueryChecker extends AbstractActor {
         msg.sender = getSelf();
         msg.serializedQuery = this.query.serializeToString();
         msg.left = unsubscribe ? left - 1 : left;
-        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.version+"."+this.nr,
+        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.path,
                 msg , false), getSelf());
     }
 
@@ -77,7 +79,7 @@ public class DSQueryChecker extends AbstractActor {
                             publishQueryResult(status); break;
                         default: // case NEW or DONTKNOW
                             if (msg.left == 0) {
-                                mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version+"."+this.nr), getSelf());
+                                mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
                                 // FIXME: let mainActor kill its child instead?
                                 mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
                                         new DSMissionAccomplished(this.version, this.query.serializeToString(), DSQuery.QueryStatus.DONTKNOW), false), getSelf());

@@ -2,9 +2,6 @@ package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
 
-import java.io.Serializable;
-
-
 public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     private String version;
     private int nr;
@@ -26,7 +23,11 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     }
 
     public static DSQuery createQueryFromFile(String filePath) throws SystemError {
-        return new DSQueryImpl((DSGraphImpl) DSGraphImpl.createGraphFromFile(filePath));
+        DSQuery q = new DSQueryImpl(DSGraphImpl.createGraphFromFile(filePath));
+        filePath = filePath.replaceFirst("(.*)/","");
+        filePath = filePath.replaceFirst("[.][^.]+$", "");
+        q.setVersion(filePath);
+        return q;
     }
 
     public void setVersion(String version) {
