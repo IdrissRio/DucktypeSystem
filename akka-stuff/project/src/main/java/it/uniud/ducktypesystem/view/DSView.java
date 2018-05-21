@@ -135,6 +135,11 @@ public class DSView implements DSAbstractView {
                 configureSystem(graphPathString, processNumber, replicasNumber, logger);
                 Thread thread = new Thread(() -> {
                     showInformationMessage("INFO: starting the AKKA environment.");
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                     akkaEnvironment(facade, this, this.App);
                 });
                 thread.start();
@@ -142,10 +147,12 @@ public class DSView implements DSAbstractView {
                 secondFrame.dispose();
                 mainFrame.setVisible(true);
             }catch(NumberFormatException error){
+                error.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         "Invalid number.\n Please check it!","Error !",JOptionPane.ERROR_MESSAGE);
                 //showErrorMessage("SETTINGS: Inavlid number. Please check it!");
             }catch(NullPointerException error){
+                error.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         " You have to choose a file description for the graph.","Error !",JOptionPane.ERROR_MESSAGE);
                 //showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
@@ -318,11 +325,19 @@ public class DSView implements DSAbstractView {
     }
 
 
+
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
         graph.setStrict(false);
         graph.setAutoCreate( true );
-        for (Node node : graph) node.addAttribute("ui.label", node.getId());
+        graph.addAttribute("ui.stylesheet","url(nodeStyle.css)");
+        for (Node node : graph) {
+            node.addAttribute("ui.label", node.getId());
+            if(facade.getOccupied().contains(node.toString()))
+                node.addAttribute("ui.class", "occupied");
+            else
+                node.addAttribute("ui.class", "normal");
+        }
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         graphPanel.remove(graphView);
@@ -384,6 +399,22 @@ public class DSView implements DSAbstractView {
 
     @Override
     public void updateRobotsPosition() {
+        StringBuilder b = new StringBuilder();
+        b.append("Robot posizionati in: ");
+        for (String s : facade.getOccupied())
+            b.append(s + " ");
+        showInformationMessage(b.toString());
+        graph =(Graph) facade.getMap().getGraphImpl();
+        graph.addAttribute("ui.stylesheet","url(nodeStyle.css)");
+        for (Node node : graph) {
+            node.addAttribute("ui.label", node.getId());
+            if(facade.getOccupied().contains(node.toString()))
+                node.addAttribute("ui.class", "occupied");
+            else
+                node.addAttribute("ui.class", "");
+        }
+
+        graphPanel.updateUI();
         // TODO: get occupied vector from facade: it should be up to date.
     }
 }

@@ -1,0 +1,29 @@
+node {
+text-alignment: under;
+text-color: white;
+text-style: bold;
+text-background-mode: rounded-box;
+text-background-color: #222C;
+text-padding: 5px;
+text-offset: 5px, 5px;
+text-size: 15px;
+}
+
+
+
+node.occupied{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('robot.png');
+    text-color: green;
+}
+edge{
+    fill-color: #000000;}
+graph {
+	fill-color: #FFFFFF;
+
+}
+
