@@ -348,6 +348,10 @@ public class DSGraphImpl implements DSGraph {
             addEdge(n1n2[0], n1n2[1]);
         }
     }
-
+    public static DSQuery createFromSerializedString(String serialized) {
+        DSQuery q = new DSQueryImpl();
+        q.loadFromSerializedString(serialized);
+        return q;
+    }
 
 }

@@ -13,19 +13,21 @@ import org.jboss.netty.channel.ChannelException;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DSCluster {
     private DataFacade facade;
+    private DSAbstractView view;
+    private DSApplication application;
     private static DSCluster cluster = null;
     private ArrayList<ActorSystem> actorSystemArray;
     private ArrayList<ActorRef> robotMainActorArray;
     private ActorRef clusterManager;
     private Integer procNumber;
-    private Integer portSeed;
-    private DSAbstractView view;
-    private Integer maxRecovery;
-    private Integer actualRecovery;
-    private DSApplication application;
+    private int portSeed = 2551;
+    private static final int maxRecovery = 5;
+    private int actualRecovery = 0;
+    private HashMap activeQueries;
 
     private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
         try {
@@ -66,20 +68,16 @@ public class DSCluster {
     }
 
     private DSCluster(DataFacade facade, DSAbstractView view, DSApplication app) {
-        this.application=app;
-        this.maxRecovery=5; //Maybe this should be in the setting.
-        this.portSeed = 2551;//Maybe also this.
-        this.actualRecovery=0;
-        this.view=view;
         this.facade = facade;
-        procNumber = facade.getOccupied().size();
-        actorSystemArray = new ArrayList<ActorSystem>(procNumber + 1 );
-        robotMainActorArray = new ArrayList<ActorRef>(procNumber + 1);
+        this.view = view;
+        this.application = app;
+        this.procNumber = facade.getOccupied().size();
+        this.actorSystemArray = new ArrayList<ActorSystem>(procNumber + 1 );
+        this.robotMainActorArray = new ArrayList<ActorRef>(procNumber + 1);
 
         final Config config = ConfigFactory.load("akka.conf");
 
         actorSystemInitialization(actorSystemArray, config);
-
     }
 
     private void exceptionFound(){
@@ -106,6 +104,7 @@ public class DSCluster {
     public void startNewComputation(DSQuery query) {
         // TODO: set query version;
         query.setVersion("versioneProva");
+        activeQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
                  facade.getNumRobot() - 1, query.serializeToString(), query.getVersion());
         clusterManager.tell(tmp, ActorRef.noSender());
@@ -116,8 +115,13 @@ public class DSCluster {
     }
 
     public void retryQuery(String version, String serializedNewQuery) {
+        ((DSQueryWrapper) activeQueries.get(version)).setStillToVerify(serializedNewQuery);
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
                 facade.getNumRobot() - 1, serializedNewQuery, version+".1");
         clusterManager.tell(tmp, ActorRef.noSender());
+    }
+
+    public HashMap getActiveQueries() {
+        return this.activeQueries;
     }
 }

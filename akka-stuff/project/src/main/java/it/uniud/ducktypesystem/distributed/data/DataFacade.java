@@ -1,7 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.errors.SystemError;
-import it.uniud.ducktypesystem.logger.DSAbstractLog;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
