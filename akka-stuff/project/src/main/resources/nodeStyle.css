@@ -18,7 +18,7 @@ node.occupied{
 	size: 40px, 40px;
     fill-mode: image-scaled;
     fill-image: url('robot.png');
-    text-color: green;
+    text-color: #7EF9FF;
 }
 edge{
     fill-color: #000000;}

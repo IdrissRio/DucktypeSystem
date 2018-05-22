@@ -13,6 +13,7 @@ import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -43,6 +44,8 @@ public class DSView implements DSAbstractView {
     private JButton startNewComputation;
     private DSQuery newQuery;
     private JPanel eastPanelQuery;
+    private JScrollPane scrollForQuery;
+    private JPanel mainPanel;
 
     public DSView(DSApplication application) {
         try {
@@ -211,19 +214,19 @@ public class DSView implements DSAbstractView {
     }
 
     private void welcomeFrame(){
-        JPanel mainPanel=new JPanel(new BorderLayout());
+        JPanel welcomeMainPanel=new JPanel(new BorderLayout());
         ViewPanel graphViewNew;
         JPanel panelGraphNew=new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
         JFrame mainFrame = new JFrame();
-        mainPanel.add(panelGraphNew, BorderLayout.CENTER);
+        welcomeMainPanel.add(panelGraphNew, BorderLayout.CENTER);
         DucktypeSystemLbl.setSize(200, 200);
         DucktypeSystemLbl.setFont(new Font("Bariol", Font.PLAIN,30));
         DucktypeSystemLbl.setForeground(Color.WHITE);
         DucktypeSystemLbl.setHorizontalAlignment(SwingConstants.CENTER);
-        mainPanel.setBackground(Color.BLACK);
-        mainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
+        welcomeMainPanel.setBackground(Color.BLACK);
+        welcomeMainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
         graph=new DefaultGraph("WelcomeGraph");
         graph.setAttribute("ui.class", "marked");
         graph.addAttribute("ui.stylesheet","url(welcomeGraphStyleSheet.css)");
@@ -237,7 +240,7 @@ public class DSView implements DSAbstractView {
         viewer.enableAutoLayout();
         graphViewNew=viewer.addDefaultView(false);
         panelGraphNew.add(graphViewNew);
-        mainFrame.getContentPane().add(mainPanel);
+        mainFrame.getContentPane().add(welcomeMainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
         mainFrame.setUndecorated(true);
         mainFrame.setBounds(00, 00, 700, 500);
@@ -253,7 +256,7 @@ public class DSView implements DSAbstractView {
     }
 
     private void initMainFrame(){
-        JPanel mainPanel=new JPanel(new BorderLayout());
+        mainPanel=new JPanel(new BorderLayout());
         JPanel southPanel=new JPanel(new BorderLayout());
         JPanel northPanel=new JPanel(new BorderLayout());
         JLabel pathLbl =new JLabel("Graph path:");
@@ -263,10 +266,9 @@ public class DSView implements DSAbstractView {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JPanel southWithScroll= new JPanel(new BorderLayout());
         eastPanelQuery=new JPanel();
-
         eastPanelQuery.setLayout(new BoxLayout(eastPanelQuery, BoxLayout.Y_AXIS));
-        eastPanelQuery.setPreferredSize(new Dimension(300,200));
-
+        scrollForQuery=new JScrollPane(eastPanelQuery,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollForQuery.setPreferredSize(new Dimension(300,500));
         startNewComputation = new JButton("Start");
         startNewComputation.setEnabled(isStartEnable());
         mainPathField=new JTextField();
@@ -278,15 +280,12 @@ public class DSView implements DSAbstractView {
         southPanel.add(queryField,BorderLayout.CENTER);
         soutWithStartPanel.add(southPanel, BorderLayout.CENTER);
         soutWithStartPanel.add(startNewComputation,BorderLayout.EAST);
-
-
         southWithScroll.add(soutWithStartPanel, BorderLayout.SOUTH);
         southWithScroll.add(logScroll,BorderLayout.CENTER);
         mainPanel.add(northPanel,BorderLayout.NORTH);
         mainPanel.add(graphPanel, BorderLayout.CENTER);
         mainPanel.add(southWithScroll, BorderLayout.SOUTH);
-        mainPanel.add(eastPanelQuery,BorderLayout.EAST);
-        //mainPanel.add(soutWithStartPanel,BorderLayout.SOUTH);
+        mainPanel.add(scrollForQuery,BorderLayout.EAST);
         mainFrame = new JFrame();
         mainFrame.getContentPane().add(mainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
@@ -294,7 +293,6 @@ public class DSView implements DSAbstractView {
         mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainPathField.setFont(Font.getFont("Bariol"));
-
         // MainFrame window listener
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
@@ -308,7 +306,7 @@ public class DSView implements DSAbstractView {
                 DSCluster.getInstance().startNewComputation(newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
-                refreshQuery();
+                refreshQuery("",DSQuery.QueryStatus.DONTKNOW);
             });
             thread.start();
         });
@@ -333,25 +331,7 @@ public class DSView implements DSAbstractView {
             }
         });
     }
-    private void refreshQuery(){
-        JPanel newPanel = new JPanel(new GridLayout(0,2));
 
-        DSCluster.getInstance().getActiveQueries().forEach((x,y)->{
-            DSQueryWrapper Wrapper= ((DSQueryWrapper)y);
-            newPanel.setName((String)x);
-            newPanel.add(queryVisualization(Wrapper.getQuery()));
-            if(Wrapper.getStillToVerify()!=null)
-             newPanel.add(queryVisualization(DSGraphImpl.createFromSerializedString(Wrapper.getStillToVerify())));
-            for(Component c : eastPanelQuery.getComponents()){
-                if(c instanceof JPanel && c.getName()== x){
-                   eastPanelQuery.remove(c);
-                }
-            }
-
-        });
-        eastPanelQuery.add(newPanel);
-        eastPanelQuery.updateUI();
-    }
     private ViewPanel queryVisualization(DSGraph x){
         ViewPanel queryViewPanel;
         graph =(Graph) x.getGraphImpl();
@@ -367,7 +347,6 @@ public class DSView implements DSAbstractView {
         queryViewPanel = viewer.addDefaultView(false);
         return queryViewPanel;
     }
-
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
         graph.setStrict(false);
@@ -387,7 +366,6 @@ public class DSView implements DSAbstractView {
         graphPanel.add(graphView);
         graphPanel.updateUI();
     }
-
     private void graphViewInit(){
         graph=new DefaultGraph("WelcomeGraph");
         graph.setAttribute("ui.class", "marked");
@@ -396,7 +374,6 @@ public class DSView implements DSAbstractView {
         graphView=viewer.addDefaultView(false);
         graphPanel.add(graphView);
     }
-
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
     private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
@@ -410,16 +387,6 @@ public class DSView implements DSAbstractView {
             showInformationMessage(b.toString());
     }
 
-
-    // Configure occupied vector: this should be called *after* configureSystem().
-    // This allows the initialization of the robots' position by selecting nodes on visual interface.
-    private void configureOccupied(ArrayList<String> occupied) {
-        if (facade == null || facade.getMap() == null ) {
-            showErrorMessage("An error occurred in System Configuration.");
-            return;
-        }
-        facade.setOccupied(occupied);
-    }
     private void setGraphCheck(Boolean b){graphCheck=b;}
     private void setQueryCheck(Boolean b){queryCheck=b;}
     private Boolean getGraphCheck(){return graphCheck;}
@@ -435,8 +402,22 @@ public class DSView implements DSAbstractView {
         JScrollBar vertical = logScroll.getVerticalScrollBar();
         vertical.setValue( vertical.getMaximum() );
     }
-    public JFrame getMainFrame(){return mainFrame;}
 
+    public void showQueryStatus( DSQuery.QueryStatus status, String version){
+        switch(status) {
+            case MATCH:
+                logger.log("Query " + version + " ended: MATCH!", Color.BLUE);
+                break;
+            case FAIL:
+                logger.log("Query " + version + " ended: FAIL!", Color.red);
+                break;
+            default:
+                logger.log("Query "+version+" ended: DONTKNOW!",Color.ORANGE );
+        }
+        JScrollBar vertical = logScroll.getVerticalScrollBar();
+        vertical.setValue( vertical.getMaximum() );
+    }
+    public JFrame getMainFrame(){return mainFrame;}
     @Override
     public void updateRobotsPosition() {
         StringBuilder b = new StringBuilder();
@@ -457,16 +438,62 @@ public class DSView implements DSAbstractView {
         graphPanel.updateUI();
     }
 
+    private void refreshQuery(String version, DSQuery.QueryStatus status){
+        DSCluster.getInstance().getActiveQueries().forEach((x,y)->{
+            JPanel aglomeratePanel = new JPanel(new BorderLayout());
+            aglomeratePanel.setPreferredSize(new Dimension(300,300));
+            JPanel twoQueryStatusPanel = new JPanel();
+            DSQueryWrapper Wrapper= ((DSQueryWrapper)y);
+            if(Wrapper.getStillToVerify()==null)
+                twoQueryStatusPanel.setLayout(new GridLayout(0,1));
+            else
+                twoQueryStatusPanel.setLayout(new GridLayout(0,2));
+
+            // twoQueryStatusPanel.setPreferredSize(new Dimension(300,200));
+            aglomeratePanel.setName((String)x);
+            twoQueryStatusPanel.add(queryVisualization(Wrapper.getQuery()));
+            String labelText=(String)x;
+            if(version==labelText){
+                switch(status){
+                    case MATCH: labelText+=" MATCH"; break;
+                    case DONTKNOW: labelText+=" DONTKNOW"; break;
+                    default: FAIL: labelText+=" FAIL";
+                }
+
+            }
+            JLabel queryNameLbl =  new JLabel((String)x);
+            queryNameLbl.setSize(200, 200);
+            queryNameLbl.setFont(new Font("Bariol", Font.PLAIN,20));
+            queryNameLbl.setForeground(Color.WHITE);
+            queryNameLbl.setHorizontalAlignment(SwingConstants.CENTER);
+            aglomeratePanel.setBackground(Color.DARK_GRAY);
+            aglomeratePanel.add(queryNameLbl,BorderLayout.NORTH);
+            if(Wrapper.getStillToVerify()!=null){
+                JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(Wrapper.getStillToVerify()));
+                tmp.setBorder( new MatteBorder(0, 2, 0, 0, Color.BLACK));
+                twoQueryStatusPanel.add(tmp);}
+            for(Component c : eastPanelQuery.getComponents()){
+                if(c instanceof JPanel && c.getName()==x){
+                    eastPanelQuery.remove(c);
+                }
+            }
+            aglomeratePanel.add(twoQueryStatusPanel,BorderLayout.CENTER);
+            eastPanelQuery.add(aglomeratePanel);
+            eastPanelQuery.add(Box.createVerticalGlue());
+        });
+        mainPanel.updateUI();
+    }
+
     @Override
     public void updateQuery(String version, DSQuery.QueryStatus status) {
         // TODO: update view from DSCluster.getInstance().getActiveQueries()
-        refreshQuery();
-
+        refreshQuery(version, status);
         switch(status) {
-            case MATCH: showInformationMessage("Query "+version+" ended: MATCH!"); break;
-            case FAIL: showInformationMessage("Query "+version+" ended: FAIL!"); break;
+            case MATCH: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: MATCH!"); break;
+            case FAIL: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: FAIL!"); break;
             default:
-                showInformationMessage("Query "+version+" ended: DONTKNOW!");
+                showQueryStatus(status, version);
+                //showInformationMessage("Query "+version+" ended: DONTKNOW!");
                 // TODO: enable retry query button.
                 // retry query button action listener should invoke:
                 DSCluster.getInstance().makeMove();
