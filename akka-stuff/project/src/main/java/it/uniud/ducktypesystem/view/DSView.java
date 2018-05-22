@@ -37,6 +37,7 @@ public class DSView implements DSAbstractView {
     private Graph graph;
     private Viewer viewer;
     private Color greenForest= new Color(11,102,35);
+    private Color pink= new Color(255, 102, 255);
     private String graphPathString;
     private JTextField mainPathField;
     private Boolean graphCheck;
@@ -304,10 +305,10 @@ public class DSView implements DSAbstractView {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
                 // FIXME: here 0 stands for `host' index.
-                DSCluster.getInstance().startNewComputation(0, newQuery);
+                String qVersion = DSCluster.getInstance().startNewComputation(0, newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
-                refreshQuery("",DSQuery.QueryStatus.DONTKNOW);
+                updateQuery(0,qVersion,DSQuery.QueryStatus.NEW);
             });
             thread.start();
         });
@@ -412,6 +413,9 @@ public class DSView implements DSAbstractView {
             case FAIL:
                 logger.log("Query " + version + " ended: FAIL!", Color.red);
                 break;
+            case NEW:
+                logger.log("Started the computation of a new query: " + version , pink);
+                break;
             default:
                 logger.log("Query "+version+" ended: DONTKNOW!",Color.ORANGE );
         }
@@ -439,61 +443,107 @@ public class DSView implements DSAbstractView {
         graphPanel.updateUI();
     }
 
-    private void refreshQuery(String version, DSQuery.QueryStatus status){
+    private void refreshQuery(String version, DSQuery.QueryStatus status) {
         // FIXME: here 0 stands for `host' parameter
-        DSCluster.getInstance().getActiveQueries(0).forEach((x,y)->{
-            JPanel aglomeratePanel = new JPanel(new BorderLayout());
-            aglomeratePanel.setPreferredSize(new Dimension(300,300));
-            JPanel twoQueryStatusPanel = new JPanel();
-            DSQueryWrapper Wrapper= ((DSQueryWrapper)y);
-            if(Wrapper.getStillToVerify()==null)
-                twoQueryStatusPanel.setLayout(new GridLayout(0,1));
-            else
-                twoQueryStatusPanel.setLayout(new GridLayout(0,2));
-
-            // twoQueryStatusPanel.setPreferredSize(new Dimension(300,200));
-            aglomeratePanel.setName((String)x);
-            twoQueryStatusPanel.add(queryVisualization(Wrapper.getQuery()));
-            String labelText=(String)x;
-            if(version==labelText){
-                switch(status){
-                    case MATCH: labelText+=" MATCH"; break;
-                    case DONTKNOW: labelText+=" DONTKNOW"; break;
-                    default: FAIL: labelText+=" FAIL";
+        DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
+            Boolean find = false;
+            DSQueryWrapper mapWrapper = (DSQueryWrapper) mapWrapperTmp;
+            String mapVersion = (String) mapVersionTmp;
+            String labelText = mapVersion;
+            if (version.equals(mapVersion)) {
+                JPanel aglomeratePanel = new JPanel(new BorderLayout());
+                aglomeratePanel.setPreferredSize(new Dimension(300, 500));
+                JPanel twoQueryStatusPanel = new JPanel();
+                JButton retry = new JButton("Retry");
+                retry.addActionListener(e -> showInformationMessage(mapVersion));
+                aglomeratePanel.add(retry, BorderLayout.SOUTH);
+                if (mapWrapper.getStillToVerify() == null)
+                    twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
+                else
+                    twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
+                aglomeratePanel.setName(mapVersion);
+                twoQueryStatusPanel.setName(mapVersion);
+                twoQueryStatusPanel.add(queryVisualization(mapWrapper.getQuery()));
+                Color labelColor;
+                switch (status) {
+                    case MATCH:
+                        labelText += " - MATCH";
+                        labelColor = Color.CYAN;
+                        break;
+                    case DONTKNOW:
+                        labelText += " - DONTKNOW";
+                        labelColor = Color.ORANGE;
+                        break;
+                    case NEW:
+                        labelText += " - NEW";
+                        labelColor = pink;
+                        break;
+                    default:
+                        labelText += " - FAIL";
+                        labelColor = Color.RED;
+                }
+                JLabel queryNameLbl = new JLabel(labelText);
+                queryNameLbl.setSize(200, 200);
+                queryNameLbl.setFont(new Font("Bariol", Font.PLAIN, 20));
+                queryNameLbl.setForeground(labelColor);
+                queryNameLbl.setHorizontalAlignment(SwingConstants.CENTER);
+                aglomeratePanel.setBackground(Color.DARK_GRAY);
+                aglomeratePanel.add(queryNameLbl, BorderLayout.NORTH);
+                for (Component c : eastPanelQuery.getComponents()) {
+                    if (c instanceof JPanel && c.getName().equals(mapVersion)) { //FIXME: Rossi G. ... Perdoname por mi vida loca !
+                        find = true;
+                        for (Component d : ((JPanel) c).getComponents()) {
+                            if (d instanceof JPanel && d.getName().equals(mapVersion)) {
+                                int i = 0;
+                                for (Component e : ((JPanel) d).getComponents()) {
+                                    ++i;
+                                    if (e.getName() != null && mapWrapper.getStillToVerify() != null) {
+                                        ((JPanel) d).remove(e);
+                                        JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
+                                        tmp.setName(mapVersion);
+                                        tmp.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
+                                        ((JPanel) d).add(tmp);
+                                    }
+                                    if (e.getName() != null & status != DSQuery.QueryStatus.DONTKNOW) {
+                                        ((JPanel) d).remove(e);
+                                    }
+                                }
+                                if (i < 2 && mapWrapper.getStillToVerify() != null) {
+                                    JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
+                                    tmp.setName(mapVersion);
+                                    tmp.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
+                                    ((JPanel) d).add(tmp);
+                                }
+                            }
+                            if ((d instanceof JLabel)) {
+                                ((JLabel) d).setText(labelText);
+                                d.setForeground(labelColor);
+                            }
+                        }
+                    }
                 }
 
-            }
-            JLabel queryNameLbl =  new JLabel((String)x);
-            queryNameLbl.setSize(200, 200);
-            queryNameLbl.setFont(new Font("Bariol", Font.PLAIN,20));
-            queryNameLbl.setForeground(Color.WHITE);
-            queryNameLbl.setHorizontalAlignment(SwingConstants.CENTER);
-            aglomeratePanel.setBackground(Color.DARK_GRAY);
-            aglomeratePanel.add(queryNameLbl,BorderLayout.NORTH);
-            if(Wrapper.getStillToVerify()!=null){
-                JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(Wrapper.getStillToVerify()));
-                tmp.setBorder( new MatteBorder(0, 2, 0, 0, Color.BLACK));
-                twoQueryStatusPanel.add(tmp);}
-            for(Component c : eastPanelQuery.getComponents()){
-                if(c instanceof JPanel && c.getName()==x){
-                    eastPanelQuery.remove(c);
+
+                if (find == false) {
+                    aglomeratePanel.add(twoQueryStatusPanel, BorderLayout.CENTER);
+                    aglomeratePanel.setBorder(new MatteBorder(0, 0, 2, 0, Color.WHITE));
+                    eastPanelQuery.add(aglomeratePanel);
                 }
             }
-            aglomeratePanel.add(twoQueryStatusPanel,BorderLayout.CENTER);
-            eastPanelQuery.add(aglomeratePanel);
             eastPanelQuery.add(Box.createVerticalGlue());
         });
         mainPanel.updateUI();
     }
 
+
     @Override
     public void updateQuery(int host, String version, DSQuery.QueryStatus status) {
         // FIXME: update the correct host view.
         refreshQuery(version, status);
-
         switch(status) {
             case MATCH: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: MATCH!"); break;
             case FAIL: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: FAIL!"); break;
+            case NEW: showQueryStatus(status, version);break;
             default:
                 showQueryStatus(status, version);
                 //showInformationMessage("Query "+version+" ended: DONTKNOW!");
