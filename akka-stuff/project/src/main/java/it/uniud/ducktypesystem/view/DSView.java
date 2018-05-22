@@ -303,6 +303,7 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
+                // FIXME: here 0 stands for `host' index.
                 DSCluster.getInstance().startNewComputation(0, newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
@@ -487,8 +488,9 @@ public class DSView implements DSAbstractView {
 
     @Override
     public void updateQuery(int host, String version, DSQuery.QueryStatus status) {
-        // TODO: update view from DSCluster.getInstance().getActiveQueries()
+        // FIXME: update the correct host view.
         refreshQuery(version, status);
+
         switch(status) {
             case MATCH: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: MATCH!"); break;
             case FAIL: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: FAIL!"); break;

@@ -83,14 +83,13 @@ public class DSCluster {
         connectNewHost();
     }
 
-    private int connectNewHost() {
+    public int connectNewHost() {
         actorSystemArray.add(ActorSystem.create("ClusterSystem",
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + numRobots + numHost)).withFallback(config)));
         this.clusterManagerArray.add(actorSystemArray.get(numRobots + numHost)
                 .actorOf(DSClusterManagerActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
         this.activeQueries.add(new HashMap());
-        ++this.numHost;
-        return this.numHost;
+        return this.numHost++;
     }
 
     private void exceptionFound(){
