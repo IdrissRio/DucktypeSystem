@@ -443,7 +443,7 @@ public class DSView implements DSAbstractView {
         graphPanel.updateUI();
     }
 
-    private void refreshQuery(String version, DSQuery.QueryStatus status) {
+    private void refreshQuery(int host,String version, DSQuery.QueryStatus status) {
         // FIXME: here 0 stands for `host' parameter
         DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
             Boolean find = false;
@@ -455,7 +455,9 @@ public class DSView implements DSAbstractView {
                 aglomeratePanel.setPreferredSize(new Dimension(300, 500));
                 JPanel twoQueryStatusPanel = new JPanel();
                 JButton retry = new JButton("Retry");
-                retry.addActionListener(e -> showInformationMessage(mapVersion));
+                retry.addActionListener(e ->{ showInformationMessage(mapVersion);
+                    DSCluster.getInstance().retryQuery(host, version);}
+                );
                 aglomeratePanel.add(retry, BorderLayout.SOUTH);
                 if (mapWrapper.getStillToVerify() == null)
                     twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
@@ -539,18 +541,39 @@ public class DSView implements DSAbstractView {
     @Override
     public void updateQuery(int host, String version, DSQuery.QueryStatus status) {
         // FIXME: update the correct host view.
-        refreshQuery(version, status);
+        refreshQuery(host,version, status);
         switch(status) {
-            case MATCH: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: MATCH!"); break;
-            case FAIL: showQueryStatus(status, version);break;//showInformationMessage("Query "+version+" ended: FAIL!"); break;
-            case NEW: showQueryStatus(status, version);break;
+            case MATCH:
+            case FAIL:
+            case NEW: showQueryStatus(status, version);
+                for (Component c : eastPanelQuery.getComponents()) {
+                    if (c instanceof JPanel && c.getName().equals(version)) {
+                        for (Component d : ((JPanel) c).getComponents()) {
+                            if ((d instanceof JButton)) {
+                                (d).setEnabled(false);
+                            }
+                        }
+                    }
+                }
+                break;
             default:
+                DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
+                    for (Component c : eastPanelQuery.getComponents()) {
+                        if (c instanceof JPanel && c.getName().equals(version)) {
+                            for (Component d : ((JPanel) c).getComponents()) {
+                                if ((d instanceof JButton)) {
+                                    (d).setEnabled(true);
+                                }
+                            }
+                        }
+                    }
+                });
                 showQueryStatus(status, version);
                 //showInformationMessage("Query "+version+" ended: DONTKNOW!");
                 // TODO: enable retry query button.
                 // retry query button action listener should invoke:
-                DSCluster.getInstance().makeMove(host);
-                DSCluster.getInstance().retryQuery(host, version);
+               // DSCluster.getInstance().makeMove(host);
+                //DSCluster.getInstance().retryQuery(host, version);
         }
     }
 }
