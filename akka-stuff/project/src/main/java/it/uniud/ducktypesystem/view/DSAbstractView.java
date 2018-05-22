@@ -13,5 +13,5 @@ public interface DSAbstractView {
 
     void updateRobotsPosition();
 
-    void updateQuery(String version, DSQuery.QueryStatus status);
+    void updateQuery(int host, String version, DSQuery.QueryStatus status);
 }

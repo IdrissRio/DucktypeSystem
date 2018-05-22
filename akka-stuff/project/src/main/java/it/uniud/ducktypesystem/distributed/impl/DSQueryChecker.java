@@ -18,18 +18,18 @@ public class DSQueryChecker extends AbstractActor {
     // Reference to the MainRobot view: the MainRobot must not clone its own view in its Checkers when constructing them.
     private DSGraph myView;
     private String myNode;
+    private int host;
     private String version;
-    private int nr;
     private String path;
     private DSQuery query;
     private ActorRef mediator;
 
-    public DSQueryChecker(DSGraph myView, String myNode, String version, int nr) {
+    public DSQueryChecker(DSGraph myView, String myNode, int host, String version, String path) {
         this.myView = myView;
         this.myNode = myNode;
+        this.host = host;
         this.version = version;
-        this.nr = nr;
-        this.path = ""+version+"."+nr;
+        this.path = path;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         log.info("QC: SONO NATO: "+getSelf().path()+ " con vista: "+myView.toString());
@@ -42,7 +42,7 @@ public class DSQueryChecker extends AbstractActor {
         mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.path,
                 new DSMissionAccomplished(this.version, null, status), true), getSelf());
-        mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
+        mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+host,
                 new DSMissionAccomplished(this.version, null, status), false), getSelf());
     }
 
@@ -81,7 +81,7 @@ public class DSQueryChecker extends AbstractActor {
                             if (msg.left == 0) {
                                 mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
                                 // FIXME: let mainActor kill its child instead?
-                                mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER",
+                                mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+host,
                                         new DSMissionAccomplished(this.version, this.query.serializeToString(), DSQuery.QueryStatus.DONTKNOW), false), getSelf());
                             }
                             else
@@ -101,7 +101,7 @@ public class DSQueryChecker extends AbstractActor {
                 .build();
     }
 
-    static public Props props(DSGraph myView, String myNode, String version, int nr) {
-        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode, version, nr));
+    static public Props props(DSGraph myView, String myNode, int host, String version, String path) {
+        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode, host, version, path));
     }
 }

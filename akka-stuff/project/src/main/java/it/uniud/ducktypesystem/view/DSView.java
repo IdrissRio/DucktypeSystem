@@ -303,7 +303,7 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                DSCluster.getInstance().startNewComputation(newQuery);
+                DSCluster.getInstance().startNewComputation(0, newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
                 refreshQuery("",DSQuery.QueryStatus.DONTKNOW);
@@ -439,7 +439,8 @@ public class DSView implements DSAbstractView {
     }
 
     private void refreshQuery(String version, DSQuery.QueryStatus status){
-        DSCluster.getInstance().getActiveQueries().forEach((x,y)->{
+        // FIXME: here 0 stands for `host' parameter
+        DSCluster.getInstance().getActiveQueries(0).forEach((x,y)->{
             JPanel aglomeratePanel = new JPanel(new BorderLayout());
             aglomeratePanel.setPreferredSize(new Dimension(300,300));
             JPanel twoQueryStatusPanel = new JPanel();
@@ -485,7 +486,7 @@ public class DSView implements DSAbstractView {
     }
 
     @Override
-    public void updateQuery(String version, DSQuery.QueryStatus status) {
+    public void updateQuery(int host, String version, DSQuery.QueryStatus status) {
         // TODO: update view from DSCluster.getInstance().getActiveQueries()
         refreshQuery(version, status);
         switch(status) {
@@ -496,8 +497,8 @@ public class DSView implements DSAbstractView {
                 //showInformationMessage("Query "+version+" ended: DONTKNOW!");
                 // TODO: enable retry query button.
                 // retry query button action listener should invoke:
-                DSCluster.getInstance().makeMove();
-                DSCluster.getInstance().retryQuery(version);
+                DSCluster.getInstance().makeMove(host);
+                DSCluster.getInstance().retryQuery(host, version);
         }
     }
 }

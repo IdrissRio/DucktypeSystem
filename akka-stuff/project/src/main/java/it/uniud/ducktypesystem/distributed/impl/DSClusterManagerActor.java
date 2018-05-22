@@ -9,7 +9,6 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSCluster;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
 import it.uniud.ducktypesystem.distributed.message.DSMissionAccomplished;
 import it.uniud.ducktypesystem.distributed.message.DSMove;
@@ -19,8 +18,11 @@ public class DSClusterManagerActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     private int numRobots;
+    private int host;
+    private String path;
 
-    public DSClusterManagerActor(int numRobots) {
+    public DSClusterManagerActor(int host, int numRobots) {
+        this.host = host;
         this.numRobots = numRobots;
         getContext().system().eventStream().subscribe(getSelf(), DeadLetter.class);
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
@@ -30,8 +32,9 @@ public class DSClusterManagerActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DSMissionAccomplished.class, msg -> {
-                    DSCluster.getInstance().endedQuery(msg.getVersion(), msg.getSerializedQuery());
-                    DSCluster.getInstance().getView().updateQuery(msg.getVersion(), msg.getStatus());
+                    DSCluster.getInstance().endedQuery(host, msg.getVersion(), msg.getSerializedQuery());
+                    // TODO: call updateQuery in cluster with right hostname
+                    DSCluster.getInstance().getView().updateQuery(host, msg.getVersion(), msg.getStatus());
                 })
                 .match(DSMove.class, msg -> {
                     log.info("Moving...");
@@ -49,7 +52,7 @@ public class DSClusterManagerActor extends AbstractActor {
                     msg.sender = getSelf();
                     msg.left = create.getNumRobot();
                     msg.serializedQuery = create.getSerializedQuery();
-                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+create.getVersion()+"."+create.getNr(),
+                    mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+create.getPath(),
                                 msg, false), getSelf());
                 })
                 .match(DeadLetter.class, deadLetter -> {
@@ -58,7 +61,7 @@ public class DSClusterManagerActor extends AbstractActor {
                 .build();
     }
 
-    static public Props props(int numRobots) {
-        return Props.create(DSClusterManagerActor.class, () -> new DSClusterManagerActor(numRobots));
+    static public Props props(int host, int numRobots) {
+        return Props.create(DSClusterManagerActor.class, () -> new DSClusterManagerActor(host, numRobots));
     }
 }

@@ -63,8 +63,8 @@ public class DSRobot extends AbstractActor {
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT", myNode, localAffinity), getSelf());
                 })*/
                 .match(DSCreateChild.class, in -> {
-                    context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getVersion(), in.getNr()),
-                            in.getVersion()+"."+in.getNr());
+                    context().actorOf(DSQueryChecker.props(this.myView, this.myNode, in.getHost(),
+                            in.getVersion(), in.getPath()), in.getPath());
                     log.info("Figli creati:" + myName);
                     // Thread.sleep(1000);
                     // mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/prova", new String("benvenuti figli miei"), false), getSelf());

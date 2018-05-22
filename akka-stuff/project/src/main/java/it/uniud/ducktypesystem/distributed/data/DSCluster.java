@@ -20,65 +20,77 @@ public class DSCluster {
     private DataFacade facade;
     private DSAbstractView view;
     private DSApplication application;
-    private static DSCluster cluster = null;
+    private final Config config = ConfigFactory.load("akka.conf");
+    private static DSCluster clusters = null;
     private ArrayList<ActorSystem> actorSystemArray;
     private ArrayList<ActorRef> robotMainActorArray;
-    private ActorRef clusterManager;
-    private Integer procNumber;
+    private ArrayList<ActorRef> clusterManagerArray;
+    private Integer numRobots;
     private int portSeed = 2551;
     private static final int maxRecovery = 5;
     private int actualRecovery = 0;
-    private HashMap activeQueries = new HashMap();
+    private ArrayList<HashMap> activeQueries = new ArrayList<>();
+    private int numHost = 0;
 
-    private void actorSystemInitialization(ArrayList<ActorSystem> actorSystemTmp, Config conf){
+    private void actorSystemInitialization(){
         try {
-            for (int i = 0; i < procNumber; ++i)
-                actorSystemTmp.add(ActorSystem.create("ClusterSystem",
-                        ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(conf)));
-            actorSystemTmp.add(ActorSystem.create("ClusterSystem",
-                    ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + procNumber)).withFallback(conf)));
-            view.showInformationMessage("AKKA: Every node is connected");
-            robotMainActorInitialization(actorSystemArray);
-        }catch(ChannelException e){
+            for (int i = 0; i < numRobots; ++i)
+                actorSystemArray.add(ActorSystem.create("ClusterSystem",
+                        ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(config)));
+            view.showInformationMessage("AKKA: Every Robot is connected");
+            robotMainActorInitialization();
+        } catch (ChannelException e) {
             exceptionFound();
-            portSeed+=procNumber;
-            for(int i=0;i<actorSystemTmp.size();++i) actorSystemTmp.remove(i);
-            actorSystemInitialization(actorSystemTmp, conf);
+            portSeed += numRobots;
+            for (int i = 0; i < actorSystemArray.size(); ++i) actorSystemArray.remove(i);
+            actorSystemInitialization();
         }
     }
 
-    private void robotMainActorInitialization(ArrayList<ActorSystem> actorSystemTmp) {
-        assert(facade.getOccupied().size() == (actorSystemTmp.size()-1) );
+    private void robotMainActorInitialization() {
+        // FIXME assert(facade.getOccupied().size() == (actorSystemArray.size()) );
         int i = 0;
         for (String localNode : facade.getOccupied()) {
             DSGraph localView = facade.getMap().getViewFromNode(localNode);
-            robotMainActorArray.add(actorSystemTmp.get(i).actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT"));
+            robotMainActorArray.add(actorSystemArray.get(i)
+                    .actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT"));
             ++i;
         }
-        this.clusterManager = actorSystemTmp.get(i).actorOf(DSClusterManagerActor.props(procNumber), "CLUSTERMANAGER");
-        robotMainActorArray.add(clusterManager);
     }
 
     public static void akkaEnvironment(DataFacade facade, DSAbstractView view, DSApplication app){
-        if(cluster==null)
-            cluster=new DSCluster(facade, view, app);
+        if(clusters==null)
+            clusters=new DSCluster(facade, view, app);
     }
 
     public static DSCluster getInstance() {
-        return cluster;
+       return clusters;
     }
 
     private DSCluster(DataFacade facade, DSAbstractView view, DSApplication app) {
         this.facade = facade;
         this.view = view;
         this.application = app;
-        this.procNumber = facade.getOccupied().size();
-        this.actorSystemArray = new ArrayList<ActorSystem>(procNumber + 1 );
-        this.robotMainActorArray = new ArrayList<ActorRef>(procNumber + 1);
+        this.numRobots = facade.getOccupied().size();
+        // Initialize capacity considering the first connected host.
+        this.actorSystemArray = new ArrayList<ActorSystem>(numRobots + 1 );
+        this.robotMainActorArray = new ArrayList<ActorRef>(numRobots);
 
-        final Config config = ConfigFactory.load("akka.conf");
+        actorSystemInitialization();
 
-        actorSystemInitialization(actorSystemArray, config);
+        // Connect First Host.
+        this.clusterManagerArray = new ArrayList<ActorRef>(1);
+        connectNewHost();
+    }
+
+    private int connectNewHost() {
+        actorSystemArray.add(ActorSystem.create("ClusterSystem",
+                ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + numRobots + numHost)).withFallback(config)));
+        this.clusterManagerArray.add(actorSystemArray.get(numRobots + numHost)
+                .actorOf(DSClusterManagerActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
+        this.activeQueries.add(new HashMap());
+        ++this.numHost;
+        return this.numHost;
     }
 
     private void exceptionFound(){
@@ -102,17 +114,20 @@ public class DSCluster {
         return actorSystemArray;
     }
 
-    public String startNewComputation(DSQuery query) {
+    public String startNewComputation(int host, DSQuery query) {
+        if (host >= numHost) return null; // FIXME
+        HashMap hostQueries = activeQueries.get(host);
         // If there is already a query with the same name, change its name.
-        if (activeQueries.get(query.getVersion()) != null) {
+        if (hostQueries.get(query.getVersion()) != null) {
             String attemptName = query.getVersion(); int i = 1;
-            while (activeQueries.get(attemptName+"-"+i) != null) ++i;
+            while (hostQueries.get(attemptName+"-"+i) != null) ++i;
             query.setVersion(attemptName+"-"+i);
         }
-        activeQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
+        hostQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
-                 facade.getNumRobot() - 1, query.serializeToString(), query.getVersion(), query.getVersionNr());
-        clusterManager.tell(tmp, ActorRef.noSender());
+                 facade.getNumRobot() - 1, query.serializeToString(),
+                host, query.getVersion(), query.getVersionNr());
+        clusterManagerArray.get(host).tell(tmp, ActorRef.noSender());
         return query.getVersion();
     }
 
@@ -120,24 +135,27 @@ public class DSCluster {
         return this.view;
     }
 
-    public void retryQuery(String version) {
-        DSQueryWrapper wrapper = ((DSQueryWrapper) activeQueries.get(version));
+    public void retryQuery(int host, String version) {
+        if (host >= numHost) return; // FIXME
+        HashMap hostQueries = activeQueries.get(host);
+        DSQueryWrapper wrapper = ((DSQueryWrapper) hostQueries.get(version));
         wrapper.getQuery().incrementVersionNr();
         DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
                 facade.getNumRobot() - 1, wrapper.getStillToVerify(),
-                version , wrapper.getQuery().getVersionNr());
-        clusterManager.tell(tmp, ActorRef.noSender());
+                host, version , wrapper.getQuery().getVersionNr());
+        clusterManagerArray.get(host).tell(tmp, ActorRef.noSender());
     }
 
-    public void makeMove() {
-        clusterManager.tell(new DSMove(), ActorRef.noSender());
+    public void makeMove(int host) {
+        clusterManagerArray.get(host).tell(new DSMove(), ActorRef.noSender());
     }
 
-    public HashMap getActiveQueries() {
-        return this.activeQueries;
+    public HashMap getActiveQueries(int host) {
+        if (host >= numHost) return null; // FIXME
+        return this.activeQueries.get(host);
     }
 
-    public void endedQuery(String version, String stillToVerify) {
-        ((DSQueryWrapper) activeQueries.get(version)).setStillToVerify(stillToVerify);
+    public void endedQuery(int host, String version, String stillToVerify) {
+        ((DSQueryWrapper) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
     }
 }

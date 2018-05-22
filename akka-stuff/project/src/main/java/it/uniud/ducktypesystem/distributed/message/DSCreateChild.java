@@ -6,8 +6,10 @@ public class DSCreateChild implements Serializable {
     private Integer numChild;
     private String serializedQuery;
     private Integer numRobot;
+    private int host;
     private String version;
     private Integer nr;
+    private String path;
 
     public Integer getNumChild() {
         return numChild;
@@ -25,12 +27,15 @@ public class DSCreateChild implements Serializable {
         this.serializedQuery = serializedQuery;
     }
 
-    public DSCreateChild(Integer numChild, Integer numRobot, String serializedQuery, String version, int nr) {
+    public DSCreateChild(Integer numChild, Integer numRobot, String serializedQuery, int host, String version, int nr) {
         this.numChild = numChild;
         this.serializedQuery = serializedQuery;
         this.numRobot = numRobot;
         this.version = version;
         this.nr = nr;
+        this.host = host;
+        this.path = "Host" + host + version + "." + nr;
+
     }
 
     public Integer getNumRobot() {
@@ -41,5 +46,13 @@ public class DSCreateChild implements Serializable {
     }
     public Integer getNr() {
         return nr;
+    }
+
+    public String getPath() {
+        return this.path;
+    }
+
+    public int getHost() {
+        return this.host;
     }
 }
