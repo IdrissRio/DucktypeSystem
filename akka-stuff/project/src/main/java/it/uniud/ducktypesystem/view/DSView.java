@@ -16,8 +16,6 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Map;
 
 import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
 
@@ -47,6 +45,7 @@ public class DSView implements DSAbstractView {
     private JPanel eastPanelQuery;
     private JScrollPane scrollForQuery;
     private JPanel mainPanel;
+    private Boolean autoMove;
 
     public DSView(DSApplication application) {
         try {
@@ -72,7 +71,8 @@ public class DSView implements DSAbstractView {
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         logScroll.setPreferredSize(new Dimension(1000,150));
         logScroll.setSize(new Dimension(1000,300));
-        graphPanel=new JPanel(new GridLayout());
+        graphPanel=new JPanel(new BorderLayout());
+        autoMove=false;
     }
 
 
@@ -100,10 +100,9 @@ public class DSView implements DSAbstractView {
 
     private void setup(){
         JDialog secondFrame = new JDialog();
-        JTextField numberReplica = new JTextField(replicasNumber.toString(),10);
+        JCheckBox autoMoveCB = new JCheckBox("Enable auto-move");
         JTextField numberProcess = new JTextField(processNumber.toString(),10);
         JLabel numberProcessLbl  = new JLabel("Number of process:");
-        JLabel numberReplicaLbl = new JLabel("Number of replicas:");
         JPanel panelProcess = new JPanel(new FlowLayout());
         JPanel panelReplica=new JPanel(new FlowLayout());
         JPanel settingPanel=new JPanel();
@@ -119,8 +118,7 @@ public class DSView implements DSAbstractView {
         settingPanel.setLayout(new BoxLayout(settingPanel, BoxLayout.Y_AXIS));
         panelProcess.add(numberProcessLbl);
         panelProcess.add(numberProcess);
-        panelReplica.add(numberReplicaLbl);
-        panelReplica.add(numberReplica);
+        panelReplica.add(autoMoveCB);
         settingPanel.add(panelProcess);
         settingPanel.add(panelReplica);
         confirmButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -135,7 +133,8 @@ public class DSView implements DSAbstractView {
         confirmButton.addActionListener(e -> {
             try {
                 processNumber = Integer.parseInt(numberProcess.getText());
-                replicasNumber = Integer.parseInt(numberReplica.getText());
+                autoMove=autoMoveCB.isSelected();
+                //replicasNumber = Integer.parseInt(numberReplica.getText());
                 mainPathField.setText(pathField.getText());
                 configureSystem(graphPathString, processNumber, replicasNumber, logger);
                 Thread thread = new Thread(() -> {
@@ -162,12 +161,13 @@ public class DSView implements DSAbstractView {
                         " You have to choose a file description for the graph.","Error !",JOptionPane.ERROR_MESSAGE);
                 //showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
             }catch(SystemError sError){
+                sError.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         " SETTINGS: I cannot read this file.\n" +
                                 " Accepted extensions: DOT, DGS, GML,\" +\n" +
                                 "                        \" TLP, NET, graphML, GEXF.","Error !",JOptionPane.ERROR_MESSAGE);
                 //showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
-                        //" TLP, NET, graphML, GEXF.");
+                //" TLP, NET, graphML, GEXF.");
                 pathField.setText("");
             }
         });
@@ -266,6 +266,7 @@ public class DSView implements DSAbstractView {
         JPanel soutWithStartPanel = new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JPanel southWithScroll= new JPanel(new BorderLayout());
+        JButton moveRobot = new JButton("Move robot");
         eastPanelQuery=new JPanel();
         eastPanelQuery.setLayout(new BoxLayout(eastPanelQuery, BoxLayout.Y_AXIS));
         scrollForQuery=new JScrollPane(eastPanelQuery,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -284,6 +285,7 @@ public class DSView implements DSAbstractView {
         southWithScroll.add(soutWithStartPanel, BorderLayout.SOUTH);
         southWithScroll.add(logScroll,BorderLayout.CENTER);
         mainPanel.add(northPanel,BorderLayout.NORTH);
+        graphPanel.add(moveRobot, BorderLayout.SOUTH);
         mainPanel.add(graphPanel, BorderLayout.CENTER);
         mainPanel.add(southWithScroll, BorderLayout.SOUTH);
         mainPanel.add(scrollForQuery,BorderLayout.EAST);
@@ -295,6 +297,14 @@ public class DSView implements DSAbstractView {
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainPathField.setFont(Font.getFont("Bariol"));
         // MainFrame window listener
+        moveRobot.addActionListener(e -> {
+            try {
+                DSCluster.getInstance().makeMove(0); //FIXME: this is the current host. Deve essere indicizzatato.
+            }catch (NullPointerException error){
+                showErrorMessage("Wait. We are initializing the Akka environment.");
+            }
+        });
+
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent evento) {
@@ -309,6 +319,8 @@ public class DSView implements DSAbstractView {
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
                 updateQuery(0,qVersion,DSQuery.QueryStatus.NEW);
+                JScrollBar vertical = scrollForQuery.getVerticalScrollBar();
+                vertical.setValue( vertical.getMaximum() );
             });
             thread.start();
         });
@@ -324,10 +336,11 @@ public class DSView implements DSAbstractView {
             try {
                 newQuery = DSQueryImpl.createQueryFromFile(graphPathString);
                 showInformationMessage("SETTINGS: Graph reading complete.");
+
             }catch(NullPointerException error) {
                 showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
             }catch(SystemError sError){
-            showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
                         " TLP, NET, graphML, GEXF.");
                 queryField.setText("");
             }
@@ -353,7 +366,7 @@ public class DSView implements DSAbstractView {
         graph =(Graph) x.getGraphImpl();
         graph.setStrict(false);
         graph.setAutoCreate( true );
-        graph.addAttribute("ui.stylesheet","url(nodeStyle.css)");
+        graph.addAttribute("ui.stylesheet", "url(nodeStyle.css)");
         for (Node node : graph) {
             node.addAttribute("ui.label", node.getId());
             if(facade.getOccupied().contains(node.toString()))
@@ -379,16 +392,15 @@ public class DSView implements DSAbstractView {
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
     private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
-            facade=DataFacade.create(filePath);
-            facade.setNumSearchGroups(numSearchGroup);
-            facade.setOccupied(numRobot);
-            StringBuilder b = new StringBuilder();
-            b.append("Robot posizionati in: ");
-            for (String s : facade.getOccupied())
-                b.append(s + " ");
-            showInformationMessage(b.toString());
+        facade=DataFacade.create(filePath);
+        facade.setNumSearchGroups(numSearchGroup);
+        facade.setOccupied(numRobot);
+        StringBuilder b = new StringBuilder();
+        b.append("Robot posizionati in: ");
+        for (String s : facade.getOccupied())
+            b.append(s + " ");
+        showInformationMessage(b.toString());
     }
-
     private void setGraphCheck(Boolean b){graphCheck=b;}
     private void setQueryCheck(Boolean b){queryCheck=b;}
     private Boolean getGraphCheck(){return graphCheck;}
@@ -422,6 +434,7 @@ public class DSView implements DSAbstractView {
         JScrollBar vertical = logScroll.getVerticalScrollBar();
         vertical.setValue( vertical.getMaximum() );
     }
+
     public JFrame getMainFrame(){return mainFrame;}
     @Override
     public void updateRobotsPosition() {
@@ -452,13 +465,16 @@ public class DSView implements DSAbstractView {
             String labelText = mapVersion;
             if (version.equals(mapVersion)) {
                 JPanel aglomeratePanel = new JPanel(new BorderLayout());
-                aglomeratePanel.setPreferredSize(new Dimension(300, 500));
+                aglomeratePanel.setPreferredSize(new Dimension(300, 520));
                 JPanel twoQueryStatusPanel = new JPanel();
                 JButton retry = new JButton("Retry");
-                retry.addActionListener(e ->{ showInformationMessage(mapVersion);
-                    DSCluster.getInstance().retryQuery(host, version);}
+                retry.addActionListener(e ->{
+                            retry.setEnabled(false);
+                            DSCluster.getInstance().retryQuery(host, version);
+                        }
                 );
-                aglomeratePanel.add(retry, BorderLayout.SOUTH);
+                if(!autoMove)
+                    aglomeratePanel.add(retry, BorderLayout.SOUTH);
                 if (mapWrapper.getStillToVerify() == null)
                     twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
                 else
@@ -561,7 +577,7 @@ public class DSView implements DSAbstractView {
                     for (Component c : eastPanelQuery.getComponents()) {
                         if (c instanceof JPanel && c.getName().equals(version)) {
                             for (Component d : ((JPanel) c).getComponents()) {
-                                if ((d instanceof JButton)) {
+                                if ((d instanceof JButton) && autoMove==false) {
                                     (d).setEnabled(true);
                                 }
                             }
@@ -572,8 +588,10 @@ public class DSView implements DSAbstractView {
                 //showInformationMessage("Query "+version+" ended: DONTKNOW!");
                 // TODO: enable retry query button.
                 // retry query button action listener should invoke:
-               // DSCluster.getInstance().makeMove(host);
-                //DSCluster.getInstance().retryQuery(host, version);
+                if(autoMove){
+                 DSCluster.getInstance().makeMove(host);
+                DSCluster.getInstance().retryQuery(host, version);
+                }
         }
     }
 }
