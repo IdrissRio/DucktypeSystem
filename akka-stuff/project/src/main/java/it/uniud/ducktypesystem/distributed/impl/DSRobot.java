@@ -12,6 +12,7 @@ import it.uniud.ducktypesystem.distributed.message.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -67,11 +68,11 @@ public class DSRobot extends AbstractActor {
                         }
                 })
                 .match(DSStartCriticalWork.class, msg -> {
-                    log.info("Un mio figlio "+ getSender() + "è in critical work...");
+                    // log.info("Un mio figlio "+ getSender() + "è in critical work...");
                     ((QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath())).status = QCStatus.CRITICAL;
                 })
                 .match(DSEndCriticalWork.class, msg -> {
-                    log.info("Un mio figlio "+ getSender()+" ha finito la critical work...");
+                    // log.info("Un mio figlio "+ getSender()+" ha finito la critical work...");
                     if (activeQueryCheckers.get(msg.getQueryId().getPath()) != null)
                         ((QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath())).status = QCStatus.DONE;
                 })
@@ -84,21 +85,35 @@ public class DSRobot extends AbstractActor {
                     String deadPath = x.actor().path().name();
                     if (activeQueryCheckers.get(deadPath) != null
                             && ((QCMonitor)activeQueryCheckers.get(deadPath)).status == QCStatus.CRITICAL) {
-                        log.info(deadPath + " is DEAD IN FUCKING CRITICAL WORK!!!!");
+                        log.info(deadPath + " is DEAD during CRITICAL WORK!!!!");
                         DSQuery.QueryId qId = new DSQuery.QueryId(deadPath);
                         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                                 new DSEndQuery(qId), false), getSelf());
                         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+ qId.getHost(),
                                 new DSRetryQuery(qId), false), getSelf());
                     }
+                    else if (activeQueryCheckers.get(deadPath) != null
+                            && ((QCMonitor)activeQueryCheckers.get(deadPath)).status == QCStatus.WAITING) {
+                        log.info(deadPath + " is DEAD in WAITING!!!!");
+                        // Recreate it:
+                        ActorRef child = getContext().actorOf(DSQueryChecker.props(this.myView, this.myNode,
+                                new DSQuery.QueryId(deadPath)), deadPath);
+                        getContext().watch(child);
+                        activeQueryCheckers.put(deadPath, new QCMonitor(child));
+                    }
                     else
-                        log.info(deadPath+" is dead in peace.");
+                        log.info(deadPath+" is DEAD in peace.");
                 })
                 .match(DSCreateQueryChecker.class, in -> {
                     ActorRef child = getContext().actorOf(DSQueryChecker.props(this.myView, this.myNode,
                             in.getQueryId()), in.getQueryId().getPath());
                     getContext().watch(child);
                     activeQueryCheckers.put(in.getQueryId().getPath(), new QCMonitor(child));
+                    Thread.sleep(500);
+
+                    // Simulate death of a QueryChecker in WAITING.
+                    boolean shouldIKill = (ThreadLocalRandom.current().nextInt(0, 10) == 0);
+                    if (shouldIKill) { log.info("I'M KILLING MY SON"); child.tell("Die!", getSelf()); }
                 })
                 .build();
     }

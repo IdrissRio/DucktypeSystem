@@ -64,6 +64,7 @@ public class DSQueryChecker extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
+                .match(String.class, msg -> { throw new ActorKilledException(myNode + ": I'm DYING!");} )
                 .match(DSTryNewQuery.class, msg -> {
                     this.query = new DSQueryImpl();
                     this.query.loadFromSerializedString(msg.getSerializedQuery());
@@ -73,7 +74,7 @@ public class DSQueryChecker extends AbstractActor {
 
                     // Simulate casual death during critical work
                     boolean shouldIDie = (ThreadLocalRandom.current().nextInt(0, 5) == 0);
-                    if (shouldIDie) throw new ActorKilledException("CASSUU!!!");
+                    if (shouldIDie) throw new ActorKilledException(myNode + ": I'm DYING!");
 
                     switch (status) {
                         case FAIL:
