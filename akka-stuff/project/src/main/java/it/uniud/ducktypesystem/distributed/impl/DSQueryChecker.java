@@ -1,6 +1,7 @@
 package it.uniud.ducktypesystem.distributed.impl;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorKilledException;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
@@ -12,24 +13,23 @@ import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.message.*;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class DSQueryChecker extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     // CHECKME: DSQueryChecker and MainRobot are on the same node: they can share resources.
     // Reference to the MainRobot view: the MainRobot must not clone its own view in its Checkers when constructing them.
     private DSGraph myView;
     private String myNode;
-    private int host;
-    private String version;
-    private String path;
+    private DSQuery.QueryId queryId;
     private DSQuery query;
     private ActorRef mediator;
 
-    public DSQueryChecker(DSGraph myView, String myNode, int host, String version, String path) {
+    public DSQueryChecker(DSGraph myView, String myNode, DSQuery.QueryId queryId) {
         this.myView = myView;
         this.myNode = myNode;
-        this.host = host;
-        this.version = version;
-        this.path = path;
+        this.queryId = queryId;
+        this.query = null;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
         log.info("QC: SONO NATO: "+getSelf().path()+ " con vista: "+myView.toString());
@@ -37,31 +37,28 @@ public class DSQueryChecker extends AbstractActor {
 
     // Communication methods
     private void publishQueryResult(DSQuery.QueryStatus status) {
-        log.info((status == DSQuery.QueryStatus.MATCH) ?
-                "MATCH da: "+ myNode : "FAIL da: "+ myNode);
-        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
-        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT/"+this.path,
-                new DSMissionAccomplished(this.version, null, status), true), getSelf());
-        mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+host,
-                new DSMissionAccomplished(this.version, null, status), false), getSelf());
+        getContext().getParent().tell(new DSEndCriticalWork(this.queryId), getSelf());
+        log.info((status == DSQuery.QueryStatus.MATCH) ? "MATCH da: "+ myNode
+                : (status == DSQuery.QueryStatus.FAIL) ? "FAIL da: " : "DONTKNOW da: " + myNode);
+        mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+this.queryId.getHost(),
+                new DSMissionAccomplished(this.queryId, this.query.serializeToString(), status),
+                false), getSelf());
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.queryId.getPath()), getSelf());
+
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
+                new DSEndQuery(this.queryId), false), getSelf());
     }
 
-    private void forwardQuery(boolean unsubscribe, int left) {
+    private void forwardQuery(int ttl) {
         log.info("FORWARDING da "+myNode+": query: "+query.toString());
-        if (unsubscribe) {
-            mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.queryId.getPath()), getSelf());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        DSTryNewQuery msg = new DSTryNewQuery();
-        msg.sender = getSelf();
-        msg.serializedQuery = this.query.serializeToString();
-        msg.left = unsubscribe ? left - 1 : left;
-        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.path,
-                msg , false), getSelf());
+        mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.queryId.getPath(),
+                new DSTryNewQuery(this.query.serializeToString(), ttl-1) , false), getSelf());
     }
 
     @Override
@@ -69,39 +66,32 @@ public class DSQueryChecker extends AbstractActor {
         return receiveBuilder()
                 .match(DSTryNewQuery.class, msg -> {
                     this.query = new DSQueryImpl();
-                    this.query.loadFromSerializedString(msg.serializedQuery);
-                    // robot.tell(new DSStartCriticalWork(msg.sender), ActorRef.noSender());
-                    // msg.sender.tell(new DSAck(), ActorRef.noSender());
+                    this.query.loadFromSerializedString(msg.getSerializedQuery());
+                    getContext().getParent().tell(new DSStartCriticalWork(this.queryId), getSelf());
+
                     DSQuery.QueryStatus status = query.checkAndReduce(myView, myNode);
+
+                    // Simulate casual death during critical work
+                    boolean shouldIDie = (ThreadLocalRandom.current().nextInt(0, 5) == 0);
+                    if (shouldIDie) throw new ActorKilledException("CASSUU!!!");
+
                     switch (status) {
                         case FAIL:
                         case MATCH:
                             publishQueryResult(status); break;
-                        default: // case NEW or DONTKNOW
-                            if (msg.left == 0) {
-                                mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.path), getSelf());
-                                // FIXME: let mainActor kill its child instead?
-                                mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+host,
-                                        new DSMissionAccomplished(this.version, this.query.serializeToString(), DSQuery.QueryStatus.DONTKNOW), false), getSelf());
+                        default: // DONTKNOW
+                            if (msg.getTTL() == 0) {
+                                // Query ended with DONTKNOW.
+                                publishQueryResult(status);
                             }
                             else
-                                forwardQuery(true, msg.left);
+                                forwardQuery(msg.getTTL());
                     }
-                    // robot.tell(new DSEndCriticalWork(), ActorRef.noSender());
                 })
-                /*.match(DSAskNewSend.class, x -> {
-                    forwardQuery(false);
-                })*/
-                .match(DSMissionAccomplished.class, x -> {
-                    log.info(myNode + ": qualcuno ha finito: mi disinscrivo.");
-                    mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.version), getSelf());
-                    // FIXME : kill myself?
-                })
-                // FIXME: .match(EndTimerAck.class, x -> { create new cluster send the x.version currentQuery })
                 .build();
     }
 
-    static public Props props(DSGraph myView, String myNode, int host, String version, String path) {
-        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode, host, version, path));
+    static public Props props(DSGraph myView, String myNode, DSQuery.QueryId qId) {
+        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode, qId));
     }
 }

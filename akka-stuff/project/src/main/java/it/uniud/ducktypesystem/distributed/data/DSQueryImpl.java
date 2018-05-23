@@ -3,45 +3,61 @@ package it.uniud.ducktypesystem.distributed.data;
 import it.uniud.ducktypesystem.errors.SystemError;
 
 public class DSQueryImpl extends DSGraphImpl implements DSQuery {
-    private String version;
-    private int nr;
+    private QueryId id;
 
     public DSQueryImpl() {
         super();
-        version = null;
-        nr = 0;
+        id = new QueryId(0, "unknownname");
     }
     public DSQueryImpl(DSGraph g) {
         super(g);
-        version = null;
-        nr = 0;
+        id = new QueryId(0, "unknownname");
     }
     public DSQueryImpl(DSQuery q) {
         super(q);
-        version = q.getVersion();
-        nr = q.getVersionNr();
+        id = new QueryId(q.getId());
     }
 
     public static DSQuery createQueryFromFile(String filePath) throws SystemError {
         DSQuery q = new DSQueryImpl(DSGraphImpl.createGraphFromFile(filePath));
+        // Get version name from fileName without extensions and previous path.
         filePath = filePath.replaceFirst("(.*)/","");
         filePath = filePath.replaceFirst("[.][^.]+$", "");
-        q.setVersion(filePath);
+        q.setName(filePath);
         return q;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public QueryId getId() {
+        return id;
+    }
+    public String getName() {
+        return id.getName();
+    }
+    public int getHost() {
+        return id.getHost();
+    }
+
+    public int getAttemptNr() {
+        return 0;
     }
     public String getVersion() {
-        return version;
+        return id.getVersion();
     }
-    public void incrementVersionNr() { this.nr++; }
-    public int getVersionNr() {return this.nr; }
+    public void setId(QueryId id) {
+        this.id = new QueryId(id);
+    }
+    public void setName(String name) {
+        id.setName(name);
+    }
+    public void setHost(int host) {
+        id.setHost(host);
+    }
+    public void incrementAttemptNr() {
+        id.incrementAttemptNr();
+    }
 
     public DSQuery.QueryStatus checkAndReduce(DSGraph myView, String myNode) {
         assert(!hasUnconnectedNodes());
-        boolean newHypothesis = false;
 
         for (String qN : getNodes()) {
             if (!myView.hasNode(qN)) continue;
@@ -52,7 +68,6 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
             for (String qN2 : adjNodes(qN)) {
                 if (!myView.hasNode(qN2) || !myView.areAdj(qN, qN2)) continue;
                 removeEdge(qN, qN2);
-                newHypothesis = true;
             }
         }
         removeUnconnectedNodes();
@@ -60,10 +75,6 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
         // `myView' verified it all.
         if (isEmpty())
             return QueryStatus.MATCH;
-
-        // `myView' knowledge simplified the query.
-        if (newHypothesis)
-            return QueryStatus.NEW;
 
         // `myView' had nothing to say about it.
         return QueryStatus.DONTKNOW;

@@ -318,7 +318,7 @@ public class DSView implements DSAbstractView {
                 String qVersion = DSCluster.getInstance().startNewComputation(0, newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
-                updateQuery(0,qVersion,DSQuery.QueryStatus.NEW);
+                updateQuery(newQuery.getId(), DSQuery.QueryStatus.NEW);
                 JScrollBar vertical = scrollForQuery.getVerticalScrollBar();
                 vertical.setValue( vertical.getMaximum() );
             });
@@ -460,7 +460,7 @@ public class DSView implements DSAbstractView {
         // FIXME: here 0 stands for `host' parameter
         DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
             Boolean find = false;
-            DSQueryWrapper mapWrapper = (DSQueryWrapper) mapWrapperTmp;
+            DSQueryResult mapWrapper = (DSQueryResult) mapWrapperTmp;
             String mapVersion = (String) mapVersionTmp;
             String labelText = mapVersion;
             if (version.equals(mapVersion)) {
@@ -555,9 +555,13 @@ public class DSView implements DSAbstractView {
 
 
     @Override
-    public void updateQuery(int host, String version, DSQuery.QueryStatus status) {
+    public void updateQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
         // FIXME: update the correct host view.
-        refreshQuery(host,version, status);
+        String version = qId.getVersion();
+        int host = qId.getHost();
+
+        refreshQuery(qId.getHost(), qId.getVersion(), status);
+
         switch(status) {
             case MATCH:
             case FAIL:

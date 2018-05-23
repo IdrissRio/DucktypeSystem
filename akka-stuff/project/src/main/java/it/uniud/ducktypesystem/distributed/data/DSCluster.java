@@ -5,10 +5,10 @@ import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import it.uniud.ducktypesystem.controller.DSApplication;
-import it.uniud.ducktypesystem.distributed.impl.DSClusterManagerActor;
+import it.uniud.ducktypesystem.distributed.impl.DSClusterInterfaceActor;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
-import it.uniud.ducktypesystem.distributed.message.DSCreateChild;
 import it.uniud.ducktypesystem.distributed.message.DSMove;
+import it.uniud.ducktypesystem.distributed.message.DSStartQueryCheck;
 import it.uniud.ducktypesystem.view.DSAbstractView;
 import org.jboss.netty.channel.ChannelException;
 
@@ -24,7 +24,7 @@ public class DSCluster {
     private static DSCluster clusters = null;
     private ArrayList<ActorSystem> actorSystemArray;
     private ArrayList<ActorRef> robotMainActorArray;
-    private ArrayList<ActorRef> clusterManagerArray;
+    private ArrayList<ActorRef> clusterInterfaceArray;
     private Integer numRobots;
     private int portSeed = 2551;
     private static final int maxRecovery = 5;
@@ -79,15 +79,15 @@ public class DSCluster {
         actorSystemInitialization();
 
         // Connect First Host.
-        this.clusterManagerArray = new ArrayList<ActorRef>(1);
+        this.clusterInterfaceArray = new ArrayList<ActorRef>(1);
         connectNewHost();
     }
 
     public int connectNewHost() {
         actorSystemArray.add(ActorSystem.create("ClusterSystem",
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + numRobots + numHost)).withFallback(config)));
-        this.clusterManagerArray.add(actorSystemArray.get(numRobots + numHost)
-                .actorOf(DSClusterManagerActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
+        this.clusterInterfaceArray.add(actorSystemArray.get(numRobots + numHost)
+                .actorOf(DSClusterInterfaceActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
         this.activeQueries.add(new HashMap());
         return this.numHost++;
     }
@@ -118,15 +118,14 @@ public class DSCluster {
         HashMap hostQueries = activeQueries.get(host);
         // If there is already a query with the same name, change its name.
         if (hostQueries.get(query.getVersion()) != null) {
-            String attemptName = query.getVersion(); int i = 1;
-            while (hostQueries.get(attemptName+"-"+i) != null) ++i;
-            query.setVersion(attemptName+"-"+i);
+            int i = 0;
+            do { ++i; query.setName(query.getName()+"."+i);
+            } while (hostQueries.get(query.getVersion()) != null);
         }
-        hostQueries.put(query.getVersion(), new DSQueryWrapper(query, null));
-        DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
-                 facade.getNumRobot() - 1, query.serializeToString(),
-                host, query.getVersion(), query.getVersionNr());
-        clusterManagerArray.get(host).tell(tmp, ActorRef.noSender());
+        hostQueries.put(query.getVersion(), new DSQueryResult(query, query.serializeToString()));
+        DSStartQueryCheck tmp = new DSStartQueryCheck(query.serializeToString(),
+                query.getId(), facade.getNumRobot() - 1);
+        clusterInterfaceArray.get(host).tell(tmp, ActorRef.noSender());
         return query.getVersion();
     }
 
@@ -137,16 +136,15 @@ public class DSCluster {
     public void retryQuery(int host, String version) {
         if (host >= numHost) return; // FIXME
         HashMap hostQueries = activeQueries.get(host);
-        DSQueryWrapper wrapper = ((DSQueryWrapper) hostQueries.get(version));
-        wrapper.getQuery().incrementVersionNr();
-        DSCreateChild tmp = new DSCreateChild(facade.getNumSearchGroups(),
-                facade.getNumRobot() - 1, wrapper.getStillToVerify(),
-                host, version , wrapper.getQuery().getVersionNr());
-        clusterManagerArray.get(host).tell(tmp, ActorRef.noSender());
+        DSQueryResult qres = ((DSQueryResult) hostQueries.get(version));
+        qres.getQuery().incrementAttemptNr();
+        DSStartQueryCheck tmp = new DSStartQueryCheck(qres.getStillToVerify(),
+                qres.getQuery().getId(), facade.getNumRobot() - 1);
+        clusterInterfaceArray.get(host).tell(tmp, ActorRef.noSender());
     }
 
     public void makeMove(int host) {
-        clusterManagerArray.get(host).tell(new DSMove(), ActorRef.noSender());
+        clusterInterfaceArray.get(host).tell(new DSMove(), ActorRef.noSender());
     }
 
     public HashMap getActiveQueries(int host) {
@@ -155,6 +153,6 @@ public class DSCluster {
     }
 
     public void endedQuery(int host, String version, String stillToVerify) {
-        ((DSQueryWrapper) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
+        ((DSQueryResult) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
     }
 }

@@ -1,19 +1,17 @@
 package it.uniud.ducktypesystem.distributed.message;
 
-import akka.actor.ActorRef;
+import it.uniud.ducktypesystem.distributed.data.DSQuery;
 
-public class DSStartCriticalWork {
-    private ActorRef askQueryTo;
+import java.io.Serializable;
 
-    public DSStartCriticalWork(ActorRef askQueryTo) {
-        this.askQueryTo = askQueryTo;
+public class DSStartCriticalWork implements Serializable {
+    private DSQuery.QueryId queryId;
+
+    public DSStartCriticalWork(DSQuery.QueryId queryId) {
+        this.queryId = queryId;
     }
 
-    public ActorRef getAskQueryTo() {
-        return askQueryTo;
-    }
-
-    public void setAskQueryTo(ActorRef askQueryTo) {
-        this.askQueryTo = askQueryTo;
+    public DSQuery.QueryId getQueryId() {
+        return queryId;
     }
 }

@@ -1,13 +1,22 @@
 package it.uniud.ducktypesystem.distributed.message;
 
-import akka.actor.ActorRef;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-
 import java.io.Serializable;
 
 
 public class DSTryNewQuery implements Serializable {
-    public String serializedQuery;
-    public ActorRef sender;
-    public Integer left;
+    private String serializedQuery;
+    private int ttl;
+
+    public DSTryNewQuery(String serializedQuery, int ttl) {
+        this.serializedQuery = serializedQuery;
+        this.ttl = ttl;
+    }
+
+    public String getSerializedQuery() {
+        return serializedQuery;
+    }
+
+    public int getTTL() {
+        return ttl;
+    }
 }

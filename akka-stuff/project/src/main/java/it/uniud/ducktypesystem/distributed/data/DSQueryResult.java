@@ -1,10 +1,10 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-public class DSQueryWrapper {
+public class DSQueryResult {
     private DSQuery query;
     private String stillToVerify;
 
-    public DSQueryWrapper(DSQuery query, String stillToVerify) {
+    public DSQueryResult(DSQuery query, String stillToVerify) {
         this.query = query;
         this.stillToVerify = stillToVerify;
     }

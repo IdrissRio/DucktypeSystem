@@ -5,25 +5,23 @@ import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import java.io.Serializable;
 
 public class DSMissionAccomplished implements Serializable {
-    private DSQuery.QueryStatus status;
-    private String version;
+    private DSQuery.QueryId queryId;
     private String serializedQuery;
+    private DSQuery.QueryStatus status;
 
-    public DSMissionAccomplished(String version, String serializedQuery, DSQuery.QueryStatus status) {
+    public DSMissionAccomplished(DSQuery.QueryId queryId, String serializedQuery, DSQuery.QueryStatus status) {
+        this.queryId = queryId;
         this.status = status;
-        this.version = version;
         this.serializedQuery = serializedQuery;
     }
 
-    public DSQuery.QueryStatus getStatus() {
-        return status;
+    public DSQuery.QueryId getQueryId() {
+        return this.queryId;
     }
-
-    public String getVersion() {
-        return this.version;
-    }
-
     public String getSerializedQuery() {
         return serializedQuery;
+    }
+    public DSQuery.QueryStatus getStatus() {
+        return status;
     }
 }
