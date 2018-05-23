@@ -118,6 +118,7 @@ public class DSView implements DSAbstractView {
         settingPanel.setLayout(new BoxLayout(settingPanel, BoxLayout.Y_AXIS));
         panelProcess.add(numberProcessLbl);
         panelProcess.add(numberProcess);
+        autoMoveCB.setSelected(true);
         panelReplica.add(autoMoveCB);
         settingPanel.add(panelProcess);
         settingPanel.add(panelReplica);
@@ -475,13 +476,7 @@ public class DSView implements DSAbstractView {
                 );
                 if(!autoMove)
                     aglomeratePanel.add(retry, BorderLayout.SOUTH);
-                if (mapWrapper.getStillToVerify() == null)
-                    twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
-                else
-                    twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
-                aglomeratePanel.setName(mapVersion);
-                twoQueryStatusPanel.setName(mapVersion);
-                twoQueryStatusPanel.add(queryVisualization(mapWrapper.getQuery()));
+
                 Color labelColor;
                 switch (status) {
                     case MATCH:
@@ -505,8 +500,6 @@ public class DSView implements DSAbstractView {
                 queryNameLbl.setFont(new Font("Bariol", Font.PLAIN, 20));
                 queryNameLbl.setForeground(labelColor);
                 queryNameLbl.setHorizontalAlignment(SwingConstants.CENTER);
-                aglomeratePanel.setBackground(Color.DARK_GRAY);
-                aglomeratePanel.add(queryNameLbl, BorderLayout.NORTH);
                 for (Component c : eastPanelQuery.getComponents()) {
                     if (c instanceof JPanel && c.getName().equals(mapVersion)) { //FIXME: Rossi G. ... Perdoname por mi vida loca !
                         find = true;
@@ -515,7 +508,8 @@ public class DSView implements DSAbstractView {
                                 int i = 0;
                                 for (Component e : ((JPanel) d).getComponents()) {
                                     ++i;
-                                    if (e.getName() != null && mapWrapper.getStillToVerify() != null) {
+                                    if (e.getName() != null && !mapWrapper.getStillToVerify().equals("\n")) {
+                                        twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
                                         ((JPanel) d).remove(e);
                                         JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
                                         tmp.setName(mapVersion);
@@ -523,10 +517,11 @@ public class DSView implements DSAbstractView {
                                         ((JPanel) d).add(tmp);
                                     }
                                     if (e.getName() != null & status != DSQuery.QueryStatus.DONTKNOW) {
+                                        twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
                                         ((JPanel) d).remove(e);
                                     }
                                 }
-                                if (i < 2 && mapWrapper.getStillToVerify() != null) {
+                                if (i < 2 && !mapWrapper.getStillToVerify().equals("\n")) {
                                     JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
                                     tmp.setName(mapVersion);
                                     tmp.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
@@ -543,6 +538,12 @@ public class DSView implements DSAbstractView {
 
 
                 if (find == false) {
+                    twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
+                    aglomeratePanel.setName(mapVersion);
+                    twoQueryStatusPanel.setName(mapVersion);
+                    twoQueryStatusPanel.add(queryVisualization(mapWrapper.getQuery()));
+                    aglomeratePanel.setBackground(Color.DARK_GRAY);
+                    aglomeratePanel.add(queryNameLbl, BorderLayout.NORTH);
                     aglomeratePanel.add(twoQueryStatusPanel, BorderLayout.CENTER);
                     aglomeratePanel.setBorder(new MatteBorder(0, 0, 2, 0, Color.WHITE));
                     eastPanelQuery.add(aglomeratePanel);

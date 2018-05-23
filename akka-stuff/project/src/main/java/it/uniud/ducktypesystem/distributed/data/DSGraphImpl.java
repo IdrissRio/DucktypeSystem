@@ -337,7 +337,7 @@ public class DSGraphImpl implements DSGraph {
 
     @Override
     public void loadFromSerializedString(String serialized) {
-        if (serialized == null || serialized.equals("")) return; // FIXME
+        if (serialized == null || serialized.equals("\n")) return; // FIXME
         String[] ne = serialized.split("\n");
         String[] nodes = ne[0].split("\t");
         String[] edges = ne[1].split("\t");
@@ -351,6 +351,7 @@ public class DSGraphImpl implements DSGraph {
     }
     public static DSQuery createFromSerializedString(String serialized) {
         DSQuery q = new DSQueryImpl();
+        if(serialized== null || serialized.equals("\n")) return null;
         q.loadFromSerializedString(serialized);
         return q;
     }

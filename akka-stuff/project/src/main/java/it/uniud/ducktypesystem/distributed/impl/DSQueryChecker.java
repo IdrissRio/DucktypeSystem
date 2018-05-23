@@ -73,7 +73,7 @@ public class DSQueryChecker extends AbstractActor {
                     DSQuery.QueryStatus status = query.checkAndReduce(myView, myNode);
 
                     // Simulate casual death during critical work
-                    boolean shouldIDie = (ThreadLocalRandom.current().nextInt(0, 5) == 0);
+                    boolean shouldIDie = (ThreadLocalRandom.current().nextInt(0, 5) == -1);
                     if (shouldIDie) throw new ActorKilledException(myNode + ": I'm DYING!");
 
                     switch (status) {

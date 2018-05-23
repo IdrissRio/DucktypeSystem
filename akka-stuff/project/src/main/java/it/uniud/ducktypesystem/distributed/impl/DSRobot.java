@@ -112,7 +112,7 @@ public class DSRobot extends AbstractActor {
                     Thread.sleep(500);
 
                     // Simulate death of a QueryChecker in WAITING.
-                    boolean shouldIKill = (ThreadLocalRandom.current().nextInt(0, 10) == 0);
+                    boolean shouldIKill = (ThreadLocalRandom.current().nextInt(0, 10) == -1);
                     if (shouldIKill) { log.info("I'M KILLING MY SON"); child.tell("Die!", getSelf()); }
                 })
                 .build();
