@@ -118,6 +118,6 @@ public class DSRobot extends AbstractActor {
                 .build();
     }
     static public Props props(DSGraph view, String node, String name) {
-        return Props.create(DSRobot.class, () -> new DSRobot(view, node,name));
+        return Props.create(DSRobot.class, view, node, name);
     }
 }

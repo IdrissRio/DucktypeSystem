@@ -56,6 +56,6 @@ public class DSClusterInterfaceActor extends AbstractActor {
     }
 
     static public Props props(int host, int numRobots) {
-        return Props.create(DSClusterInterfaceActor.class, () -> new DSClusterInterfaceActor(host, numRobots));
+        return Props.create(DSClusterInterfaceActor.class, host, numRobots);
     }
 }

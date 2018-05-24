@@ -93,6 +93,6 @@ public class DSQueryChecker extends AbstractActor {
     }
 
     static public Props props(DSGraph myView, String myNode, DSQuery.QueryId qId) {
-        return Props.create(DSQueryChecker.class, () -> new DSQueryChecker(myView, myNode, qId));
+        return Props.create(DSQueryChecker.class, myView, myNode, qId);
     }
 }
