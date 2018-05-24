@@ -15,9 +15,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class DataFacade {
     private static DataFacade instance = null;
-    public static final int MOVEFAIL = 5;
-    public static final int CRITICALFAIL = 10;
-    public static final int WAITINGFAIL = 5;
+    private int MOVEFAIL;
+    private int CRITICALFAIL;
+    private int WAITINGFAIL;
+    //public static final int MOVEFAIL = 5;
+    //public static final int CRITICALFAIL = 10;
+    //public static final int WAITINGFAIL = 5;
 
     private DSGraph map;
     private ArrayList<String> occupied;
@@ -39,6 +42,9 @@ public class DataFacade {
         map = DSGraphImpl.createGraphFromFile(filePath);
         occupied= new ArrayList<>();
         enabledFailure = true;
+        MOVEFAIL=5;
+        CRITICALFAIL=10;
+        WAITINGFAIL=5;
     }
 
     // Overloaded setters for `occupied'.
@@ -71,6 +77,30 @@ public class DataFacade {
     }
     public void enableFailure() {
         this.enabledFailure = true;
+    }
+
+    public int getMOVEFAIL() {
+        return MOVEFAIL;
+    }
+
+    public void setMOVEFAIL(int MOVEFAIL) {
+        this.MOVEFAIL = MOVEFAIL;
+    }
+
+    public int getCRITICALFAIL() {
+        return CRITICALFAIL;
+    }
+
+    public void setCRITICALFAIL(int CRITICALFAIL) {
+        this.CRITICALFAIL = CRITICALFAIL;
+    }
+
+    public int getWAITINGFAIL() {
+        return WAITINGFAIL;
+    }
+
+    public void setWAITINGFAIL(int WAITINGFAIL) {
+        this.WAITINGFAIL = WAITINGFAIL;
     }
 
     public boolean shouldFailMove() {
