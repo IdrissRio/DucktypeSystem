@@ -9,10 +9,11 @@ import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.message.*;
+import it.uniud.ducktypesystem.errors.SystemError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
 
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -46,6 +47,20 @@ public class DSRobot extends AbstractActor {
         this.myNode = node;
         this.lastStep = null;
         this.activeQueryCheckers = new HashMap();
+        log.info("CREAZIONE ROBOT with view " + view.toString());
+    }
+
+    @Override
+    public void preRestart(Throwable resason, Optional<Object> messages) {
+        log.info("PRE RESTART!!!!!!!!!!!");
+        // TODO: Stop childrens?
+    }
+
+    @Override
+    public void postRestart(Throwable reason) {
+        log.info("POST RESTART!!!!!!!!!!!");
+        // TODO: signal to ClusterInterface that I died.
+        // Stop queries?
     }
 
     @Override
@@ -55,6 +70,12 @@ public class DSRobot extends AbstractActor {
                     String tmp = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
                     lastStep = tmp;
+
+                    // Simulate Robot Death.
+                    if (DataFacade.getInstance().shouldFailMove()) {
+                        throw new SystemError(myName + " I'm DYING in MOVE!");
+                    }
+
                     /* Note: This is just for debugging purposes:
                      * We DON'T claim to know the exact position of every robot:
                      * in a real distributed context this static access would be illegal,
@@ -111,9 +132,12 @@ public class DSRobot extends AbstractActor {
                     activeQueryCheckers.put(in.getQueryId().getPath(), new QCMonitor(child));
                     Thread.sleep(500);
 
-                    // Simulate death of a QueryChecker in WAITING.
-                    boolean shouldIKill = (ThreadLocalRandom.current().nextInt(0, 10) == -1);
-                    if (shouldIKill) { log.info("I'M KILLING MY SON"); child.tell("Die!", getSelf()); }
+                    // Simulate QueryChecker's Death in WAITING.
+                    if (DataFacade.getInstance().shouldDieInWaiting()) {
+                        log.info("I'M KILLING MY SON");
+                        // child.tell("Die!", getSelf());
+                        getContext().stop(child);
+                    }
                 })
                 .build();
     }

@@ -43,10 +43,8 @@ public class GraphTest {
         try {
             facade = DataFacade.create(fileName);
             facade.setOccupied(2);
-            facade.setNumSearchGroups(5);
 
             Assert.assertEquals(facade.getOccupied().size(), 2);
-            Assert.assertEquals(facade.getNumSearchGroups(), 5);
         } catch (Throwable systemError) {
             systemError.printStackTrace();
         }
@@ -57,7 +55,6 @@ public class GraphTest {
         facade = DataFacade.create(fileName);
         graph = facade.getMap();
 
-        Assert.assertEquals(facade.getNumSearchGroups(), 3);
         Assert.assertEquals(facade.getOccupied().size(), 0);
     }
 

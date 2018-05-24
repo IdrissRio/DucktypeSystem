@@ -15,16 +15,14 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class DataFacade {
     private static DataFacade instance = null;
+    public static final int MOVEFAIL = 5;
+    public static final int CRITICALFAIL = 10;
+    public static final int WAITINGFAIL = 5;
+
     private DSGraph map;
     private ArrayList<String> occupied;
-    private int numSearchGroups;
     private int numRobot;
-
-    /* Just for debugging Move() */
-    public DataFacade(DSGraph graph) {
-        instance = this;
-        this.map = graph;
-    }
+    private boolean enabledFailure;
 
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws SystemError {
@@ -40,11 +38,7 @@ public class DataFacade {
     private DataFacade(String filePath) throws SystemError {
         map = DSGraphImpl.createGraphFromFile(filePath);
         occupied= new ArrayList<>();
-        numSearchGroups = 3;
-    }
-
-    public void setNumSearchGroups(int numSearchGroups) {
-        this.numSearchGroups = numSearchGroups;
+        enabledFailure = true;
     }
 
     // Overloaded setters for `occupied'.
@@ -67,11 +61,28 @@ public class DataFacade {
     public ArrayList<String> getOccupied() {
         return occupied;
     }
-    public int getNumSearchGroups() {
-        return numSearchGroups;
-    }
 
     public int getNumRobot() {
         return numRobot;
+    }
+
+    public void disableFailure() {
+        this.enabledFailure = false;
+    }
+    public void enableFailure() {
+        this.enabledFailure = true;
+    }
+
+    public boolean shouldFailMove() {
+       return (ThreadLocalRandom.current().nextInt(
+               0, enabledFailure ? MOVEFAIL : 0 ) == 1);
+    }
+    public boolean shouldFailInCriticalWork() {
+        return (ThreadLocalRandom.current().nextInt(
+                0, enabledFailure ? CRITICALFAIL : 0 ) == 1);
+    }
+    public boolean shouldDieInWaiting() {
+        return (ThreadLocalRandom.current().nextInt(
+                0, enabledFailure ? WAITINGFAIL : 0 ) == 1);
     }
 }

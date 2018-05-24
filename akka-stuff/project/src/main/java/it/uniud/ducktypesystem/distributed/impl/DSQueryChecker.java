@@ -11,9 +11,8 @@ import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
+import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.message.*;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 public class DSQueryChecker extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -64,7 +63,6 @@ public class DSQueryChecker extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(String.class, msg -> { throw new ActorKilledException(myNode + ": I'm DYING!");} )
                 .match(DSTryNewQuery.class, msg -> {
                     this.query = new DSQueryImpl();
                     this.query.loadFromSerializedString(msg.getSerializedQuery());
@@ -72,9 +70,9 @@ public class DSQueryChecker extends AbstractActor {
 
                     DSQuery.QueryStatus status = query.checkAndReduce(myView, myNode);
 
-                    // Simulate casual death during critical work
-                    boolean shouldIDie = (ThreadLocalRandom.current().nextInt(0, 5) == -1);
-                    if (shouldIDie) throw new ActorKilledException(myNode + ": I'm DYING!");
+                    // Simulate QueryChecker's Death during critical work
+                    if (DataFacade.getInstance().shouldFailInCriticalWork())
+                        throw new ActorKilledException(myNode + ": I'm DYING!");
 
                     switch (status) {
                         case FAIL:

@@ -33,7 +33,6 @@ public class DSView implements DSAbstractView {
     // or NullPointerException will be thrown.
     private DataFacade facade;
     private Integer processNumber;
-    private Integer replicasNumber;
     private Graph graph;
     private Viewer viewer;
     private Color greenForest= new Color(11,102,35);
@@ -65,7 +64,6 @@ public class DSView implements DSAbstractView {
             e.printStackTrace();
         }
         processNumber=3;
-        replicasNumber=1;
         this.App = application;
         logger=new DSLog();
         graphCheck=false;
@@ -141,9 +139,8 @@ public class DSView implements DSAbstractView {
             try {
                 processNumber = Integer.parseInt(numberProcess.getText());
                 autoMove=autoMoveCB.isSelected();
-                //replicasNumber = Integer.parseInt(numberReplica.getText());
                 mainPathField.setText(pathField.getText());
-                configureSystem(graphPathString, processNumber, replicasNumber, logger);
+                configureSystem(graphPathString, processNumber, logger);
                 Thread thread = new Thread(() -> {
                     showInformationMessage("INFO: starting the AKKA environment.");
                     try {
@@ -398,9 +395,8 @@ public class DSView implements DSAbstractView {
     }
     // Initialize graph and system parameters got from visual interface.
     // NB: the caller is responsible of initialize `numRobot' and `numSearchGroup' default parameters (0 and 3 respectively).
-    private void configureSystem(String filePath, int numRobot, int numSearchGroup, DSAbstractLog log) throws SystemError {
+    private void configureSystem(String filePath, int numRobot, DSAbstractLog log) throws SystemError {
         facade=DataFacade.create(filePath);
-        facade.setNumSearchGroups(numSearchGroup);
         facade.setOccupied(numRobot);
         StringBuilder b = new StringBuilder();
         b.append("Robot posizionati in: ");
