@@ -23,7 +23,6 @@ public class DSCluster {
     private final Config config = ConfigFactory.load("akka.conf");
     private static DSCluster clusters = null;
     private ArrayList<ActorSystem> actorSystemArray;
-    private ArrayList<ActorRef> robotMainActorArray;
     private ArrayList<ActorRef> clusterInterfaceArray;
     private Integer numRobots;
     private int portSeed = 2551;
@@ -34,10 +33,12 @@ public class DSCluster {
 
     private void actorSystemInitialization(){
         try {
+            // Create Robot's ActorSystem.
             for (int i = 0; i < numRobots; ++i)
                 actorSystemArray.add(ActorSystem.create("ClusterSystem",
                         ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + i)).withFallback(config)));
             view.showInformationMessage("AKKA: Every Robot is connected");
+
             robotMainActorInitialization();
         } catch (ChannelException e) {
             exceptionFound();
@@ -52,8 +53,8 @@ public class DSCluster {
         int i = 0;
         for (String localNode : facade.getOccupied()) {
             DSGraph localView = facade.getMap().getViewFromNode(localNode);
-            robotMainActorArray.add(actorSystemArray.get(i)
-                    .actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT"));
+            actorSystemArray.get(i)
+                    .actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT");
             ++i;
         }
     }
@@ -74,7 +75,6 @@ public class DSCluster {
         this.numRobots = facade.getOccupied().size();
         // Initialize capacity considering the first connected host.
         this.actorSystemArray = new ArrayList<ActorSystem>(numRobots + 1 );
-        this.robotMainActorArray = new ArrayList<ActorRef>(numRobots);
 
         actorSystemInitialization();
 
@@ -84,8 +84,10 @@ public class DSCluster {
     }
 
     public int connectNewHost() {
-        actorSystemArray.add(ActorSystem.create("ClusterSystem",
+        // Add a new ActorSystem for the new host.
+        this.actorSystemArray.add(ActorSystem.create("ClusterSystem",
                 ConfigFactory.parseString("akka.remote.netty.tcp.port=" + (portSeed + numRobots + numHost)).withFallback(config)));
+        // Add the clusterInterface Actor for the new host.
         this.clusterInterfaceArray.add(actorSystemArray.get(numRobots + numHost)
                 .actorOf(DSClusterInterfaceActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
         this.activeQueries.add(new HashMap());
@@ -104,13 +106,6 @@ public class DSCluster {
         if(actualRecovery==0)
             view.showErrorMessage("AKKA: Error in cluster initialization. Starting recovery mode.");
         ++actualRecovery;
-    }
-    public ArrayList<ActorRef> getRobotMainActorArray(){
-        return robotMainActorArray;
-    }
-
-    public ArrayList<ActorSystem> getActorSystemArray(){
-        return actorSystemArray;
     }
 
     public String startNewComputation(int host, DSQuery query) {
