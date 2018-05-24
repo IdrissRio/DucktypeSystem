@@ -4,9 +4,9 @@ text-color: white;
 text-style: bold;
 text-background-mode: rounded-box;
 text-background-color: #222C;
-text-padding: 5px;
-text-offset: 5px, 5px;
-text-size: 15px;
+text-padding: 2px;
+text-offset: 2px, 2px;
+text-size: 10px;
 }
 
 

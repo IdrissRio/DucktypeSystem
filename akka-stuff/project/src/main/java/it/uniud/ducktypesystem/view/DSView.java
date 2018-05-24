@@ -13,9 +13,11 @@ import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 
 import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
 
@@ -46,6 +48,9 @@ public class DSView implements DSAbstractView {
     private JScrollPane scrollForQuery;
     private JPanel mainPanel;
     private Boolean autoMove;
+    private Boolean betterVisualizationBool;
+    private JFrame externalView;
+    private JPanel externalPanel;
 
     public DSView(DSApplication application) {
         try {
@@ -73,6 +78,7 @@ public class DSView implements DSAbstractView {
         logScroll.setSize(new Dimension(1000,300));
         graphPanel=new JPanel(new BorderLayout());
         autoMove=false;
+        betterVisualizationBool=false;
     }
 
 
@@ -271,7 +277,7 @@ public class DSView implements DSAbstractView {
         eastPanelQuery=new JPanel();
         eastPanelQuery.setLayout(new BoxLayout(eastPanelQuery, BoxLayout.Y_AXIS));
         scrollForQuery=new JScrollPane(eastPanelQuery,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollForQuery.setPreferredSize(new Dimension(300,500));
+        scrollForQuery.setPreferredSize(new Dimension(500,500));
         startNewComputation = new JButton("Start");
         startNewComputation.setEnabled(isStartEnable());
         mainPathField=new JTextField();
@@ -293,7 +299,7 @@ public class DSView implements DSAbstractView {
         mainFrame = new JFrame();
         mainFrame.getContentPane().add(mainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
-        mainFrame.setBounds(20, 00, 1000, 750);
+        mainFrame.setBounds(20, 00, 1200, 750);
         mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainPathField.setFont(Font.getFont("Bariol"));
@@ -476,7 +482,6 @@ public class DSView implements DSAbstractView {
                 );
                 if(!autoMove)
                     aglomeratePanel.add(retry, BorderLayout.SOUTH);
-
                 Color labelColor;
                 switch (status) {
                     case MATCH:
@@ -512,9 +517,50 @@ public class DSView implements DSAbstractView {
                                         twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
                                         ((JPanel) d).remove(e);
                                         JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
+                                        JPanel northPanelForBetterVisualization = new JPanel(new BorderLayout());
+                                        JPanel reallyNorthPanel = new JPanel(new FlowLayout());
+                                        JLabel statusLable= new JLabel("Still to verify...");
+                                        URL url = getClass().getResource("/apri.png");
+                                        JButton betterVisualization = new JButton(new ImageIcon(url));
+                                        betterVisualization.addActionListener(x->{
+                                            try {
+                                                if (betterVisualizationBool)throw new SystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
+                                                        "Close it before open another one.");
+                                                else{
+                                                    betterVisualizationBool=true;
+                                                    externalPanel = new JPanel(new BorderLayout());
+                                                    externalView = new JFrame();
+                                                    externalView.setContentPane(externalPanel);
+                                                    externalView.setSize(new Dimension(900,700));
+                                                    externalView.setName("Query:" + mapVersion);
+                                                    externalView.setVisible(true);
+                                                    externalView.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+                                                    externalView.addWindowListener(new WindowAdapter() {
+                                                        @Override
+                                                        public void windowClosing(WindowEvent evento) {
+                                                            betterVisualizationBool=false;
+                                                            externalView.dispose();
+                                                        }
+                                                    });
+                                                }
+
+                                            }catch(SystemError error){
+                                                JOptionPane.showMessageDialog(null,
+                                                        error.getMessage(),"Error !",JOptionPane.ERROR_MESSAGE);
+                                            }
+
+                                        });
+                                        statusLable.setForeground(Color.WHITE);
+                                        statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
+                                        reallyNorthPanel.add(statusLable);
+                                        reallyNorthPanel.add(betterVisualization);
+                                        northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
+                                        reallyNorthPanel.setBackground(Color.DARK_GRAY);
+                                        northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
                                         tmp.setName(mapVersion);
-                                        tmp.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
-                                        ((JPanel) d).add(tmp);
+                                        northPanelForBetterVisualization.setName(mapVersion);
+                                        northPanelForBetterVisualization.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
+                                        ((JPanel) d).add(northPanelForBetterVisualization);
                                     }
                                     if (e.getName() != null & status != DSQuery.QueryStatus.DONTKNOW) {
                                         twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
@@ -523,9 +569,22 @@ public class DSView implements DSAbstractView {
                                 }
                                 if (i < 2 && !mapWrapper.getStillToVerify().equals("\n")) {
                                     JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
-                                    tmp.setName(mapVersion);
-                                    tmp.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
-                                    ((JPanel) d).add(tmp);
+                                    JPanel northPanelForBetterVisualization = new JPanel(new BorderLayout());
+                                    JPanel reallyNorthPanel = new JPanel(new FlowLayout());
+                                    JLabel statusLable= new JLabel("Still to verify...");
+                                    URL url = getClass().getResource("/apri.png");
+                                    JButton betterVisualization = new JButton(new ImageIcon(url));
+                                    statusLable.setForeground(Color.WHITE);
+                                    statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
+                                    reallyNorthPanel.add(statusLable);
+                                    reallyNorthPanel.add(betterVisualization);
+                                    northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
+                                    northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
+                                    reallyNorthPanel.setBackground(Color.DARK_GRAY);
+                                    //tmp.add(northPanelForBetterVisualization, BorderLayout.NORTH);
+                                    northPanelForBetterVisualization.setName(mapVersion);
+                                    northPanelForBetterVisualization.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
+                                    ((JPanel) d).add(northPanelForBetterVisualization);
                                 }
                             }
                             if ((d instanceof JLabel)) {
@@ -554,6 +613,9 @@ public class DSView implements DSAbstractView {
         mainPanel.updateUI();
     }
 
+    private void refreshBetterVisualization(){
+
+    }
 
     @Override
     public void updateQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
