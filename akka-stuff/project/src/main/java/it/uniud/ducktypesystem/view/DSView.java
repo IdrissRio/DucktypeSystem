@@ -225,6 +225,7 @@ public class DSView implements DSAbstractView {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
         JFrame mainFrame = new JFrame();
+        mainFrame.setAlwaysOnTop(true);
         welcomeMainPanel.add(panelGraphNew, BorderLayout.CENTER);
         DucktypeSystemLbl.setSize(200, 200);
         DucktypeSystemLbl.setFont(new Font("Bariol", Font.PLAIN,30));
@@ -524,18 +525,23 @@ public class DSView implements DSAbstractView {
                                                         "Close it before open another one.");
                                                 else{
                                                     betterVisualizationBool=true;
-                                                    externalPanel = new JPanel(new BorderLayout());
+                                                    externalPanel = eastPanelQuery;
+                                                    mainFrame.remove(scrollForQuery);
                                                     externalView = new JFrame();
-                                                    externalView.setContentPane(externalPanel);
+                                                    JScrollPane www = scrollForQuery;
+                                                    externalView.setContentPane(www);
                                                     externalView.setSize(new Dimension(900,700));
                                                     externalView.setName("Query:" + mapVersion);
+                                                    mainPanel.updateUI();
                                                     externalView.setVisible(true);
                                                     externalView.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
                                                     externalView.addWindowListener(new WindowAdapter() {
                                                         @Override
                                                         public void windowClosing(WindowEvent evento) {
+                                                            mainPanel.add(scrollForQuery, BorderLayout.EAST);
                                                             betterVisualizationBool=false;
                                                             externalView.dispose();
+                                                            mainPanel.updateUI();
                                                         }
                                                     });
                                                 }
@@ -549,7 +555,8 @@ public class DSView implements DSAbstractView {
                                         statusLable.setForeground(Color.WHITE);
                                         statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
                                         reallyNorthPanel.add(statusLable);
-                                        reallyNorthPanel.add(betterVisualization);
+                                        if(!betterVisualizationBool)
+                                            reallyNorthPanel.add(betterVisualization);
                                         northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
                                         reallyNorthPanel.setBackground(Color.DARK_GRAY);
                                         northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
@@ -570,14 +577,47 @@ public class DSView implements DSAbstractView {
                                     JLabel statusLable= new JLabel("Still to verify...");
                                     URL url = getClass().getResource("/apri.png");
                                     JButton betterVisualization = new JButton(new ImageIcon(url));
+                                    betterVisualization.addActionListener(x->{
+                                        try {
+                                            if (betterVisualizationBool)throw new SystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
+                                                    "Close it before open another one.");
+                                            else{
+                                                betterVisualizationBool=true;
+                                                externalPanel = eastPanelQuery;
+                                                mainFrame.remove(scrollForQuery);
+                                                externalView = new JFrame();
+                                                JScrollPane www = scrollForQuery;
+                                                externalView.setContentPane(www);
+                                                externalView.setSize(new Dimension(900,700));
+                                                externalView.setName("Query:" + mapVersion);
+                                                mainPanel.updateUI();
+                                                externalView.setVisible(true);
+                                                externalView.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+                                                externalView.addWindowListener(new WindowAdapter() {
+                                                    @Override
+                                                    public void windowClosing(WindowEvent evento) {
+                                                        mainPanel.add(scrollForQuery, BorderLayout.EAST);
+                                                        betterVisualizationBool=false;
+                                                        externalView.dispose();
+                                                        mainPanel.updateUI();
+                                                    }
+                                                });
+                                            }
+
+                                        }catch(SystemError error){
+                                            JOptionPane.showMessageDialog(null,
+                                                    error.getMessage(),"Error !",JOptionPane.ERROR_MESSAGE);
+                                        }
+
+                                    });
                                     statusLable.setForeground(Color.WHITE);
                                     statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
                                     reallyNorthPanel.add(statusLable);
-                                    reallyNorthPanel.add(betterVisualization);
+                                    if(!betterVisualizationBool)
+                                        reallyNorthPanel.add(betterVisualization);
                                     northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
                                     northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
                                     reallyNorthPanel.setBackground(Color.DARK_GRAY);
-                                    //tmp.add(northPanelForBetterVisualization, BorderLayout.NORTH);
                                     northPanelForBetterVisualization.setName(mapVersion);
                                     northPanelForBetterVisualization.setBorder(new MatteBorder(2, 0, 0, 0, Color.BLACK));
                                     ((JPanel) d).add(northPanelForBetterVisualization);
@@ -606,7 +646,8 @@ public class DSView implements DSAbstractView {
             }
             eastPanelQuery.add(Box.createVerticalGlue());
         });
-        mainPanel.updateUI();
+        if(betterVisualizationBool)externalPanel.updateUI();
+        else mainPanel.updateUI();
     }
 
     private void refreshBetterVisualization(){
