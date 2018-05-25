@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 
 public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     private QueryId id;
@@ -18,7 +18,7 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
         id = new QueryId(q.getId());
     }
 
-    public static DSQuery createQueryFromFile(String filePath) throws SystemError {
+    public static DSQuery createQueryFromFile(String filePath) throws DSSystemError {
         DSQuery q = new DSQueryImpl(DSGraphImpl.createGraphFromFile(filePath));
         // Get version name from fileName without extensions and previous path.
         filePath = filePath.replaceFirst("(.*)/","");

@@ -3,7 +3,7 @@ package it.uniud.ducktypesystem.tests.data;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.file.FileSource;
 import org.graphstream.stream.file.FileSourceFactory;
@@ -19,7 +19,7 @@ public class GraphTest {
     private DefaultGraph realGraph;
     private String fileName;
 
-    public GraphTest() throws SystemError, IOException {
+    public GraphTest() throws DSSystemError, IOException {
         String basePath = new File("").getAbsolutePath();
         fileName = basePath + "/src/test/resources/graphTest01.DGS";
         facade = DataFacade.create(fileName);
@@ -31,7 +31,7 @@ public class GraphTest {
         try {
             fs.readAll(fileName);
         } catch (Throwable t) {
-            throw new SystemError(t);
+            throw new DSSystemError(t);
         } finally {
             fs.removeSink(realGraph);
         }
@@ -51,7 +51,7 @@ public class GraphTest {
     }
 
     @Test
-    public void initFacade02() throws SystemError {
+    public void initFacade02() throws DSSystemError {
         facade = DataFacade.create(fileName);
         graph = facade.getMap();
 

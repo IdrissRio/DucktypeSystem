@@ -2,7 +2,7 @@ package it.uniud.ducktypesystem.view;
 
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.data.*;
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 import it.uniud.ducktypesystem.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.logger.DSLog;
 import org.graphstream.algorithm.generator.FlowerSnarkGenerator;
@@ -13,7 +13,6 @@ import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
@@ -168,7 +167,7 @@ public class DSView implements DSAbstractView {
                 error.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         " You have to choose a file description for the graph.","Error !",JOptionPane.ERROR_MESSAGE);
-            }catch(SystemError sError){
+            }catch(DSSystemError sError){
                 sError.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         " SETTINGS: I cannot read this file.\n" +
@@ -211,56 +210,56 @@ public class DSView implements DSAbstractView {
             JDialog secondFrame = new JDialog(getMainFrame());
             JPanel settingPanel = new JPanel(new FlowLayout());
             JRadioButton nullaMOVEFAIL = new JRadioButton("Disable");
-            nullaMOVEFAIL.setSelected(facade.getMOVEFAIL()==0);
+            nullaMOVEFAIL.setSelected(facade.getMOVEFAIL()==1);
             nullaMOVEFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setMOVEFAIL(0);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setMOVEFAIL(1);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton nullaWAITINGFAIL = new JRadioButton("Disabled");
-            nullaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==0);
+            nullaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==1);
             nullaWAITINGFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setWAITINGFAIL(0);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setWAITINGFAIL(1);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton nullaCRITICALFAIL = new JRadioButton("Disabled");
-            nullaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==0);
+            nullaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==1);
             nullaCRITICALFAIL.addActionListener(x->{
                 try {
                     DataFacade.getInstance().setCRITICALFAIL(0);
-                }catch (SystemError e){
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton bassaMOVEFAIL = new JRadioButton("Low");
-            bassaMOVEFAIL.setSelected(facade.getMOVEFAIL()==10);
+            bassaMOVEFAIL.setSelected(facade.getMOVEFAIL()==20);
             bassaMOVEFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setMOVEFAIL(10);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setMOVEFAIL(20);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton bassaWAITINGFAIL = new JRadioButton("Low");
-            bassaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==10);
+            bassaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==20);
             bassaWAITINGFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setWAITINGFAIL(10);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setWAITINGFAIL(20);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton bassaCRITICALFAIL = new JRadioButton("Low");
-            bassaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==10);
+            bassaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==20);
             bassaCRITICALFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setCRITICALFAIL(10);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setCRITICALFAIL(20);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
@@ -268,26 +267,26 @@ public class DSView implements DSAbstractView {
             altaMOVEFAIL.setSelected(facade.getMOVEFAIL()==5);
            altaMOVEFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setMOVEFAIL(1);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setMOVEFAIL(5);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton altaWAITINGFAIL = new JRadioButton("High");
-            altaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==1);
+            altaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==5);
             altaWAITINGFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setWAITINGFAIL(1);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setWAITINGFAIL(5);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
             JRadioButton altaCRITICALFAIL = new JRadioButton("High");
-            altaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==1);
+            altaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==5);
             altaCRITICALFAIL.addActionListener(x->{
                 try {
-                    DataFacade.getInstance().setCRITICALFAIL(1);
-                }catch (SystemError e){
+                    DataFacade.getInstance().setCRITICALFAIL(5);
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
@@ -296,7 +295,7 @@ public class DSView implements DSAbstractView {
             mediaMOVEFAIL.addActionListener(x->{
                 try {
                     DataFacade.getInstance().setMOVEFAIL(5);
-                }catch (SystemError e){
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
@@ -305,7 +304,7 @@ public class DSView implements DSAbstractView {
             mediaWAITINGFAIL.addActionListener(x->{
                 try {
                     DataFacade.getInstance().setWAITINGFAIL(5);
-                }catch (SystemError e){
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
@@ -314,7 +313,7 @@ public class DSView implements DSAbstractView {
             mediaCRITICALFAIL.addActionListener(x->{
                 try {
                     DataFacade.getInstance().setCRITICALFAIL(5);
-                }catch (SystemError e){
+                }catch (DSSystemError e){
                     showErrorMessage(e.getMessage());
                 }
             });
@@ -343,7 +342,7 @@ public class DSView implements DSAbstractView {
             radioPanelCritical.add(mediaCRITICALFAIL);
             radioPanelCritical.add(altaCRITICALFAIL);
             JPanel radioPanelMoving = new JPanel(new GridLayout(0, 1));
-            JLabel movingLabel = new JLabel("  CriticalFail");
+            JLabel movingLabel = new JLabel("  RobotFail");
             movingLabel.setFont(new Font("Bariol", Font.PLAIN,15));
             movingLabel.setForeground(Color.DARK_GRAY);
             radioPanelMoving.add(movingLabel);
@@ -390,6 +389,7 @@ public class DSView implements DSAbstractView {
                         facade.setCRITICALFAIL(tempCRITICALFAIL);
                         facade.setMOVEFAIL(tempMOVEFAIL);
                         facade.setWAITINGFAIL(tempWAITINGFAIL);
+                        // FIXME : close window!
                     }
                 }
             });
@@ -533,7 +533,7 @@ public class DSView implements DSAbstractView {
 
             }catch(NullPointerException error) {
                 showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
-            }catch(SystemError sError){
+            }catch(DSSystemError sError){
                 showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
                         " TLP, NET, graphML, GEXF.");
                 queryField.setText("");
@@ -584,7 +584,7 @@ public class DSView implements DSAbstractView {
         graphPanel.add(graphView);
     }
 
-    private void configureSystem(String filePath, int numRobot, DSAbstractLog log) throws SystemError {
+    private void configureSystem(String filePath, int numRobot, DSAbstractLog log) throws DSSystemError {
         facade=DataFacade.create(filePath);
         facade.setOccupied(numRobot);
         StringBuilder b = new StringBuilder();
@@ -708,7 +708,7 @@ public class DSView implements DSAbstractView {
                                         JButton betterVisualization = new JButton(new ImageIcon(url));
                                         betterVisualization.addActionListener(x->{
                                             try {
-                                                if (betterVisualizationBool)throw new SystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
+                                                if (betterVisualizationBool)throw new DSSystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
                                                         "Close it before open another one.");
                                                 else{
                                                     betterVisualizationBool=true;
@@ -733,7 +733,7 @@ public class DSView implements DSAbstractView {
                                                     });
                                                 }
 
-                                            }catch(SystemError error){
+                                            }catch(DSSystemError error){
                                                 JOptionPane.showMessageDialog(null,
                                                         error.getMessage(),"Error !",JOptionPane.ERROR_MESSAGE);
                                             }
@@ -766,7 +766,7 @@ public class DSView implements DSAbstractView {
                                     JButton betterVisualization = new JButton(new ImageIcon(url));
                                     betterVisualization.addActionListener(x->{
                                         try {
-                                            if (betterVisualizationBool)throw new SystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
+                                            if (betterVisualizationBool)throw new DSSystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
                                                     "Close it before open another one.");
                                             else{
                                                 betterVisualizationBool=true;
@@ -791,7 +791,7 @@ public class DSView implements DSAbstractView {
                                                 });
                                             }
 
-                                        }catch(SystemError error){
+                                        }catch(DSSystemError error){
                                             JOptionPane.showMessageDialog(null,
                                                     error.getMessage(),"Error !",JOptionPane.ERROR_MESSAGE);
                                         }

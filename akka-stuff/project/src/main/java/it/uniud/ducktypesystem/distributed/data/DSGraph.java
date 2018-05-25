@@ -1,12 +1,12 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 
 import java.io.Serializable;
 import java.util.List;
 
 public interface DSGraph extends Serializable {
-    void loadGraphFromFile(String filePath) throws SystemError;
+    void loadGraphFromFile(String filePath) throws DSSystemError;
 
     int numNodes();
     String getNode(int i);
@@ -29,8 +29,7 @@ public interface DSGraph extends Serializable {
     boolean removeNode(String id);
     boolean removeEdge(String n1, String n2);
     boolean removeEdge(int n1, int n2);
-
-    // Remove nodes whose adj info are empty.
+    void clear();
     void removeUnconnectedNodes();
 
     boolean isEmpty();
@@ -39,6 +38,7 @@ public interface DSGraph extends Serializable {
     DSGraph getViewFromNode(String id);
     DSGraph getViewFromNode(int n);
 
+    void obtainView(String whereIAm);
     String obtainNewView(String whereIAm, String alreadyBeen);
 
     Object getGraphImpl();

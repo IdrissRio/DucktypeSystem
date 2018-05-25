@@ -15,6 +15,7 @@ import org.jboss.netty.channel.ChannelException;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DSCluster {
     private DataFacade facade;
@@ -31,7 +32,7 @@ public class DSCluster {
     private ArrayList<HashMap> activeQueries = new ArrayList<>();
     private int numHost = 0;
 
-    private void actorSystemInitialization(){
+    private void actorSystemInitialization() {
         try {
             // Create Robot's ActorSystem.
             for (int i = 0; i < numRobots; ++i)
@@ -50,13 +51,8 @@ public class DSCluster {
 
     private void robotMainActorInitialization() {
         // FIXME assert(facade.getOccupied().size() == (actorSystemArray.size()) );
-        int i = 0;
-        for (String localNode : facade.getOccupied()) {
-            DSGraph localView = facade.getMap().getViewFromNode(localNode);
-            actorSystemArray.get(i)
-                    .actorOf(DSRobot.props(localView, localNode, "Robot"+i), "ROBOT");
-            ++i;
-        }
+        for (int i = numRobots; i-- > 0; )
+            actorSystemArray.get(i).actorOf(DSRobot.props(i), "ROBOT");
     }
 
     public static void akkaEnvironment(DataFacade facade, DSAbstractView view, DSApplication app){
@@ -92,6 +88,11 @@ public class DSCluster {
                 .actorOf(DSClusterInterfaceActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
         this.activeQueries.add(new HashMap());
         return this.numHost++;
+    }
+
+    public void disconnectHost(int i) {
+        // FIXME: how to kill ActorSystem?
+        this.activeQueries.get(i).clear();
     }
 
     private void exceptionFound(){

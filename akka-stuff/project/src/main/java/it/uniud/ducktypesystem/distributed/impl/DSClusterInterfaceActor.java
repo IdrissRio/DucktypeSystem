@@ -20,6 +20,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
         this.numRobots = numRobots;
         getContext().system().eventStream().subscribe(getSelf(), DeadLetter.class);
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
+        mediator.tell(new DistributedPubSubMediator.Subscribe("CLUSTERINFO", getSelf()), getSelf());
     }
 
     @Override
@@ -51,6 +52,13 @@ public class DSClusterInterfaceActor extends AbstractActor {
                 })
                 .match(DeadLetter.class, deadLetter -> {
                     log.info("DEAD LETTER");
+                })
+                .match(DSRobotFailureOccurred.class, in -> {
+                    log.info("CLUSTER"+ host + " was informed that robot in " + in.getDeadNode() + " died.");
+                    DSCluster.getInstance().getView()
+                            .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
+                    mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
+                            in, false), ActorRef.noSender());
                 })
                 .build();
     }

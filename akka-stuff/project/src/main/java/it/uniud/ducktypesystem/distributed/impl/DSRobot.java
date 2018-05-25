@@ -6,10 +6,13 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
+import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.message.*;
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.errors.DSSystemFailureSimulation;
+import scala.Option;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,47 +43,43 @@ public class DSRobot extends AbstractActor {
     private String lastStep;
     private HashMap activeQueryCheckers;
 
-    public DSRobot(DSGraph view, String node, String name) {
+    public DSRobot(int index) {
         mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
-        this.myName = name;
-        this.myView = view;
-        this.myNode = node;
+        this.myName = "Robot" + index;
+        try {
+            this.myNode = DataFacade.getInstance().getOccupied().get(index);
+        } catch (DSSystemError dsSystemError) {
+            dsSystemError.printStackTrace();
+            return;
+        }
+        this.myView = new DSGraphImpl();
+        this.myView.obtainView(myNode);
         this.lastStep = null;
         this.activeQueryCheckers = new HashMap();
-        log.info("CREAZIONE ROBOT with view " + view.toString());
+        log.info(myName + " created on " + myNode + " with view " + myView.toString());
     }
 
-    @Override
-    public void preRestart(Throwable resason, Optional<Object> messages) {
-        log.info("PRE RESTART!!!!!!!!!!!");
-        // TODO: Stop childrens?
-    }
 
     @Override
     public void postRestart(Throwable reason) {
-        log.info("POST RESTART!!!!!!!!!!!");
-        // TODO: signal to ClusterInterface that I died.
-        // Stop queries?
+        mediator.tell(new DistributedPubSubMediator.Publish("CLUSTERINFO",
+                new DSRobotFailureOccurred(myNode)), getSelf());
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DSMove.class, x -> {
+                    // Simulate Robot Death.
+                    if (DataFacade.getInstance().shouldFailMove())
+                        throw new DSSystemFailureSimulation(myName + " DEATH in MOVE!");
+
                     String tmp = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
                     lastStep = tmp;
 
-                    // Simulate Robot Death.
-                    if (DataFacade.getInstance().shouldFailMove()) {
-                        throw new SystemError(myName + " I'm DYING in MOVE!");
-                    }
-
-                    /* Note: This is just for debugging purposes:
-                     * We DON'T claim to know the exact position of every robot:
-                     * in a real distributed context this static access would be illegal,
-                     * but we do it here just to improve the visualization and to ease the debugging phase.
-                     */
+                    /* Note: This is just for presentation purposes:
+                     * We DON'T claim to know the exact position of every robot. */
                     ArrayList<String> occupied = DataFacade.getInstance().getOccupied();
                     for (int i = occupied.size(); i-- > 0; )
                         if (occupied.get(i).equals(lastStep)) {
@@ -106,7 +105,7 @@ public class DSRobot extends AbstractActor {
                     String deadPath = x.actor().path().name();
                     if (activeQueryCheckers.get(deadPath) != null
                             && ((QCMonitor)activeQueryCheckers.get(deadPath)).status == QCStatus.CRITICAL) {
-                        log.info(deadPath + " is DEAD during CRITICAL WORK!!!!");
+                        // log.info(deadPath + " is DEAD during CRITICAL WORK!!!!");
                         DSQuery.QueryId qId = new DSQuery.QueryId(deadPath);
                         mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                                 new DSEndQuery(qId), false), getSelf());
@@ -115,8 +114,8 @@ public class DSRobot extends AbstractActor {
                     }
                     else if (activeQueryCheckers.get(deadPath) != null
                             && ((QCMonitor)activeQueryCheckers.get(deadPath)).status == QCStatus.WAITING) {
-                        log.info(deadPath + " is DEAD in WAITING!!!!");
-                        // Recreate it:
+                        // log.info(deadPath + " is DEAD in WAITING!!!!");
+                        log.info("Recreating QUERYCHECKER");
                         ActorRef child = getContext().actorOf(DSQueryChecker.props(this.myView, this.myNode,
                                 new DSQuery.QueryId(deadPath)), deadPath);
                         getContext().watch(child);
@@ -134,14 +133,20 @@ public class DSRobot extends AbstractActor {
 
                     // Simulate QueryChecker's Death in WAITING.
                     if (DataFacade.getInstance().shouldDieInWaiting()) {
-                        log.info("I'M KILLING MY SON");
-                        // child.tell("Die!", getSelf());
+                        log.info("QUERYCHECKER DEATH IN WAITING.");
                         getContext().stop(child);
+                    }
+                })
+                .match(DSRobotFailureOccurred.class, in -> {
+                    log.info(myName + " killing all my sons.");
+                    for (ActorRef each : getContext().getChildren()) {
+                        getContext().unwatch(each);
+                        getContext().stop(each);
                     }
                 })
                 .build();
     }
-    static public Props props(DSGraph view, String node, String name) {
-        return Props.create(DSRobot.class, view, node, name);
+    static public Props props(int index) {
+        return Props.create(DSRobot.class, index);
     }
 }

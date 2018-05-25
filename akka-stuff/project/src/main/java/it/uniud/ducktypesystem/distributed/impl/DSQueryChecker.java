@@ -1,7 +1,6 @@
 package it.uniud.ducktypesystem.distributed.impl;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorKilledException;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
@@ -13,6 +12,7 @@ import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.message.*;
+import it.uniud.ducktypesystem.errors.DSSystemFailureSimulation;
 
 public class DSQueryChecker extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -71,8 +71,11 @@ public class DSQueryChecker extends AbstractActor {
                     DSQuery.QueryStatus status = query.checkAndReduce(myView, myNode);
 
                     // Simulate QueryChecker's Death during critical work
-                    if (DataFacade.getInstance().shouldFailInCriticalWork())
-                        throw new ActorKilledException(myNode + ": I'm DYING!");
+                    if (DataFacade.getInstance().shouldFailInCriticalWork()) {
+                        log.info("QUERYCHECKER DEATH in CRITICAL WORK.");
+                        getContext().stop(getSelf());
+                        return;
+                    }
 
                     switch (status) {
                         case FAIL:

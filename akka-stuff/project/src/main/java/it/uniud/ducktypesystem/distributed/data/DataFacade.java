@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,12 +15,10 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class DataFacade {
     private static DataFacade instance = null;
-    private int MOVEFAIL;
-    private int CRITICALFAIL;
-    private int WAITINGFAIL;
-    //public static final int MOVEFAIL = 5;
-    //public static final int CRITICALFAIL = 10;
-    //public static final int WAITINGFAIL = 5;
+
+    private int MOVEFAIL = 1;
+    private int CRITICALFAIL = 1;
+    private int WAITINGFAIL = 1;
 
     private DSGraph map;
     private ArrayList<String> occupied;
@@ -28,23 +26,20 @@ public class DataFacade {
     private boolean enabledFailure;
 
     // Returns a singleton instance of DataFacade given the graph file path.
-    public static DataFacade create(String filePath) throws SystemError {
+    public static DataFacade create(String filePath) throws DSSystemError {
         if (instance != null ) return instance;
         return instance=new DataFacade(filePath);
     }
 
-    public static DataFacade getInstance() throws SystemError {
+    public static DataFacade getInstance() throws DSSystemError {
         if (instance != null) return instance;
-        throw new SystemError("Invalid access to uninitialized DataFacade.");
+        throw new DSSystemError("Invalid access to uninitialized DataFacade.");
     }
 
-    private DataFacade(String filePath) throws SystemError {
+    private DataFacade(String filePath) throws DSSystemError {
         map = DSGraphImpl.createGraphFromFile(filePath);
         occupied= new ArrayList<>();
         enabledFailure = true;
-        MOVEFAIL=5;
-        CRITICALFAIL=10;
-        WAITINGFAIL=5;
     }
 
     // Overloaded setters for `occupied'.
@@ -105,14 +100,14 @@ public class DataFacade {
 
     public boolean shouldFailMove() {
        return (ThreadLocalRandom.current().nextInt(
-               0, enabledFailure ? MOVEFAIL : 0 ) == 1);
+               0, MOVEFAIL ) == 1);
     }
     public boolean shouldFailInCriticalWork() {
         return (ThreadLocalRandom.current().nextInt(
-                0, enabledFailure ? CRITICALFAIL : 0 ) == 1);
+                0, CRITICALFAIL ) == 1);
     }
     public boolean shouldDieInWaiting() {
         return (ThreadLocalRandom.current().nextInt(
-                0, enabledFailure ? WAITINGFAIL : 0 ) == 1);
+                0, WAITINGFAIL ) == 1);
     }
 }

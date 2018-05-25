@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.SystemError;
+import it.uniud.ducktypesystem.errors.DSSystemError;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
@@ -34,26 +34,26 @@ public class DSGraphImpl implements DSGraph {
                 addEdge(s1, s2);
     }
 
-    public static DSGraph createGraphFromFile(String filePath) throws SystemError {
+    public static DSGraph createGraphFromFile(String filePath) throws DSSystemError {
         DSGraph g = new DSGraphImpl();
         g.loadGraphFromFile(filePath);
         return g;
     }
     
     @Override
-    public void loadGraphFromFile(String filePath) throws SystemError {
+    public void loadGraphFromFile(String filePath) throws DSSystemError {
         try {
             FileSource fs = FileSourceFactory.sourceFor(filePath);
             fs.addSink(impl);
             try {
                 fs.readAll(filePath);
             } catch (Throwable t) {
-                throw new SystemError(t);
+                throw new DSSystemError(t);
             } finally {
                 fs.removeSink(impl);
             }
         } catch(Throwable t) {
-            throw new SystemError(t);
+            throw new DSSystemError(t);
         }
     }
 
@@ -214,6 +214,13 @@ public class DSGraphImpl implements DSGraph {
     }
 
     @Override
+    public void clear() {
+        for (String s : getNodes())
+            removeNode(s);
+        assert(isEmpty());
+    }
+
+    @Override
     public boolean isEmpty() {
         return numNodes() == 0;
     }
@@ -241,6 +248,23 @@ public class DSGraphImpl implements DSGraph {
     public DSGraph getViewFromNode(int n) {
         if (n >= numNodes()) return null;
         return getViewFromNode(getNode(n));
+    }
+
+    @Override
+    public void obtainView(String whereIAm) {
+        try {
+            clear();
+            DSGraph mainGraph = DataFacade.getInstance().getMap();
+            if (!mainGraph.hasNode(whereIAm)) return;
+            addNode(whereIAm);
+            for (String s : mainGraph.adjNodes(whereIAm)) {
+                addNode(s);
+                addEdge(whereIAm, s);
+            }
+        } catch (DSSystemError systemError) {
+            systemError.printStackTrace();
+        }
+
     }
 
     private String chooseNext(String whereIAm, String alreadyBeen) {
@@ -283,7 +307,7 @@ public class DSGraphImpl implements DSGraph {
             String next = chooseNext(whereIAm, alreadyBeen);
             mergeView(mainGraph.getViewFromNode(whereIAm), mainGraph.getViewFromNode(next));
             return next;
-        } catch (SystemError systemError) {
+        } catch (DSSystemError systemError) {
             systemError.printStackTrace();
             return whereIAm;
         }
