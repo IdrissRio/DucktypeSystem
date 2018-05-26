@@ -36,7 +36,6 @@ public class DSQueryChecker extends AbstractActor {
 
     // Communication methods
     private void publishQueryResult(DSQuery.QueryStatus status) {
-        getContext().getParent().tell(new DSEndCriticalWork(this.queryId), getSelf());
         log.info((status == DSQuery.QueryStatus.MATCH) ? "MATCH da: "+ myNode
                 : (status == DSQuery.QueryStatus.FAIL) ? "FAIL da: " : "DONTKNOW da: " + myNode);
         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+this.queryId.getHost(),
@@ -76,6 +75,8 @@ public class DSQueryChecker extends AbstractActor {
                         getContext().stop(getSelf());
                         return;
                     }
+
+                    getContext().getParent().tell(new DSEndCriticalWork(this.queryId), getSelf());
 
                     switch (status) {
                         case FAIL:

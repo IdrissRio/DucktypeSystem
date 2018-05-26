@@ -13,7 +13,6 @@ public class DSClusterInterfaceActor extends AbstractActor {
     private ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     private int numRobots;
     private int host;
-    private String path;
 
     public DSClusterInterfaceActor(int host, int numRobots) {
         this.host = host;
@@ -58,8 +57,6 @@ public class DSClusterInterfaceActor extends AbstractActor {
                     DSCluster.getInstance().getView()
                             .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
                     // TODO: re-enable retry button!
-                    mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
-                            in, false), ActorRef.noSender());
                 })
                 .build();
     }

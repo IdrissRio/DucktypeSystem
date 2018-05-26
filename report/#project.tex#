@@ -1,0 +1,92 @@
+
+\subsection{Architettura logica}
+\label{sec:logical-arch}
+Come già anticipato in Sezione~\ref{sec:func-req},
+il sistema dovrà gestire due tipologie di informazioni.\\
+
+La descrizione del grafo principale e le caratteristiche scelte
+in fase di configurazione simulano la collocazione dei robot in
+un ambiente fisico reale che si mantiene costante: dovranno dunque
+essere accessibili dall'intero sistema in qualunque momento,
+ma non potranno essere utilizzate per risolvere la ricerca della query.
+Avremo un modulo `\textbf{\emph{DSDataFacade}}' che conterrà:
+\begin{itemize}
+\item \emph{mainGraph}: il grafo caricato dall'utente rappresentante
+  l'ambiente totale;
+\item \emph{numRobot}: il numero di robot collocati nella mappa;
+\item \emph{occupied}: l'elenco dei nodi in cui i robot sono posizionati.
+\end{itemize}
+I primi due campi della `\emph{DSDataFacade}' sono costanti e vengono
+istanziati in fase di inizializzazione: in questa fase si provvede anche
+a inizializzare in modo random il vettore `\emph{occupied}'. Quest'ultimo
+potrà essere modificato durante l'esecuzione del sistema in seguito allo
+spostamento dei robot.
+Solo il modulo di visualizzazione potrà accedere alla `\emph{DSDataFacade}'
+richiedendo la posizione dei robot, permettendo all'utente di monitorare
+il loro movimento: non è infatti ammesso ai singoli robot di conoscere
+la posizione degli altri né il loro numero complessivo per risolvere
+il problema.\\
+
+Gli altri moduli del sistema sono volti ad implementare i
+ruoli coinvolti in un'implementazione fisica reale.
+Utilizzando la terminologia di \emph{Akka}, questi costituiscono
+\emph{attori}, ovvero astrazioni con comportamento fortemente coeso
+che implementano determinate funzionalità innescate dallo scambio di
+messaggi. Gli attori si possono trovare su diversi \emph{Actor Systems},
+che rappresentano nodi distinti della rete.
+
+Ogni \textbf{robot} è un Actor System su cui sono in esecuzione più attori:
+\begin{itemize}
+\item `\emph{DSRobot}': è l'attore principale; viene costruito specificando
+  il nodo in cui è stato posizionato in fase di inizializzazione.
+  Accede alla `\emph{DSDataFacade}' per caricare in memoria la vista
+  `\emph{myView}' a partire da `\emph{myNode}'
+  del grafo principale, simulando in questo modo l'effettiva
+  acquisizione di conoscenza tramite sensori dell'ambiente.
+
+  Quando una query viene sottoposta al sistema, `\emph{DSRobot}' riceve
+  un messaggio che impone di creare un attore figlio
+  `\emph{DSQueryChecker}'.
+  La definizione di un'adeguata gerarchia tra attori si rivela fondamentale
+  per poter gestire i fallimenti: infatti il processo padre sarà
+  responsabile dei figli.
+\item `\emph{DSQueryCheckers}': sono gli attori figli costruiti in un
+  robot. Il loro comportamento è estremamente specializzato alla
+  verifica e alla gestione di una specifica. Sono presenti in numero pari
+  al numero delle query in circolazione in quel momento e vengono
+  distrutti dal processo padre appena la query che gestisono ha raggiunto
+  un risultato.
+\end{itemize}
+
+Ogni \textbf{client} che si interfaccia al sistema costituisce un nuovo Actor System.
+In esso c'è un solo attore `\emph{DSClusterInterfaceActor}':
+esso deve essere il punto di accesso al cluster per l'utente.\\
+In relazione al cluster deve mandare la query che l'utente
+sottopone e ottenere da questo il risultato della computazione;
+deve essere informato anche degli eventuali fallimenti
+riscontrati tra i robot per poter ripresentare la query.\\
+Per gestire l'interfaccia con l'utente potrà accedere alle informazioni
+presenti in ogni host, contenute nel modulo `\emph{DSCluster}'.
+Tale modulo è condiviso con il modulo di visualizzazione grafica
+`\emph{DSView}' che si occupa di settare i dati e i comandi dell'utente.
+In particolare verrà memorizzato in `\emph{DSCluster}' l'elenco delle
+query sottoposte da quel particolare client con i relativi
+risultati.
+
+Si noti che tali Actor System non conoscono la posizione degli altri,
+dunque non sarà possibile mandare messaggi one-to-one,
+ma si dovrà sempre passare per meccanismi di comunicazione che svincolano
+dalla necessità di conoscere la località dei destinatari.
+
+\subsection{Protocollo e algoritmo}
+\label{sec:protocols}
+Communication between components.
+UML sequence diagrams go here.
+Also, put here a detailed description of distributed algorithms
+used to solve specific problems of the project.
+
+\subsection{Architettura fisica e sviluppo}
+\label{sec:deploy}
+Which nodes and platforms involved, and where each
+component is deployed.
+

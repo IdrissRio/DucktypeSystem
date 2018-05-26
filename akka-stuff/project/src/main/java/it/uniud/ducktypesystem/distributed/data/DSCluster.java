@@ -15,7 +15,6 @@ import org.jboss.netty.channel.ChannelException;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class DSCluster {
     private DataFacade facade;

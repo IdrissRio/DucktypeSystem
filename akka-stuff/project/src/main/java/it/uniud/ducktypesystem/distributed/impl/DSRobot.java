@@ -64,6 +64,8 @@ public class DSRobot extends AbstractActor {
     public void postRestart(Throwable reason) {
         mediator.tell(new DistributedPubSubMediator.Publish("CLUSTERINFO",
                 new DSRobotFailureOccurred(myNode)), getSelf());
+        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
+                new DSRobotFailureOccurred(myNode), false), ActorRef.noSender());
     }
 
     @Override
