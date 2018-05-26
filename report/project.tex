@@ -80,10 +80,56 @@ dalla necessità di conoscere la località dei destinatari.
 
 \subsection{Protocollo e algoritmo}
 \label{sec:protocols}
+\begin{quote}
 Communication between components.
 UML sequence diagrams go here.
 Also, put here a detailed description of distributed algorithms
 used to solve specific problems of the project.
+\end{quote}
+%%%%%%%%%%%%%%%%%%%%%%%
+\coanote{FIXME: add the UML from photo...}
+
+\[...\]
+%%%%%%%%%%%%%%%%%%%%%%%
+\[
+\adj{v}{\cG} = \bigl\{\, v' \bigm| (v, v') \in E,
+\ \cG = (\Vset, E) \,\bigr\}.
+\]
+%%%%%%%%%
+\begin{algorithm}
+  \caption{Verifica e riduzione di una query: dati in input
+    un grafo $\cV$ rappresentante la conoscenza parziale del grafo,
+    il nodo $v$ nel quale si è posizionati e
+    una query $\cQ$, restituisce \texttt{MATCH} / \texttt{FAIL}
+    / \texttt{DONTKNOW} come definito in Sezione~\ref{sec:func-req}.
+  }
+\label{alg:check-and-reduce}
+\begin{algorithmic}[2]
+  \Function{check-and-reduce}{DSGraph $\cV$, Node $v$ , DSQuery $\cQ$}
+  \State let $(\Vset, E) \gets \cV$;
+  \Comment{Precond: $\view(v) \sqsseq \cV$}
+  \State let $(\Vset_\cQ, E_\cQ) \gets \cQ$;
+  \ForAll {$q \in \Vset_\cQ$}
+    \If {$q \notin \Vset$} \textbf{continue}; \EndIf
+    \If {$q = v \wedge \adj{q}{\cQ} \nsubseteq \adj{v}{\cV}$}
+       \State \Return \texttt{FAIL}
+    \EndIf
+    \ForAll {$q' \in \adj{q}{\cQ}$}
+      \If {$q' \in \adj{q}{\cV}$}
+      \State remove $(q, q')$ from $E_\cQ$
+      \EndIf
+    \EndFor
+  \EndFor
+  \State remove from $\cQ$ nodes $q$ such that
+  $\adj{q}{\cQ} = \varnothing$
+  \If {$\Vset_\cQ = \varnothing$}
+    \State \Return \texttt{MATCH}
+  \Else
+    \State \Return \texttt{DONTKNOW}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Architettura fisica e sviluppo}
 \label{sec:deploy}
