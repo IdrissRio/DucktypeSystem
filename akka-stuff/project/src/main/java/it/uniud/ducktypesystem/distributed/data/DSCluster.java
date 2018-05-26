@@ -114,9 +114,10 @@ public class DSCluster {
         HashMap hostQueries = activeQueries.get(host);
         // If there is already a query with the same name, change its name.
         if (hostQueries.get(query.getVersion()) != null) {
-            int i = 0;
-            do { ++i; query.setName(query.getName()+"."+i);
-            } while (hostQueries.get(query.getVersion()) != null);
+            int i = 0; String attemptName = query.getName();
+            while (hostQueries.get(query.getVersion()) != null) {
+                ++i; query.setName(attemptName + i);
+            }
         }
         hostQueries.put(query.getVersion(), new DSQueryResult(query, query.serializeToString()));
         DSStartQueryCheck tmp = new DSStartQueryCheck(query.serializeToString(),

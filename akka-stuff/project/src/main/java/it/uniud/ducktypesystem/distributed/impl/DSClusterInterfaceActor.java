@@ -57,6 +57,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
                     log.info("CLUSTER"+ host + " was informed that robot in " + in.getDeadNode() + " died.");
                     DSCluster.getInstance().getView()
                             .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
+                    // TODO: re-enable retry button!
                     mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                             in, false), ActorRef.noSender());
                 })

@@ -47,6 +47,10 @@ public interface DSQuery extends DSGraph {
 
         public void setPath(String path) {
             this.path = path;
+            String[] decomposed = path.split("-");
+            this.host = Integer.parseInt(decomposed[0]);
+            this.name = decomposed[1];
+            this.attemptNr = Integer.parseInt(decomposed[2]);
         }
         public void setHost(int host) {
             this.host = host;
