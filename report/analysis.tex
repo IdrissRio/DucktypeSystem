@@ -1,20 +1,197 @@
-\coanote{In this chapter, we describe in detail functional
-and non-functional requirements of a solution for the problem.}
+In questa sezione approfondiremo le specifiche del
+\emph{subgraph isomorphism problem}; inoltre analizzeremo i
+requisiti del sistema che lo implementa applicato a un particolare
+contesto fisico.
 
-\section{Functional requirements}
+\subsection{Modellizzazione del problema}
+Tratteremo grafi descritti da una coppia
+$\cG = (\Vset, E)$ con $\Vset = \{ v_i \}_{1 \leq i \leq n}$ insieme di
+etichette (i nodi del grafo) e $E \sseq \Vset \times \Vset$
+insieme di archi non etichettati e non orientati con
+$(v_i, v_j) \in E$ se e solo se $v_i$ e $v_j$ sono adiacenti in $\cG$.
+
+In generale, con \emph{subgraph isomorphism problem} si intende
+stabilire se un grafo query etichettato $\cQ = (\Vset_\cQ, E_\cQ)$ è
+sottografo di un altro grafo etichettato $\cG = ( \Vset, E)$,
+ovvero se vale: $\Vset_\cQ \sseq \Vset$ e $E_\cQ \sseq E$.
+Nel seguito indicheremo con l'operatore `$\sqsseq$' la relazione
+di sottografo.
+
+La versione \emph{distribuita} dell'algoritmo prevede che
+non si abbia una conoscenza centralizzata del grafo $\cG$,
+ma lo si conosca solo come somma di conoscenza parziali.
+
+\begin{definition}[Vista di un nodo]
+Dato un nodo $v_i \in \Vset$, la sua \emph{vista} del grafo
+$\cG = (\Vset, E)$ è definita come $\view(v_i) = (\{v_i\}, E_i)$, con
+$E_i = \bigl\{\,(v_j, v_k) \in E \bigm| k = i \vee j = i \,\bigr\}$.
+\end{definition}
+
+Per ogni insieme di nodi $\Vset' \sseq \Vset$ si ha che
+$\bigcup_{v \in \Vset'} \view(v) \sqsseq \cG$.
+L'unione delle viste di un insieme di nodi $\Vset'$ equivale
+all'intero grafo solo nel caso $\Vset'$ costituisca il suo
+\emph{vertex cover}.\\
+
+L'algoritmo ha svariati ambiti di applicazioni: nel sistema che si
+intende proporre lo applicheremo a grafi che rappresentano la
+disposizione spaziale di alcuni luoghi (i nodi etichettati)
+connessi da particolari archi (non etichettati).
+Si immagina infatti di distribuire in un ambiente alcuni \emph{robot}
+dotati di sensori e capaci di muoversi autonomamente, che si
+posizioneranno ognuno su un nodo della mappa.
+Ogni robot è in grado di acquisire l'intera vista del grafo a partire
+dal nodo in cui si trova;
+comunicando tramite scambio di messaggi, senza ricostruire alcuna
+conoscenza del grafo totale, i robot dovranno verificare la
+presenza di una query.
+
+\subsection{Requisiti funzionali}
 \label{sec:func-req}
-Which functions must be offered to users / other programs?
-Which are the input data and the output data?
-Which is the expected effect?
+Il sistema deve implementare l'algoritmo e fornire adeguati strumenti
+per monitorare la sua esecuzione.
+La componente centrale sarà formata dai processi dei vari robot e dai
+processi dei client che sottopongono le query; a questa
+sarà affiancata una componente atta a \emph{simulare}
+l'ambiente, ovvero la mappa nella quale i robot sono collocati,
+raccogliendo informazioni per controllare la correttezza dei risultati
+restituiti.
 
+All'utente si propone un'interfaccia grafica che in
+fase di inizializzazione richiede:
+\begin{itemize}
+\item un file contenente la mappa totale in formato \texttt{DGS} FIXME
+\item il numero $n$ di robot da collocare nella mappa.
+\end{itemize}
+Questo consentirà all'utente di visualizzare la mappa e la posizione,
+definita casualmente, dei robot inseriti. Si noti che le
+informazioni complessive e centralizzate riguardanti la collocazione
+dei robot e il grafo complessivo \emph{non} potranno essere
+utilizzate per risolvere il problema, né saranno rese disponibili
+all'utente dell'applicazione reale: hanno infatti come unico scopo
+quello di facilitare la visualizzazione e il controllo di
+questa simulazione.
 
-\section{Non functional requirements}
+Nella fase di inizializzazione ogni robot acquisisce la vista del
+grafo a partire dalla sua posizione;
+successivamente l'utente potrà sottoporre query nello stesso formato
+del grafo e far partire la ricerca.
+Il sistema può ricevere un numero arbitrario di query
+contemporaneamente e deve provvedere a versionarle.
+
+\coanote{Abbozzato...ancora da verificare..\\}
+L'interfaccia permette di simulare la connessione di un altro
+client che accede allo stesso insieme di robot, sottoponendo
+le proprie query. Ogni client host deve essere indipendente:
+l'accesso è dunque identico per ogni host come se fosse l'unico a
+interrogare il cluster.
+
+Quando la computazione termina, il client che ha sottoposto la
+query riceve l'esito. Questo può essere:
+\begin{itemize}
+\item \texttt{MATCH}: nel caso in cui la somma delle conoscenze
+parziale dei robot è in grado di coprire tutta la query: ovvero quando \[
+\cQ \sqsseq \bigcup_{1 \leq i \leq n} \cR_i, \]
+con $\cR_i$ conoscenza parziale del robot $i$;
+\item \texttt{FAIL}: nel caso in cui vengano riscontrate inconsistenze
+tra la somma delle conoscenze parziali (ma localmente certe)
+dei sensori e la query: ovvero quando un arco $(x, y) \in E_\cQ$
+non è presente in $E_\cR$ con $\cR$ la conoscenza del robot posizionato
+sul nodo $x$ (infatti è garantito che $\view(x) \sqsseq \cR$);
+\item \texttt{DONTKNOW}: nel caso in cui, data la mancanza di una visione
+totale del grafo, non si riesce a determinare in maniera effettiva
+l'esistenza o il fallimento della query:\[
+\bigcup_{1 \leq i \leq n} \cR_i \cap \cQ \neq \cQ
+\]
+\end{itemize}
+
+In caso di \texttt{DONTKNOW} l'utente può imporre ai robot di muoversi
+nel grafo, cercando in questo modo di acquisire nuova conoscenza,
+e in seguito ripresentare la stessa query.
+I robot devono dunque scegliere autonomamente un nuovo nodo,
+tra i propri adiacenti e caricare in memoria la vista del nuovo
+nodo in cui si posizionano: poiché in un contesto reale i
+robot hanno limitate capacità di memorizzazione,
+in questo processo verranno scordati i nodi conosciuti due
+passi indietro.
+
+I robot devono poter comunicare esclusivamente tramite scambio di
+messaggi: la loro capacità di memorizzazione deve essere sufficiente
+a mantenere almeno l'intera query sottoposta.\\
+
+L'ambiente di sviluppo è stato scelto in modo da poter
+evidenziare solamente le caratteristiche più rilevanti del problema.
+Il sistema è implementato in \emph{Akka}, un toolkit per
+la creazione di applicazioni distribuite e concorrenti con supporto
+alla \emph{fault-tollerance event-driven}.
+Il toolkit è disponibile sia per il linguaggio imperativo usato (\emph{Java})
+che per il funzionale \emph{Scala}.
+
+\subsection{Requisiti non funzionali}
 \label{sec:nonfunc-req}
-Everything about mode and transparencies:
-availability, mobility, security, fault tolerance, etc.
-Are there execution time bounds? Minimum data rates?
 
-If requested, specific platforms/languages/middlewares requirements
-for the implementation can be decided here.
-(E.g.: if the project is on a SOA, we may request that functions
-are offered via SOAP or RESTful services).
+\subsubsection*{Scalabilità e trasparenza}
+I robot costituiscono una rete peer-to-peer,
+senza alcuna suddivisione di ruoli a priori; i ruoli centralizzati
+sono definiti staticamente con il compito fissato di fornire un punto
+di accesso al cluster in ingresso (proponendo una nuova query) e
+in uscita (raccogliendo informazioni relative alla riuscita
+o al fallimento della query).
+
+Un requisito fondamentale è che
+la \emph{conoscenza} del grafo complessivo sia totalmente distribuita.
+Il sistema deve essere dunque scalabile e flessibile:
+si devono poter far spostare i robot senza la necessità di
+riconfigurare nulla. L'implementazione delle
+comunicazioni tra i punti di accesso centrali al cluster e
+tra gli elementi stessi del cluster, potrà
+sfruttare le caratteristiche offerte dalle implementazioni di
+comunicazioni \emph{Publish-Subscribe} di \emph{Akka}:
+scala con il numero di robot ed è totalmente svincolata dal conoscere
+la loro posizione.
+Il grado di \emph{location transparency} offerto
+deve dunque essere molto elevato.
+
+\subsubsection*{Failure model}
+Trattandosi di query potenzialmente molto lunghe da verificare,
+da gestirsi in modo sequenziale su un numero potenzialmente alto di sensori,
+siamo disposti ad aggiungere uno scambio di messaggi non direttamente
+informativi per quanto riguarda la ricerca: l'obiettivo è essere in grado,
+in caso di fallimenti, di recuperare la query parziale,
+evitando di perdere il lavoro eseguito fino a quel momento.
+
+Il sistema di comunicazione di \emph{Akka} implementa già una
+protezione della perdita di messaggi da parte di una rete inaffidabile;
+occorre però tenere in considerazione che i robot possono fallire
+interamente e che possono fallire i singoli processi in esecuzione in essi.
+
+L'approccio a questo tipo di fallimenti è quello di ristabilire la
+condizione del sistema come prima del fallimento senza che
+l'utente ne venga informato. Eventualmente quindi il sistema deve poter
+recuperare e ripresentare in modo automatico le query che si stavano
+verificando. In caso di morte di un robot però,
+essendo un fallimento critico, l'utente di ogni client host viene informato,
+(anche se l'host non ha query attive in quel momento):
+nella simulazione del sistema si provvede immediatamente a
+sostituire il robot con uno nuovo posizionato nello stesso luogo.
+
+\subsubsection*{Correttezza del risultato}
+Il sistema deve riuscire a rispondere con un messaggio di
+\texttt{MATCH} / \texttt{FAIL} / \texttt{DONTKNOW} correttamente
+rispetto a quanto definito nelle specifiche funzionali.
+Anche nel caso di fallimenti, si garantisce che
+il sistema non dà falsi \texttt{MATCH} o falsi \texttt{FAIL} della query:
+viene ammessa solo la restituzione di un falso \texttt{DONTKNOW}.
+
+Infatti,
+in caso un robot muoia durante la verifica, può accadere che il sistema,
+sebbene la somma delle conoscenze parziali sia in grado di definire
+un risultato, risponda comunque \texttt{DONTKNOW} all'utente.
+
+Quando la conoscenza dei sensori aumenta,
+non è garantito che le nuove informazioni possano essere immediatamente
+utilizzate se queste sono state acquisite \emph{durante} la fase di verifica
+di una query: anche in questo caso, il sistema può rispondere eventualmente
+\texttt{DONTKNOW}, anche quando l'insieme (aggiornato) delle conoscenze
+parziali dei sensori sarebbe in grado di dare una risposta più specifica.
+
