@@ -57,7 +57,6 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     }
 
     public DSQuery.QueryStatus checkAndReduce(DSGraph myView, String myNode) {
-        assert(!hasUnconnectedNodes());
 
         for (String qN : getNodes()) {
             if (!myView.hasNode(qN)) continue;
