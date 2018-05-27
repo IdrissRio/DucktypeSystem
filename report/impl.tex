@@ -7,12 +7,82 @@ Important choices about implementation should be described here;
 e.g., peculiar data structures.
 \end{quote}
 
-\coanote{Metterei qui la descrizione delle classi che abbiamo usato.
-  In particolare di come DSGraph sia wrapper per stream-graph.}
+\subsection{Implementazione del sistema distribuito}
+\coanote{Metterei qui la descrizione di come funziona Akka...
+  TCP, garanzia ricezione messaggi.. un po' di handwaving per dire che
+  l'abbiamo letto..}
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
-I messaggi scambiati sono classi wrapper per i dati che contengono:
+\subsection{Strutture dati}
+Il principale dato che il sitema deve manipolare è un grafo:
+la rappresentazione scelta e l'implementazione di tale struttura dati
+gioca quindi un ruolo fondamentale. \`E stata data particolare
+importanza alla modularità del codice in modo che si possa in seguito
+cambiare l'implementazione scelta senza dover modificare l'intero
+codice.
+
+L'interfaccia \textbf{\emph{DSGraph}} espone i metodi necessari per
+l'algoritmo: la classe \emph{DSGraphImpl} la implementa costituendosi
+come wrapper per l'implementazione di basso livello fornita dalla
+libreria \emph{graph-stream}. \`E stata scelta tale libreria perché
+fornisce diversi metodi per caricare agevolmente il grafo da un file
+in formato \texttt{.DOT, .DGS, .GML, .TLP, .NET, .graphML, .GEXF}
+e per la sua visualizzazione grafica.
+La classe \emph{DSGraphImpl} si occupa anche di gestire internamente
+le eccezioni dei metodi della libreria \emph{graph-stream} preferendo,
+ad esempio,
+la restituzione di un valore booleano al lancio di un'eccezione
+nel caso di duplice inserimento di uno stesso nodo o arco: questo
+rende l'implementazione dei metodi che utilizzano la classe più
+flessibile e agevole.
+Tuttavia, la libreria non offre metodi per la serializzazione
+dei grafi: per poter inviare un grafo in un messaggio è stato
+necessario implementare metodi aggiuntivi per serializzare e
+de-serializzare il grafo di basso livello in una String.\\
+Sono di tipo \emph{DSGraph} il `\emph{mainGraph}' della
+\emph{DSDataFacade} e le singole `\emph{myView}' contenute in ogni
+robot.
+
+L'interfaccia \textbf{\emph{DSQuery}} estende l'interfaccia
+\emph{DSQuery} aggiungendo il metodo \texttt{check-and-reduce()} e la
+definizione interna dell'enumerazione \emph{DSQueryStatus},
+con i valori \texttt{MATCH, FAIL, DONTKNOW}, e della classe
+\textbf{\emph{DSQueryId}}.
+Quest'ultima è un wrapper per tre valori la cui
+combinazione identifica univocamente una query:~\footnote{
+    L'inizializzazione viene fatta dal \emph{DSCluster} quando la
+    query viene sottomessa: in particolare il nome viene ricavato
+    escludendo il path e l'estensione del file, con l'eventuale
+    aggiunta di un numero progressivo nel caso di molteplici
+    inserimenti.}
+\begin{itemize}
+\item un intero `\emph{host}' identificativo del client che ne ha
+  richiesto la verifica;
+\item una stringa `\emph{name}' ricavata dal nome del file dal quale
+  la query è stata caricata;
+\item un intero `\emph{nrAttempt}' che numera i tentativi successivi
+  per la stessa query nel caso sia terminata in \texttt{DONTKNOW}.
+\end{itemize}
+Concatenati in una stringa, i tre valori costituiscono il path
+identificativo sul quale ascoltano i \emph{DSQueryChecker}
+per quella query: opportune manipolazioni della stringa permettono
+di estrarre da questo tutti i dati necessari per comunicare
+il risultato al \emph{DSClusterInterfaceActor} corretto oppure
+per richiedere di presentare nuovamente la query.
+
+La coppia `\emph{host}' e `\emph{name}' è usata come chiave
+per l'hash-map `\emph{activeQueries}' (contenuta nel \emph{DSCluster})
+che indicizza dei \emph{DSQueryResult}: tale classe è una semplice
+coppia di una \emph{DSQuery}, e di una stringa `\emph{stillToVerify}'
+corrispondente alla serializzazione della parte ancora da verificare.
+Mantenere queste informazioni parziali permette di ritentare la
+verifica della query partendo dal risultato intermedio oltre che
+far visualizzare all'utente quali parti della query
+rimangono sconosciute.\\
+
+Possiamo descrivere le classi dei messaggi scambiati come
+wrapper per i dati che contengono:
 \begin{itemize}
 \item \texttt{DSStartQueryCheck(String serializedQuery,
   DSQueryId id, int TTL)}
@@ -29,12 +99,14 @@ I messaggi scambiati sono classi wrapper per i dati che contengono:
 \item \texttt{DSRobotFailureOccurred(String deadNode)}
 \end{itemize}
 
-Dovendo essere tutti serializzabili, non è possibile inviare
-un'istanza di \emph{DSQuery} in quanto l'implementazione scelta che
-utilizza \emph{stream-graph} non è serializzabile:
-per questo motivo è stato necessario implementare metodi
-aggiuntivi per serializzare e de-serializzare una query in
-una String.
+La \textbf{\emph{DSDataFacade}}, come già descritto nella
+Sezione~\ref{sec:logical-arch}, contiene delle informazioni che devono
+essere accessibili da tutto il sistema: è stata dunque implementata
+come un singleton accessibile in unica istanza tramite il metodo statico
+\texttt{getInstance()}.
+Allo stesso modo viene implementato l'accesso alla \emph{DSView} e
+ai dati del \emph{DSCluster} da parte del corrispondente
+\emph{DSClusterInterfaceActor}.\\
 
 [...]
 

@@ -5,7 +5,7 @@ import it.uniud.ducktypesystem.errors.DSSystemError;
 import java.io.Serializable;
 import java.util.List;
 
-public interface DSGraph extends Serializable {
+public interface DSGraph {
     void loadGraphFromFile(String filePath) throws DSSystemError;
 
     int numNodes();

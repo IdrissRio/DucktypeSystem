@@ -113,9 +113,6 @@ una nuova query o impostare i parametri del sistema.
 Durante la fase di inizializzazione,
 il metodo \texttt{actorSystemInitialization()} crea gli Actor
 System per i robot
-%~\footnote{
-%  Poiché la simulazione lavora in locale, i vari Actor System sono
-%  distinti in quanto in ascolto ognuno su porte diverse.}
 un numero pari a quello definito dall'utente,
 e crea in essi l'attore principale \emph{DSRobot}. Viene inoltre
 creato l'Actor System e il relativo \emph{DSClusterInterfaceActor}
@@ -251,7 +248,7 @@ l'esecuzione dell'algoritmo, inoltre è ragionevole pensare che
 l'utente voglia essere informato della morte di un robot.
 Per simulare l'immediata sostituzione del robot nel cluster,
 possiamo lasciare che sia la strategia di fault tollerance di default
-di Akka a reinizializzarlo: specificando il metodo \texttt{postRestart}
+di Akka a reinizializzarlo: specificando il metodo \texttt{postRestart()}
 si può inviare il messaggio \texttt{DSRobotFailureOccurred}
 in \emph{Publish} al topic a cui tutti i
 \emph{DSClusterInterfaceActor} sono iscritti: in questo modo tutti gli
@@ -385,7 +382,8 @@ Which nodes and platforms involved, and where each
 component is deployed.
 \end{quote}
 
-\coanote{Metterei qui la descrizione di come funziona Akka...
-  TCP, garanzia ricezione messaggi.. un po' di handwaving per dire che
-  l'abbiamo letto..}
+\coanote{
+``Poiché la simulazioe lavora in locale, i vari Actor System sono
+distinti in quanto in ascolto ognuno su porte diverse''... spiegazione
+del `akka-conf' usato per configurarli e del recovery mode...}
 
