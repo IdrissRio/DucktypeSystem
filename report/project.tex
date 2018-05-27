@@ -82,19 +82,13 @@ dalla necessità di conoscere la località dei destinatari.
 
 \subsection{Protocollo e algoritmo}
 \label{sec:protocols}
-\begin{quote}
-Communication between components.
-UML sequence diagrams go here.
-Also, put here a detailed description of distributed algorithms
-used to solve specific problems of the project.
-\end{quote}
 
 Le comunicazioni tra le varie componenti del sistema sfruttano
 principalmente il meccanismo di
 \emph{Distribuited Publish Subscribe in Cluster} offerto da Akka.
 Esso consente di comunicare con un insieme di attori che si
-dichiarano interessati a un determinato topic svincolando il mittente
-dal conoscere la posizione dei destinatari. Per questi motivi
+dichiarano interessati a un determinato topic senza che il mittente
+conosca gli \emph{ActorRef} dei destinatari. Per questi motivi
 risulta una funzionalità particolarmente adatta al sistema in questione
 perché garantisce una massima location transparency tra i diversi
 Actor System.
@@ -148,8 +142,8 @@ Come mostrato in Figura~\ref{fig:UML-messages},
 quando riceve questo messaggio il \emph{DSClusterInterfaceActor},
 manda in SendAll all'intero cluster di robot un messaggio
 \texttt{DSCreateQueryCheckers} contenente il solo identificativo della
-query: la routine associata alla ricezione di questo messaggio
-in un \emph{DSRobot} crea un attore figlio \emph{DSQueryChecker}.
+query: in un \emph{DSRobot} la routine associata alla ricezione
+di questo messaggio crea un attore figlio \emph{DSQueryChecker}.
 
 I vari \emph{DSQueryChecker} ricavano dal padre la vista
 conosciuta del grafo $\cV$ e il nodo sul quale sono posizionati;
@@ -181,6 +175,35 @@ un messaggio \texttt{DSMissionAccomplished}:
 il risultato può essere così trasmesso all'utente e i \emph{DSRobot}
 provvedono a terminare i processi figli relativi alla query terminata.
 
+Quando al \emph{DSCluster} giunge il risultato della query,
+questo provvede a comunicarlo all'utente tramite il modulo di
+visualizzazione. Viene mantenuto in memoria l'elenco delle
+query sottoposte fino a quel momento che l'utente può visualizzare
+in elenco: nel caso il risultato sia \texttt{DONTKNOW}, affiancata
+alla query e al suo identificativo, si mantiene anche la sua versione
+(ridotta) che ancora manca da verificare. In questo modo
+l'utente può ritentare di verificare la query solo nelle parti
+ancora da controllare.
+
+In qualunque momento l'utente può far muovere i robot cercando di
+aumentare la somma della conoscenze parziali del grafo: questo
+avviene inviando tramite il \emph{DSClusterInterfaceActor} un
+messaggio \texttt{DSMove} sul path dei robot.
+Ognuno di questi allora sceglie un nodo adiacente
+a quello in cui è attualmente posizionato e carica in memoria
+una nuova vista spostandosi in esso.
+Questo richiede necessariamente un accesso al `\emph{mainGraph}' della
+\emph{DSDataFacade} che simula l'effettiva acquisizione di
+nuova conoscenza: durante questa fase, per simulare il limite di
+memorizzazione dei robot, vengono rimossi da `\emph{myView}'
+i nodi conosciuti due passi indietro.
+La scelta del nodo su cui spostarsi è random, in quanto il robot
+non ha modo di scegliere il nodo più informativo non conoscendo
+il grafo né tutte le query che sono in fase di verifica:
+tra la scelta degli adiacenti però viene escluso il nodo su cui
+si trovava al passo precedente, memorizzato come
+`\emph{lastStep}', per evitare quantomeno che ritorni sui suoi passi.
+
 \subsubsection*{Gestione dei fallimenti dei \emph{DSQueryChecker}:}
 Come mostrato in Figura~\ref{fig:UML-messages},
 per proteggersi da fallimenti, ulteriori messaggi possono essere
@@ -198,7 +221,7 @@ figli conoscendo il loro stato di esecuzione:\begin{itemize}
 \end{itemize}
 Se un \emph{DSQueryChecker} termina, grazie al sistema gerarchico
 formatosi, il padre viene informato e può controllare in quale fase del
-lavoro si trova l'attore.
+lavoro si trovava l'attore.
 
 Se questo era in `waiting' allora si occupa
 di ricrearlo semplicemente così che si possa iscrivere al path ed
@@ -255,7 +278,8 @@ in quel momento.
   è DSRobotFailureOccurred, e *non* DSEndQuery.}
 }
 \end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%
 \[
 \adj{v}{\cG} = \bigl\{\, v' \bigm| (v, v') \in E,
 \ \cG = (\Vset, E) \,\bigr\}.
