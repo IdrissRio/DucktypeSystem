@@ -1,7 +1,32 @@
+\begin{quote}
 Details about the implementation: every choice about platforms,
 languages, software/hardware, middlewares, which has not been decided
 in the requirements.
 
 Important choices about implementation should be described here;
 e.g., peculiar data structures.
+\end{quote}
+
+I messaggi scambiati sono classi wrapper per i dati che contengono:
+\begin{itemize}
+\item \texttt{DSStartQueryCheck(String serializedQuery, DSQueryId id, int TTL)}
+\item \texttt{DSCreateQueryChecker(DSQueryId id)}
+\item \texttt{DSTryNewQuery(String serializedQuery, int TTL)}
+\item \texttt{DSEndQuery(DSQueryId id)}
+\item \texttt{DSMissionAccomplished(DSQueryId id,\\
+  \phantom{....}
+  String serializedStillToVerify, DSQueryStatus status)}
+\item \texttt{DSStartCriticalWork(DSQueryId id)}
+\item \texttt{DSEndCriticalWork(DSQueryId id)}
+\item \texttt{DSRetryQuery(DSQueryId id}
+\item \texttt{DSMove()}
+\item \texttt{DSRobotFailureOccurred(String deadNode)}
+\end{itemize}
+
+Dovendo essere tutti serializzabili, non è possibile inviare
+un'istanza di \emph{DSQuery} in quanto l'implementazione scelta che
+utilizza \emph{stream-graph} non è serializzabile:
+per questo motivo è stato necessario implementare metodi
+aggiuntivi per serializzare e de-serializzare una query in una String.
+
 
