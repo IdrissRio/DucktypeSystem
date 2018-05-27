@@ -7,9 +7,15 @@ Important choices about implementation should be described here;
 e.g., peculiar data structures.
 \end{quote}
 
+\coanote{Metterei qui la descrizione delle classi che abbiamo usato.
+  In particolare di come DSGraph sia wrapper per stream-graph.}
+
+%%%%%%%%%%%%%%%%%%%%%
+
 I messaggi scambiati sono classi wrapper per i dati che contengono:
 \begin{itemize}
-\item \texttt{DSStartQueryCheck(String serializedQuery, DSQueryId id, int TTL)}
+\item \texttt{DSStartQueryCheck(String serializedQuery,
+  DSQueryId id, int TTL)}
 \item \texttt{DSCreateQueryChecker(DSQueryId id)}
 \item \texttt{DSTryNewQuery(String serializedQuery, int TTL)}
 \item \texttt{DSEndQuery(DSQueryId id)}
@@ -27,6 +33,10 @@ Dovendo essere tutti serializzabili, non è possibile inviare
 un'istanza di \emph{DSQuery} in quanto l'implementazione scelta che
 utilizza \emph{stream-graph} non è serializzabile:
 per questo motivo è stato necessario implementare metodi
-aggiuntivi per serializzare e de-serializzare una query in una String.
+aggiuntivi per serializzare e de-serializzare una query in
+una String.
 
+[...]
 
+\coanote{Metterei qui accenno agli strumenti usati per la View.
+  Swing ecc..}

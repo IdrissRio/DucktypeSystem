@@ -259,7 +259,7 @@ host saranno informati che un robot è morto ed è stato sostituito.
 Viene inoltre inviato lo stesso messaggio a tutti i
 robot per terminare effettivamente tutte le computazioni attive
 in quel momento.
-
+%
 %%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[ht!]
 \centering
@@ -278,26 +278,84 @@ in quel momento.
   è DSRobotFailureOccurred, e *non* DSEndQuery.}
 }
 \end{figure}
-
 %%%%%%%%%%%%%%%%%%%%%%
+%
+\subsubsection*{Computazione}
+Affrontare il problema del \emph{subgraph isomorphism} in un
+contesto distribuito come il presente richiede alcune osservazioni.
+Come già detto in Sezione~\ref{sec:problem}, il grafo principale
+è conosciuto solo parzialmente come somma di conoscenze localizzate
+in alcuni nodi.
+Il contributo che ogni robot può dare alla verifica della query
+è dunque a sua volta parziale e localizzato: in particolare,
+il controllo si deve focalizzare sugli archi.
+Dispondendo della vista $\cV = (\Vset, E)$ ed essendo posizionato
+nel nodo $v$, per ogni arco della query $(x_\cQ, y_\cQ)$
+il \emph{DSQueryChecker} può distinguere i seguenti casi:
+\begin{itemize}
+\item se \(x_\cQ \in \Vset\,\wedge\,y_\cQ \in \Vset\,
+  \wedge (x_\cQ, y_\cQ) \in E\), allora l'arco è verificato.
+\item se \((x_\cQ = v\,\vee\,y_\cQ = v)\,
+  \wedge\,(x_\cQ, y_\cQ) \notin E\),
+  allora l'arco non è sicuramente presente nel grafo principale:
+  può essere pubblicato immediatamente il risultato \texttt{FAIL}.
+\item in tutti gli altri casi non si può affermare nulla
+  sull'arco in questione.
+\end{itemize}
+%
+Ogni arco verificato può essere rimosso dalla query, lasciando
+che in questa rimangano solo gli elementi ancora da verificare.
+Se, al termine di questa operazione risulta che $E_\cQ = \varnothing$,
+allora la query è stata interamente verificata e si può
+pubblicare il risultato \texttt{MATCH}.
+
+Se invece rimangono archi ancora da verificare, significa che
+la conoscenza parziale di quel \emph{DSQueryChecker} non è
+sufficiente per raggiungere un risultato definitivo:
+il risultato di questa particolare verifica è \texttt{DONTKNOW}
+e la query rimasta deve allora essere inoltrata agli altri.
+Se anche l'ultimo robot a cui giunge la query termina la
+computazione in stato \texttt{DONTKNOW} significa che la somma
+delle conoscenze parziali non copre l'intera query: si può
+allora pubblicare il risultato \texttt{DONTKNOW}.
+
+Nel caso pessimo dunque la query deve essere analizzata da tutti
+i robot: si noti che questo deve avvenire in modo sequenziale.
+Infatti, perché si giunga a un risultato, ogni nodo deve aver
+contribuito con le proprie conoscenze sulla stessa query che
+non può essere condivisa: occorre necessariamente che i robot
+si passino uno alla volta il sottografo da controllare
+snellendolo progressivamente. Anche se non parallelizzabile,
+notiamo che il processo non richiede che le verifiche seguano
+un particolare ordinamento, in quanto ognuna è indipendente
+dalle altre: per ogni possibile permutazione dei contributi dei
+robot il risultato della query sarà lo stesso.
+Inoltre, non conoscendo la posizione dei robot, non è nemmeno
+possibile applicare euristiche sull'ordinamento cercando
+di fare arrivare la query per primi ai robot più informati.
+
+L'Algoritmo~\ref{alg:check-and-reduce} riporta in pseudocodice
+la funzione principale dei \emph{DSQueryChecker}, dove la
+notazione $\adj{v}{\cG}$ indica l'insieme dei nodi
+adiacenti al nodo $v$ nel grafo $\cG$:
 \[
-\adj{v}{\cG} = \bigl\{\, v' \bigm| (v, v') \in E,
+\adj{v}{\cG} \defeq \bigl\{\, v' \bigm| (v, v') \in E,
 \ \cG = (\Vset, E) \,\bigr\}.
 \]
-%%%%%%%%%
+
 \begin{algorithm}
   \caption{Verifica e riduzione di una query: dati in input
     un grafo $\cV$ rappresentante la conoscenza parziale del grafo,
     il nodo $v$ nel quale si è posizionati e
     una query $\cQ$, restituisce \texttt{MATCH} / \texttt{FAIL}
-    / \texttt{DONTKNOW} come definito in Sezione~\ref{sec:func-req}.
+    / \texttt{DONTKNOW}.
   }
 \label{alg:check-and-reduce}
 \begin{algorithmic}[2]
   \Function{check-and-reduce}{DSGraph $\cV$, Node $v$ , DSQuery $\cQ$}
   \State let $(\Vset, E) \gets \cV$;
-  \Comment{Precond: $\view(v) \sqsseq \cV$}
   \State let $(\Vset_\cQ, E_\cQ) \gets \cQ$;
+  \State \algorithmicrequire{$\view(v) \sqsseq \cV$}
   \ForAll {$q \in \Vset_\cQ$}
     \If {$q \notin \Vset$} \textbf{continue}; \EndIf
     \If {$q = v \wedge \adj{q}{\cQ} \nsubseteq \adj{v}{\cV}$}
@@ -322,6 +380,12 @@ in quel momento.
 
 \subsection{Architettura fisica e sviluppo}
 \label{sec:deploy}
+\begin{quote}
 Which nodes and platforms involved, and where each
 component is deployed.
+\end{quote}
+
+\coanote{Metterei qui la descrizione di come funziona Akka...
+  TCP, garanzia ricezione messaggi.. un po' di handwaving per dire che
+  l'abbiamo letto..}
 
