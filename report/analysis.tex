@@ -34,18 +34,13 @@ L'unione delle viste di un insieme di nodi $\Vset'$ equivale
 all'intero grafo solo nel caso $\Vset'$ costituisca il suo
 \emph{vertex cover}.\\
 
-L'algoritmo ha svariati ambiti di applicazioni: nel sistema che si
-intende proporre lo applicheremo a grafi che rappresentano la
+Il sistema viene applicato a grafi che rappresentano la
 disposizione spaziale di alcuni luoghi (i nodi etichettati)
 connessi da particolari archi (non etichettati).
-Si immagina infatti di distribuire in un ambiente alcuni \emph{robot}
-dotati di sensori e capaci di muoversi autonomamente, che si
-posizioneranno ognuno su un nodo della mappa.
-Ogni robot è in grado di acquisire l'intera vista del grafo a partire
-dal nodo in cui si trova;
-comunicando tramite scambio di messaggi, senza ricostruire alcuna
-conoscenza del grafo totale, i robot dovranno verificare la
-presenza di una query.
+I robot distribuiti nella mappa sono in grado di acquisire
+l'intera vista del grafo a partire dal nodo in cui si trovano:
+se $\cR$ è la conoscenza del robot posizionato sul nodo $v$,
+vale dunque sempre che $\view(v) \sqsseq \cR$.
 
 \subsection{Requisiti funzionali}
 \label{sec:func-req}
@@ -212,7 +207,7 @@ che tale arco non è presente nel grafo principale
 Considerando una query $\cQ'$ ottenuta da $\cQ$ rimuovendo l'arco
 $(c, f)$, il robot può verificare la presenza degli archi $(b,c)$ e $(c,e)$
 (marcati in blu in figura), ma non può affermare nulla sui restanti:
-siamo dunque nel caso in cui $\cQ \not\sqsseq \cR$ e il risultato
+siamo dunque nel caso in cui $\cQ' \not\sqsseq \cR$ e il risultato
 è \texttt{DONTKNOW}.
 L'utente allora può imporre il movimento del robot e ritentare
 la query ancora da verificare (marcata in giallo in figura).
@@ -220,7 +215,7 @@ Supponiamo che il robot si sposti sul nodo $b$: esso può allora verificare
 l'esistenza degli archi rimanenti e concludere con \texttt{MATCH}.
 \end{example}
 
-L'ambiente di sviluppo è stato scelto in modo da poter
+L'ambiente di sviluppo deve essere scelto in modo da poter
 evidenziare solamente le caratteristiche più rilevanti del problema.
 Il sistema è implementato in \emph{Akka}, un toolkit per
 la creazione di applicazioni distribuite e concorrenti con supporto
@@ -245,29 +240,17 @@ Il sistema deve essere dunque scalabile e flessibile:
 si devono poter far spostare i robot senza la necessità di
 riconfigurare nulla. L'implementazione delle
 comunicazioni tra i punti di accesso centrali al cluster e
-tra gli elementi stessi del cluster, potrà
-sfruttare le caratteristiche offerte dalle implementazioni di
-comunicazioni \emph{Publish-Subscribe} di \emph{Akka}:
-scala con il numero di robot ed è totalmente svincolata dal conoscere
-la loro posizione.
+tra gli elementi stessi del cluster
+deve scalare con il numero di robot ed essere totalmente
+svincolata dal conoscere la loro posizione.
 Il grado di \emph{location transparency} offerto
 deve dunque essere molto elevato.
 
 \subsubsection*{Failure model:}
-Trattandosi di query potenzialmente molto lunghe da verificare,
-da gestirsi in modo sequenziale su un numero potenzialmente alto di sensori,
-siamo disposti ad aggiungere uno scambio di messaggi non direttamente
-informativi per quanto riguarda la ricerca: l'obiettivo è essere in grado,
-in caso di fallimenti, di recuperare la query parziale,
-evitando di perdere il lavoro eseguito fino a quel momento.
-
-Il sistema di comunicazione di \emph{Akka} implementa già una
-protezione della perdita di messaggi da parte di una rete inaffidabile;
-occorre però tenere in considerazione che i robot possono fallire
-interamente e che possono fallire i singoli processi in esecuzione in essi.
-
-L'approccio a questo tipo di fallimenti è quello di ristabilire la
-condizione del sistema come prima del fallimento senza che
+Di fronte a un fallimento, sia dovuto a una rete inaffidabile,
+sia dovuto alla morte di un processo in esecizione in esso,
+l'approccio è quello di ristabilire la
+condizione del sistema senza che
 l'utente ne venga informato. Eventualmente quindi il sistema deve poter
 recuperare e ripresentare in modo automatico le query che si stavano
 verificando. In caso di morte di un robot però,
