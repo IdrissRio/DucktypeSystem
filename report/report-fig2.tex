@@ -1,0 +1,43 @@
+\documentclass{article}
+\input tmp.inputs
+\pagestyle{empty}
+\begin{document}
+\psset{xunit=1cm,yunit=1cm,runit=1cm}
+\psset{origin={0,0}}
+\pspicture*[](-0.5,-0.5)(5.5,2.5)
+\rput(-0.3, 1.15){$\mathcal{G}$}
+\begin{blue}\rput(2.9, 1.15){$\mathcal{Q}$}\end{blue}
+\psline[linecolor=black](0,0)(0,2)
+\psline[linecolor=black](0,2)(5,2)
+\psline[linecolor=black](0,0)(5,0)
+\psline[linecolor=blue](0,0)(2,2)
+\psline[linecolor=black](2,0)(2,2)
+\psline[linecolor=blue](2,2)(4,1)
+\psline[linecolor=black](1,1)(0,2)
+\psline[linecolor=black](4,1)(5,2)
+\psline[linecolor=black](4,1)(4,0)
+\psline[linecolor=blue](4,1)(5,0)
+\psline[linecolor=black](5,0)(5,2)
+\pscircle*[linecolor=black](0, 0){2pt}
+\pscircle*[linecolor=black](0, 2){2pt}
+\pscircle*[linecolor=green](1, 1){2pt}
+\pscircle*[linecolor=green](2, 0){2pt}
+\pscircle*[linecolor=black](2, 2){2pt}
+\pscircle*[linecolor=black](4, 0){2pt}
+\pscircle*[linecolor=green](4, 1){2pt}
+\pscircle*[linecolor=black](5, 0){2pt}
+\pscircle*[linecolor=black](5, 2){2pt}
+\begin{footnotesize}
+\rput(0,2.3){$a$}
+\rput(0,-0.3){$b$}
+\rput(1.2,0.8){$c$}
+\rput(2,-0.3){$e$}
+\rput(2, 2.3){$d$}
+\rput(4,-0.3){$g$}
+\rput(3.8,0.8){$f$}
+\rput(5,-0.3){$i$}
+\rput(5,2.3){$h$}
+\end{footnotesize}
+%%
+\endpspicture
+\end{document}

@@ -375,6 +375,105 @@ adiacenti al nodo $v$ nel grafo $\cG$:
 \end{algorithmic}
 \end{algorithm}
 
+%%%%%%%%%%%
+\begin{figure}
+\centering
+{\begin{pdfpic}
+\psset{xunit=1cm,yunit=1cm,runit=1cm}
+\psset{origin={0,0}}
+\pspicture*[](-0.5,-0.5)(5.5,2.5)
+\rput(-0.3, 1.15){$\mathcal{G}$}
+\begin{blue}\rput(2.9, 1.15){$\mathcal{Q}$}\end{blue}
+\psline[linecolor=black](0,0)(0,2)
+\psline[linecolor=black](0,2)(5,2)
+\psline[linecolor=black](0,0)(5,0)
+\psline[linecolor=blue](0,0)(2,2)
+\psline[linecolor=black](2,0)(2,2)
+\psline[linecolor=blue](2,2)(4,1)
+\psline[linecolor=black](1,1)(0,2)
+\psline[linecolor=black](4,1)(5,2)
+\psline[linecolor=black](4,1)(4,0)
+\psline[linecolor=blue](4,1)(5,0)
+\psline[linecolor=black](5,0)(5,2)
+\pscircle*[linecolor=black](0, 0){2pt}
+\pscircle*[linecolor=black](0, 2){2pt}
+\pscircle*[linecolor=green](1, 1){2pt}
+\pscircle*[linecolor=green](2, 0){2pt}
+\pscircle*[linecolor=black](2, 2){2pt}
+\pscircle*[linecolor=black](4, 0){2pt}
+\pscircle*[linecolor=green](4, 1){2pt}
+\pscircle*[linecolor=black](5, 0){2pt}
+\pscircle*[linecolor=black](5, 2){2pt}
+\begin{footnotesize}
+\rput(0,2.3){$a$}
+\rput(0,-0.3){$b$}
+\rput(1.2,0.8){$c$}
+\rput(2,-0.3){$e$}
+\rput(2, 2.3){$d$}
+\rput(4,-0.3){$g$}
+\rput(3.8,0.8){$f$}
+\rput(5,-0.3){$i$}
+\rput(5,2.3){$h$}
+\end{footnotesize}
+%%
+\endpspicture
+\end{pdfpic}
+}
+\caption{Grafo principale $\cG$ (in nero), con tre robot
+  posizionati sui nodi $c, e, f$; query $\cQ$ (in blu) il cui
+  risultato atteso è \texttt{MATCH}.}
+\label{fig:comp}
+\end{figure}
+
+\begin{example}
+Si consideri un `\emph{mainGraph}' inizializzato con il
+grafo $\cG$ riportato in Figura~\ref{fig:comp}.
+Vengono collocati nel grafo tre robot, che acquisiscono
+la vista del nodo su cui sono posizionati:
+\begin{align*}
+  \cR_c &= \view(c) = \left(\bigl\{c\bigr\},\,
+  \bigl\{\,(a,c), (b,c), (c,d)\,\bigr\}\right); \\
+  \cR_e &= \view(e) = \left(\bigl\{e\bigr\},\,
+  \bigl\{\,(b,e), (d,e), (e,g)\,\bigr\}\right); \\
+  \cR_f &= \view(f) = \left(\bigl\{f\bigr\},\,
+  \bigl\{\,(d,f), (f,g), (f,h), (f,i)\,\bigr\}\right).
+\end{align*}
+Con l'arrivo del messaggio \texttt{DSCreateQueryChecker}
+ogni robot crea un attore figlio in ascolto sul path
+della query; su tale path viene spedito in Send il primo
+messaggio \texttt{DSTryNewQuery} contenente la (versione
+serializzata della) query $\cQ = (\Vset_\cQ, E_\cQ)$:\[
+\Vset_\cQ = \bigl\{\,b, c, d, f, i\,\bigr\}, \ \,
+E_\cQ = \bigl\{\,(b,c),(c,d),(d,f),(f,i)\,\bigr\}.\]
+Il messaggio viene ricevuto da uno solo dei
+\emph{DSQueryChecker}: supponiamo che questo sia il figlio
+del robot posizionato in $c$.
+La sua funzione \texttt{check-and-reduce()} restituisce
+\texttt{DONTKNOW} perché non può a verificare ogni
+arco, ma riesce a rimuovere quelli che appartengono a $E_{\cR_c}$.
+Il \emph{DSQueryChecker} ottiene quindi una nuova versione
+della query $\cQ'$, con\[
+\Vset_{\cQ'} = \bigl\{\,d, f, i\,\bigr\}, \ \,
+E_{\cQ'} = \bigl\{\,(d,f),(f,i)\,\bigr\};\]
+poiché sono ancora presenti altri attori in ascolto sul path,
+spedisce in Send (dopo essersi disiscritto)
+in un messaggio \texttt{TryNewQuery}.
+
+Supponiamo che venga ricevuto dal \emph{DSQueryChecker}
+figlio del robot posizionato sul nodo $e$.
+Esso non può affermare nulla su $\cQ'$, perciò è
+costretto a sua volta a inoltrare il messaggio.
+
+La query arriva infine all'ultimo \emph{DSQueryChecker} che
+possiede la vista $\cR_f$: esso può verificare l'intera query
+e pubblicare il risultato \texttt{MATCH} al
+\emph{DSClusterInterfaceActor} che ne ha fatto richiesta.
+
+Si noti che il risultato sarebbe stato lo stesso per
+qualunque ordine si fosse seguito nella ricezione dei messaggi
+\texttt{TryNewQuery}.
+\end{example}
+
 \subsection{Architettura fisica e sviluppo}
 \label{sec:deploy}
 \begin{quote}

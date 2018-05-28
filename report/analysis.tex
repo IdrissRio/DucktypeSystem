@@ -128,6 +128,7 @@ a mantenere almeno l'intera query sottoposta.\\
 \psset{origin={0,0}}
 \pspicture*[](-0.7,-0.5)(9,2.5)
 \rput(-0.5,1){$\mathcal{G}$}
+\begin{green}\rput(1.3,0.7){$\mathcal{R}$}\end{green}
 \psline[linecolor=black](0,2)(1,1)
 \psline[linecolor=black](2,2)(1,1)
 \psline[linecolor=black](0,0)(1,1)
@@ -136,14 +137,14 @@ a mantenere almeno l'intera query sottoposta.\\
 \psline[linecolor=black](2,0)(3.5,1)
 \psline[linecolor=black](2,2)(0,2)
 \psline[linecolor=black](1,1)(3.5,1)
-\psline[linecolor=blue, linestyle=dashed](0,2)(1,1)
-\psline[linecolor=blue, linestyle=dashed](2,2)(1,1)
-\psline[linecolor=blue, linestyle=dashed](0,0)(1,1)
-\psline[linecolor=blue, linestyle=dashed](1,1)(3.5,1)
+\psline[linecolor=green, linestyle=dashed](0,2)(1,1)
+\psline[linecolor=green, linestyle=dashed](2,2)(1,1)
+\psline[linecolor=green, linestyle=dashed](0,0)(1,1)
+\psline[linecolor=green, linestyle=dashed](1,1)(3.5,1)
 %% \psline[linecolor=blue, linestyle=dashed](2,0)(1,1)
 \pscircle*[linecolor=black](0, 2){2pt}
 \pscircle*[linecolor=black](2, 2){2pt}
-\pscircle*[linecolor=blue](1, 1){2pt}
+\pscircle*[linecolor=green](1, 1){2pt}
 \pscircle*[linecolor=black](3.5, 1){2pt}
 \pscircle*[linecolor=black](0, 0){2pt}
 \pscircle*[linecolor=black](2, 0){2pt}
@@ -161,9 +162,9 @@ a mantenere almeno l'intera query sottoposta.\\
 \psline[linecolor=yellow](7,2)(8.5,1)
 \psline[linecolor=red, linestyle=dashed](6,1)(7.5,0)
 \pscircle*[linecolor=yellow](7, 2){2pt}
-\pscircle*[linecolor=black](6, 1){2pt}
+\pscircle*[linecolor=blue](6, 1){2pt}
 \pscircle*[linecolor=yellow](8.5, 1){2pt}
-\pscircle*[linecolor=black](5, 0){2pt}
+\pscircle*[linecolor=blue](5, 0){2pt}
 \pscircle*[linecolor=white](7.5, 0){2pt}
 \pscircle[linecolor=red](7.5, 0){2pt}
 \begin{footnotesize}
@@ -193,7 +194,7 @@ opposta $(v_j, v_i)$.}
 E = \bigl\{\,(a,b),(a,c),(b,c),(b,d),(c,e),(c,d),(d,f)\,\bigr\};
 \]
 la conoscenza parziale del grafo,
-evidenziata in figura con linee rosse tratteggiate,
+evidenziata in figura con linee verdi tratteggiate,
 è la vista acquisita dal robot collocato
 sul nodo $c$: \[
 \cR = \view(c) = \left(\bigl\{c\bigr\},\,
