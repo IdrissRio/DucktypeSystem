@@ -1,0 +1,56 @@
+\documentclass{article}
+\input tmp.inputs
+\pagestyle{empty}
+\begin{document}
+\psset{xunit=1cm,yunit=1cm,runit=1cm}
+\psset{origin={0,0}}
+\pspicture*[](-0.7,-0.5)(9,2.5)
+\rput(-0.5,1){$\mathcal{G}$}
+\psline[linecolor=black](0,2)(1,1)
+\psline[linecolor=black](2,2)(1,1)
+\psline[linecolor=black](0,0)(1,1)
+%% \psline[linecolor=black](2,0)(1,1)
+\psline[linecolor=black](2,2)(3.5,1)
+\psline[linecolor=black](2,0)(3.5,1)
+\psline[linecolor=black](2,2)(0,2)
+\psline[linecolor=black](1,1)(3.5,1)
+\psline[linecolor=blue, linestyle=dashed](0,2)(1,1)
+\psline[linecolor=blue, linestyle=dashed](2,2)(1,1)
+\psline[linecolor=blue, linestyle=dashed](0,0)(1,1)
+\psline[linecolor=blue, linestyle=dashed](1,1)(3.5,1)
+%% \psline[linecolor=blue, linestyle=dashed](2,0)(1,1)
+\pscircle*[linecolor=black](0, 2){2pt}
+\pscircle*[linecolor=black](2, 2){2pt}
+\pscircle*[linecolor=blue](1, 1){2pt}
+\pscircle*[linecolor=black](3.5, 1){2pt}
+\pscircle*[linecolor=black](0, 0){2pt}
+\pscircle*[linecolor=black](2, 0){2pt}
+\begin{footnotesize}
+\rput(0,2.3){$a$}
+\rput(2,2.3){$b$}
+\rput(0.7,1){$c$}
+\rput(3.7,1.2){$d$}
+\rput(0,-0.3){$e$}
+\rput(2,-0.3){$f$}
+\end{footnotesize}
+%%
+\psline[linecolor=blue](7,2)(6,1)
+\psline[linecolor=blue](5,0)(6,1)
+\psline[linecolor=yellow](7,2)(8.5,1)
+\psline[linecolor=red, linestyle=dashed](6,1)(7.5,0)
+\pscircle*[linecolor=yellow](7, 2){2pt}
+\pscircle*[linecolor=black](6, 1){2pt}
+\pscircle*[linecolor=yellow](8.5, 1){2pt}
+\pscircle*[linecolor=black](5, 0){2pt}
+\pscircle*[linecolor=white](7.5, 0){2pt}
+\pscircle[linecolor=red](7.5, 0){2pt}
+\begin{footnotesize}
+\rput(7,2.3){$b$}
+\rput(5.7,1){$c$}
+\rput(8.7,1.2){$d$}
+\rput(5,-0.3){$e$}
+\rput(7.5,-0.3){$f$}
+\end{footnotesize}
+%%
+\endpspicture
+\end{document}

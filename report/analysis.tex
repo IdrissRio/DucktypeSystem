@@ -24,7 +24,7 @@ ma lo si conosca solo come somma di conoscenza parziali.
 
 \begin{definition}[Vista di un nodo]
 Dato un nodo $v_i \in \Vset$, la sua \emph{vista} del grafo
-$\cG = (\Vset, E)$ è definita come $\view(v_i) = (\{v_i\}, E_i)$, con
+$\cG = (\Vset, E)$ è definita come $\view(v_i) \defeq (\{v_i\}, E_i)$, con
 $E_i = \bigl\{\,(v_j, v_k) \in E \bigm| k = i \vee j = i \,\bigr\}$.
 \end{definition}
 
@@ -100,11 +100,10 @@ tra la somma delle conoscenze parziali (ma localmente certe)
 dei sensori e la query: ovvero quando un arco $(x, y) \in E_\cQ$
 non è presente in $E_\cR$ con $\cR$ la conoscenza del robot posizionato
 sul nodo $x$ (infatti è garantito che $\view(x) \sqsseq \cR$);
-\item \texttt{DONTKNOW}: nel caso in cui, data la mancanza di una visione
-totale del grafo, non si riesce a determinare in maniera effettiva
-l'esistenza o il fallimento della query:\[
-\bigcup_{1 \leq i \leq n} \cR_i \cap \cQ \neq \cQ
-\]
+\item \texttt{DONTKNOW}: in tutti gli altri casi, ovvero quando
+data la mancanza di una visione totale del grafo,
+non si riesce a determinare in maniera effettiva né l'esistenza né
+il fallimento della query.
 \end{itemize}
 
 In caso di \texttt{DONTKNOW} l'utente può imporre ai robot di muoversi
@@ -120,6 +119,105 @@ passi indietro.
 I robot devono poter comunicare esclusivamente tramite scambio di
 messaggi: la loro capacità di memorizzazione deve essere sufficiente
 a mantenere almeno l'intera query sottoposta.\\
+
+
+\begin{figure}
+\centering
+{\begin{pdfpic}
+\psset{xunit=1cm,yunit=1cm,runit=1cm}
+\psset{origin={0,0}}
+\pspicture*[](-0.7,-0.5)(9,2.5)
+\rput(-0.5,1){$\mathcal{G}$}
+\psline[linecolor=black](0,2)(1,1)
+\psline[linecolor=black](2,2)(1,1)
+\psline[linecolor=black](0,0)(1,1)
+%% \psline[linecolor=black](2,0)(1,1)
+\psline[linecolor=black](2,2)(3.5,1)
+\psline[linecolor=black](2,0)(3.5,1)
+\psline[linecolor=black](2,2)(0,2)
+\psline[linecolor=black](1,1)(3.5,1)
+\psline[linecolor=blue, linestyle=dashed](0,2)(1,1)
+\psline[linecolor=blue, linestyle=dashed](2,2)(1,1)
+\psline[linecolor=blue, linestyle=dashed](0,0)(1,1)
+\psline[linecolor=blue, linestyle=dashed](1,1)(3.5,1)
+%% \psline[linecolor=blue, linestyle=dashed](2,0)(1,1)
+\pscircle*[linecolor=black](0, 2){2pt}
+\pscircle*[linecolor=black](2, 2){2pt}
+\pscircle*[linecolor=blue](1, 1){2pt}
+\pscircle*[linecolor=black](3.5, 1){2pt}
+\pscircle*[linecolor=black](0, 0){2pt}
+\pscircle*[linecolor=black](2, 0){2pt}
+\begin{footnotesize}
+\rput(0,2.3){$a$}
+\rput(2,2.3){$b$}
+\rput(0.7,1){$c$}
+\rput(3.7,1.2){$d$}
+\rput(0,-0.3){$e$}
+\rput(2,-0.3){$f$}
+\end{footnotesize}
+%%
+\psline[linecolor=blue](7,2)(6,1)
+\psline[linecolor=blue](5,0)(6,1)
+\psline[linecolor=yellow](7,2)(8.5,1)
+\psline[linecolor=red, linestyle=dashed](6,1)(7.5,0)
+\pscircle*[linecolor=yellow](7, 2){2pt}
+\pscircle*[linecolor=black](6, 1){2pt}
+\pscircle*[linecolor=yellow](8.5, 1){2pt}
+\pscircle*[linecolor=black](5, 0){2pt}
+\pscircle*[linecolor=white](7.5, 0){2pt}
+\pscircle[linecolor=red](7.5, 0){2pt}
+\begin{footnotesize}
+\rput(7,2.3){$b$}
+\rput(5.7,1){$c$}
+\rput(8.7,1.2){$d$}
+\rput(5,-0.3){$e$}
+\rput(7.5,-0.3){$f$}
+\end{footnotesize}
+%%
+\endpspicture
+\end{pdfpic}
+}
+\caption{Nella parte sinistra: un grafo etichettato $\cG$
+con un robot posizionato sul nodo $c$. Nella parte destra: una query
+$\cQ$ sottoposta al sistema.}
+\label{fig:graph-query}
+\end{figure}
+
+\begin{example}
+Si consideri il grafo $\cG = (\Vset, E)$ presentato nella parte sinistra
+della Figura~\ref{fig:graph-query}. Si ha:~\footnote{Nell'insieme di archi
+riportiamo una sola coppia $(v_i, v_j)$, lasciando implicita la sua
+opposta $(v_j, v_i)$.}
+\[
+\Vset = \bigl\{\,a, b, c, d, e, f\,\bigr\}, \ \,
+E = \bigl\{\,(a,b),(a,c),(b,c),(b,d),(c,e),(c,d),(d,f)\,\bigr\};
+\]
+la conoscenza parziale del grafo,
+evidenziata in figura con linee rosse tratteggiate,
+è la vista acquisita dal robot collocato
+sul nodo $c$: \[
+\cR = \view(c) = \left(\bigl\{c\bigr\},\,
+\bigl\{\,(a,c), (b,c), (c,e), (c,d)\,\bigr\}\right). \]
+Si sottopone la query $\cQ = (\Vset_\cQ, E_\cQ)$ con:\[
+\Vset_\cQ = \bigl\{\,b, c, d, e, f\,\bigr\}, \ \,
+E_\cQ = \bigl\{\,(b,c),(b,d),(c,e),(c,f)\,\bigr\}. \]
+
+Poiché esiste un arco $(c,f) \in E_\cQ$ che non è presente in $E_\cR$
+con il robot posizionato in $c$, esso potrebbe affermare immediatamente
+che tale arco non è presente nel grafo principale
+(in quanto la sua conoscenza è localmente certa): il risultato della query
+è \texttt{FAIL}.
+
+Considerando una query $\cQ'$ ottenuta da $\cQ$ rimuovendo l'arco
+$(c, f)$, il robot può verificare la presenza degli archi $(b,c)$ e $(c,e)$
+(marcati in blu in figura), ma non può affermare nulla sui restanti:
+siamo dunque nel caso in cui $\cQ \not\sqsseq \cR$ e il risultato
+è \texttt{DONTKNOW}.
+L'utente allora può imporre il movimento del robot e ritentare
+la query ancora da verificare (marcata in giallo in figura).
+Supponiamo che il robot si sposti sul nodo $b$: esso può allora verificare
+l'esistenza degli archi rimanenti e concludere con \texttt{MATCH}.
+\end{example}
 
 L'ambiente di sviluppo è stato scelto in modo da poter
 evidenziare solamente le caratteristiche più rilevanti del problema.

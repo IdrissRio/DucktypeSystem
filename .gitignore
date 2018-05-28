@@ -5,6 +5,8 @@
 *.pdf
 *.gz
 *.DS_Store
+*.ps
+*.inputs
 akka-stuff/first-project/target/classes/
 akka-stuff/first-project/target/test-classes/
 akka-stuff/first-project/target/maven-status
