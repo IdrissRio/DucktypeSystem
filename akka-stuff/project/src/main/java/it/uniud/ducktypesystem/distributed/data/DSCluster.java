@@ -151,4 +151,13 @@ public class DSCluster {
     public void endedQuery(int host, String version, String stillToVerify) {
         ((DSQueryResult) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
     }
+
+    public void killQuery(int host, String version){
+        //Fixme: da implementare. Questa è la funzione che chiamo quando dalla view voglio completamente eliminare una query.
+        //DSCluster.getInstance().getActiveQueries(host).remove(mapVersionTmp,mapWrapperTmp); //Fixme: dalla view avrei chiamato questa. Da rimuovre i commenti quando killQuery sarà implmentata.
+    }
+
+    public void temporaryQueryStop(int host, String version){
+        //Fixme: da implementare. Questa è la funzione che chiamo quando voglio sospendere l'esecuzione di una query, Il risultato dovrebbe ritornare DONTKNOW.
+    }
 }

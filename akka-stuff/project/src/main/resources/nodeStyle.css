@@ -45,6 +45,16 @@ node.robot{
     fill-image: url('robot.png');
     text-color: #7EF9FF;
 }
+
+node.halo{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('DSHalo.png');
+    text-color: #7EF9FF;
+}
 edge{
     fill-color: #000000;}
 graph {

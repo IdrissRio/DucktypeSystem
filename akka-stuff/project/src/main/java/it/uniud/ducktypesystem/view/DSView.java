@@ -430,10 +430,13 @@ public class DSView implements DSAbstractView {
         r2d2.addActionListener(x->{defaultRobot="r2d2";updateRobotsPosition();});
         JMenuItem duck = new JMenuItem("Duck",new ImageIcon(getClass().getResource("/DSDuckLittle.png")));
         duck.addActionListener(x->{defaultRobot="duck";updateRobotsPosition();});
+        JMenuItem Halo = new JMenuItem("Halo",new ImageIcon(getClass().getResource("/DSHaloLittle.png")));
+        Halo.addActionListener(x->{defaultRobot="halo";updateRobotsPosition();});
         Theme.add(bender);
         Theme.add(robot);
         Theme.add(r2d2);
         Theme.add(duck);
+        Theme.add(Halo);
         menuFile.add(Theme);
         menuFile.setMnemonic(KeyEvent.VK_F);
         menuFile.add(openMenuItem);
@@ -915,14 +918,16 @@ public class DSView implements DSAbstractView {
                             ImageIcon tmpIcon = new ImageIcon(tmpImage);
                             playAndPause.setIcon(tmpIcon);
                             playAndPause.setName("pause");
-                            //Fixme: da mandare in puasa l'esecuzione della query.
+                            DSCluster.getInstance().temporaryQueryStop(host, mapVersion);
                         }else{
                             URL tmpUrl = getClass().getResource("/DSPause.png");
                             Image tmpImage = Toolkit.getDefaultToolkit().getImage(tmpUrl);
                             ImageIcon tmpIcon = new ImageIcon(tmpImage);
                             playAndPause.setIcon(tmpIcon);
                             playAndPause.setName("play");
-                            //Fixme: fare riprendere l'esecuzione della query.
+                            if(status!=DSQuery.QueryStatus.DONTKNOW){
+                                DSCluster.getInstance().retryQuery(host, mapVersion);
+                            }
                         }
 
                     });
@@ -935,8 +940,7 @@ public class DSView implements DSAbstractView {
                         mainFrame.setCursor(Cursor.getDefaultCursor());
                         if(betterVisualizationBool)externalPanel.updateUI();
                         else mainPanel.updateUI();
-                        //DSCluster.getInstance().endedQuery(host, mapVersion, mapWrapper.getStillToVerify());
-                        //DSCluster.getInstance().getActiveQueries(host).remove(mapVersionTmp,mapWrapperTmp);
+                        DSCluster.getInstance().killQuery(host, mapVersion);
                     });
                     northPanelWithLabelAndClosure.add(queryNameLbl, BorderLayout.CENTER);
                     northPanelWithLabelAndClosure.add(killQuery, BorderLayout.EAST);
