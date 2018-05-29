@@ -6,7 +6,7 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSCluster;
-import it.uniud.ducktypesystem.distributed.message.*;
+import it.uniud.ducktypesystem.distributed.messages.*;
 
 public class DSClusterInterfaceActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);

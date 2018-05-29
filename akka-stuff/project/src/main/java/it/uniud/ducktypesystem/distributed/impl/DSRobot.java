@@ -9,14 +9,12 @@ import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
-import it.uniud.ducktypesystem.distributed.message.*;
-import it.uniud.ducktypesystem.errors.DSSystemError;
-import it.uniud.ducktypesystem.errors.DSSystemFailureSimulation;
-import scala.Option;
+import it.uniud.ducktypesystem.distributed.messages.*;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemFailureSimulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
 
 public class DSRobot extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);

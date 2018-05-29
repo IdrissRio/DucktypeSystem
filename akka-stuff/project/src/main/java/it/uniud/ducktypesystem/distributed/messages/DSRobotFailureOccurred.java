@@ -1,4 +1,4 @@
-package it.uniud.ducktypesystem.distributed.message;
+package it.uniud.ducktypesystem.distributed.messages;
 
 import java.io.Serializable;
 

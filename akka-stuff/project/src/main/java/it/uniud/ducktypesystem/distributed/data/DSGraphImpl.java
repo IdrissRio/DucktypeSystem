@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;

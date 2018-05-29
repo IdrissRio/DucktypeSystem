@@ -11,8 +11,7 @@ import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
-import it.uniud.ducktypesystem.distributed.message.*;
-import it.uniud.ducktypesystem.errors.DSSystemFailureSimulation;
+import it.uniud.ducktypesystem.distributed.messages.*;
 
 public class DSQueryChecker extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);

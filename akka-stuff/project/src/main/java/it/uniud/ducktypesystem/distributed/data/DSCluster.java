@@ -7,8 +7,8 @@ import com.typesafe.config.ConfigFactory;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.impl.DSClusterInterfaceActor;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
-import it.uniud.ducktypesystem.distributed.message.DSMove;
-import it.uniud.ducktypesystem.distributed.message.DSStartQueryCheck;
+import it.uniud.ducktypesystem.distributed.messages.DSMove;
+import it.uniud.ducktypesystem.distributed.messages.DSStartQueryCheck;
 import it.uniud.ducktypesystem.view.DSAbstractView;
 import org.jboss.netty.channel.ChannelException;
 

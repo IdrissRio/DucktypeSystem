@@ -2,9 +2,9 @@ package it.uniud.ducktypesystem.view;
 
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.data.*;
-import it.uniud.ducktypesystem.errors.DSSystemError;
-import it.uniud.ducktypesystem.logger.DSAbstractLog;
-import it.uniud.ducktypesystem.logger.DSLog;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
+import it.uniud.ducktypesystem.controller.logger.DSAbstractLog;
+import it.uniud.ducktypesystem.controller.logger.DSLog;
 import org.graphstream.algorithm.generator.FlowerSnarkGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;

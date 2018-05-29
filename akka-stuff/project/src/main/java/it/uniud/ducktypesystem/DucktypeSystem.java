@@ -9,7 +9,4 @@ public class DucktypeSystem {
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         new DSApplication().run();
     }
-    public void exit() {
-        System.exit(0);
-    }
 }

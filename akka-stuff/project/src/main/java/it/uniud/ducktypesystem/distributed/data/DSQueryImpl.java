@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 
 public class DSQueryImpl extends DSGraphImpl implements DSQuery {
     private QueryId id;

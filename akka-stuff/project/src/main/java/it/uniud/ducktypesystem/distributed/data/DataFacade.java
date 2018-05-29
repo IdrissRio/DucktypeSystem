@@ -1,6 +1,6 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;

@@ -3,7 +3,7 @@ package it.uniud.ducktypesystem.tests.data;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
 import it.uniud.ducktypesystem.distributed.data.DataFacade;
-import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.file.FileSource;
 import org.graphstream.stream.file.FileSourceFactory;

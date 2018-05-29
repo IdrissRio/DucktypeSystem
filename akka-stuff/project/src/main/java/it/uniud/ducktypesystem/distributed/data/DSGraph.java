@@ -1,8 +1,7 @@
 package it.uniud.ducktypesystem.distributed.data;
 
-import it.uniud.ducktypesystem.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 
-import java.io.Serializable;
 import java.util.List;
 
 public interface DSGraph {

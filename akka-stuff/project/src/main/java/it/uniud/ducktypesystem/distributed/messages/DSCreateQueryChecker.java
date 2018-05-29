@@ -1,13 +1,13 @@
-package it.uniud.ducktypesystem.distributed.message;
+package it.uniud.ducktypesystem.distributed.messages;
 
 import it.uniud.ducktypesystem.distributed.data.DSQuery;
 
 import java.io.Serializable;
 
-public class DSEndQuery implements Serializable {
+public class DSCreateQueryChecker implements Serializable {
     private DSQuery.QueryId queryId;
 
-    public DSEndQuery(DSQuery.QueryId queryId) {
+    public DSCreateQueryChecker(DSQuery.QueryId queryId) {
         this.queryId = queryId;
     }
 

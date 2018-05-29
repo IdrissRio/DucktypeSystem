@@ -1,4 +1,4 @@
-package it.uniud.ducktypesystem.logger;
+package it.uniud.ducktypesystem.controller.logger;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
