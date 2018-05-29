@@ -23,7 +23,6 @@ public class DataFacade {
     private DSGraph map;
     private ArrayList<String> occupied;
     private int numRobot;
-    private boolean enabledFailure;
 
     // Returns a singleton instance of DataFacade given the graph file path.
     public static DataFacade create(String filePath) throws DSSystemError {
@@ -39,7 +38,6 @@ public class DataFacade {
     private DataFacade(String filePath) throws DSSystemError {
         map = DSGraphImpl.createGraphFromFile(filePath);
         occupied= new ArrayList<>();
-        enabledFailure = true;
     }
 
     // Overloaded setters for `occupied'.
@@ -67,12 +65,6 @@ public class DataFacade {
         return numRobot;
     }
 
-    public void disableFailure() {
-        this.enabledFailure = false;
-    }
-    public void enableFailure() {
-        this.enabledFailure = true;
-    }
 
     public int getMOVEFAIL() {
         return MOVEFAIL;
