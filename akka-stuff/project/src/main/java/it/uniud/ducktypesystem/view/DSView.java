@@ -14,6 +14,7 @@ import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Method;
@@ -23,6 +24,7 @@ import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment
 
 
 public class DSView implements DSAbstractView {
+    private String defaultRobot;
     private Boolean autoMoveMOVEFAIL;
     private Boolean autoMoveCRITICALFAIL;
     private Boolean autoMoveWAITINGFAIL;
@@ -73,6 +75,7 @@ public class DSView implements DSAbstractView {
             setDockIconImage.invoke(application2, image);
         } catch ( Throwable e ) {
         }
+        defaultRobot="robot";
         processNumber=3;
         this.App = application;
         logger=new DSLog();
@@ -117,7 +120,7 @@ public class DSView implements DSAbstractView {
 
     private void setup(){
         JDialog secondFrame = new JDialog();
-        JCheckBox autoMoveCB = new JCheckBox("Enable auto-move");
+        JCheckBox autoMoveCB = new JCheckBox("Enable auto-move-retry");
         JTextField numberProcess = new JTextField(processNumber.toString(),10);
         JLabel numberProcessLbl  = new JLabel("Number of process:");
         JPanel panelProcess = new JPanel(new FlowLayout());
@@ -218,7 +221,7 @@ public class DSView implements DSAbstractView {
         JMenuItem openMenuItem = new JMenuItem("Settings...");
         openMenuItem.setMnemonic(KeyEvent.VK_O);
         openMenuItem.addActionListener(l -> {
-            JCheckBox autoMoveCB = new JCheckBox("Enable auto-move");
+            JCheckBox autoMoveCB = new JCheckBox("Enable auto-move-retry");
             JButton confirmButton = new JButton("Confirm");
             Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
             autoMoveCB.setSelected(autoMove);
@@ -381,8 +384,8 @@ public class DSView implements DSAbstractView {
             JLabel InfoLabel = new JLabel(icon, JLabel.CENTER);
             InfoLabel.setText("<html> <i>High, medium</i> and <i>low</i> are the probability that a fail in <br>" +
                     "CRITICAL-FAIL, MOVE-FAIL or WAITING-FAIL can occur.<br><br>" +
-                    "When one of this failure is different from disabled<br>" +
-                    "the Auto-move is automatically <b>turned off</b>. </html>");
+                    "When one of this failure is enabled<br>" +
+                    "the auto-move-retry is automatically <b>turned off</b>. </html>");
             settingPanel.add(InfoLabel);
             settingPanel.add(confirmButton);
 
@@ -418,6 +421,20 @@ public class DSView implements DSAbstractView {
         exitMenuItem.setMnemonic(KeyEvent.VK_E);
         exitMenuItem.addActionListener(evento -> exit());
         JMenu menuFile = new JMenu("File");
+        JMenu Theme = new JMenu("Robot style");
+        JMenuItem bender = new JMenuItem("Bender",new ImageIcon(getClass().getResource("/DSBenderLittle.png")));
+        bender.addActionListener(x->{defaultRobot="bender";updateRobotsPosition();});
+        JMenuItem robot = new JMenuItem("Robot",new ImageIcon(getClass().getResource("/DSRobotLittle.png")));
+        robot.addActionListener(x->{defaultRobot="robot";updateRobotsPosition();});
+        JMenuItem r2d2 = new JMenuItem("R2D2",new ImageIcon(getClass().getResource("/DSLittleR2d2.png")));
+        r2d2.addActionListener(x->{defaultRobot="r2d2";updateRobotsPosition();});
+        JMenuItem duck = new JMenuItem("Duck",new ImageIcon(getClass().getResource("/DSDuckLittle.png")));
+        duck.addActionListener(x->{defaultRobot="duck";updateRobotsPosition();});
+        Theme.add(bender);
+        Theme.add(robot);
+        Theme.add(r2d2);
+        Theme.add(duck);
+        menuFile.add(Theme);
         menuFile.setMnemonic(KeyEvent.VK_F);
         menuFile.add(openMenuItem);
         menuFile.addSeparator();
@@ -584,7 +601,7 @@ public class DSView implements DSAbstractView {
         for (Node node : graph) {
             node.addAttribute("ui.label", node.getId());
             if(facade.getOccupied().contains(node.toString()))
-                node.addAttribute("ui.class", "occupied");
+                node.addAttribute("ui.class", defaultRobot);
             else
                 node.addAttribute("ui.class", "normal");
         }
@@ -662,7 +679,7 @@ public class DSView implements DSAbstractView {
         for (Node node : graph) {
             node.addAttribute("ui.label", node.getId());
             if(facade.getOccupied().contains(node.toString()))
-                node.addAttribute("ui.class", "occupied");
+                node.addAttribute("ui.class", defaultRobot);
             else
                 node.addAttribute("ui.class", "");
         }
@@ -736,10 +753,14 @@ public class DSView implements DSAbstractView {
                                         ((JPanel) d).remove(e);
                                         JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
                                         JPanel northPanelForBetterVisualization = new JPanel(new BorderLayout());
-                                        JPanel reallyNorthPanel = new JPanel(new FlowLayout());
+                                        JPanel reallyNorthPanel = new JPanel(new BorderLayout());
                                         JLabel statusLable= new JLabel("Still to verify...");
                                         URL url = getClass().getResource("/apri.png");
                                         JButton betterVisualization = new JButton(new ImageIcon(url));
+                                        betterVisualization.setUI(new BasicButtonUI());
+                                        betterVisualization.setContentAreaFilled(false);
+                                        betterVisualization.setOpaque(true);
+                                        betterVisualization.setBackground(Color.DARK_GRAY);
                                         betterVisualization.addActionListener(x->{
                                             try {
                                                 if (betterVisualizationBool)throw new DSSystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
@@ -773,9 +794,9 @@ public class DSView implements DSAbstractView {
                                         });
                                         statusLable.setForeground(Color.WHITE);
                                         statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
-                                        reallyNorthPanel.add(statusLable);
+                                        reallyNorthPanel.add(statusLable, BorderLayout.CENTER);
                                         if(!betterVisualizationBool)
-                                            reallyNorthPanel.add(betterVisualization);
+                                            reallyNorthPanel.add(betterVisualization, BorderLayout.EAST);
                                         northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
                                         reallyNorthPanel.setBackground(Color.DARK_GRAY);
                                         northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
@@ -792,10 +813,14 @@ public class DSView implements DSAbstractView {
                                 if (i < 2 && !mapWrapper.getStillToVerify().equals("\n") && status!=DSQuery.QueryStatus.FAIL) {
                                     JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
                                     JPanel northPanelForBetterVisualization = new JPanel(new BorderLayout());
-                                    JPanel reallyNorthPanel = new JPanel(new FlowLayout());
+                                    JPanel reallyNorthPanel = new JPanel(new BorderLayout());
                                     JLabel statusLable= new JLabel("Still to verify...");
                                     URL url = getClass().getResource("/apri.png");
                                     JButton betterVisualization = new JButton(new ImageIcon(url));
+                                    betterVisualization.setUI(new BasicButtonUI());
+                                    betterVisualization.setContentAreaFilled(false);
+                                    betterVisualization.setOpaque(true);
+                                    betterVisualization.setBackground(Color.DARK_GRAY);
                                     betterVisualization.addActionListener(x->{
                                         try {
                                             if (betterVisualizationBool)throw new DSSystemError("You already have one query open in SUPER-DUPER-VISUALIZATION.\n" +
@@ -831,9 +856,9 @@ public class DSView implements DSAbstractView {
                                     });
                                     statusLable.setForeground(Color.WHITE);
                                     statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
-                                    reallyNorthPanel.add(statusLable);
+                                    reallyNorthPanel.add(statusLable,BorderLayout.CENTER);
                                     if(!betterVisualizationBool)
-                                        reallyNorthPanel.add(betterVisualization);
+                                        reallyNorthPanel.add(betterVisualization, BorderLayout.EAST);
                                     northPanelForBetterVisualization.add(reallyNorthPanel,BorderLayout.NORTH);
                                     northPanelForBetterVisualization.add(tmp, BorderLayout.CENTER);
                                     reallyNorthPanel.setBackground(Color.DARK_GRAY);
@@ -863,9 +888,62 @@ public class DSView implements DSAbstractView {
                     twoQueryStatusPanel.setName(mapVersion);
                     twoQueryStatusPanel.add(queryVisualization(mapWrapper.getQuery()));
                     aglomeratePanel.setBackground(Color.DARK_GRAY);
-                    JPanel northPanelWithLabelAndClosure = new JPanel(new FlowLayout());
-                    northPanelWithLabelAndClosure.add(queryNameLbl);
+                    JPanel northPanelWithLabelAndClosure = new JPanel(new BorderLayout());
+                    URL url = getClass().getResource("/DSClose.png");
+                    Image image = Toolkit.getDefaultToolkit().getImage(url);
+                    ImageIcon icon = new ImageIcon(image);
+                    JButton killQuery = new JButton(icon);
+                    killQuery.setUI(new BasicButtonUI());
+                    killQuery.setContentAreaFilled(false);
+                    killQuery.setOpaque(true);
+                    killQuery.setBackground(Color.DARK_GRAY);
+                    killQuery.setForeground(Color.DARK_GRAY);
+                    url = getClass().getResource("/DSPause.png");
+                    image = Toolkit.getDefaultToolkit().getImage(url);
+                    icon = new ImageIcon(image);
+                    JButton playAndPause = new JButton(icon);
+                    playAndPause.setUI(new BasicButtonUI());
+                    playAndPause.setContentAreaFilled(false);
+                    playAndPause.setBackground(Color.DARK_GRAY);
+                    playAndPause.setName("play");
+                    playAndPause.setOpaque(true);
+                    northPanelWithLabelAndClosure.add(playAndPause, BorderLayout.WEST);
+                    playAndPause.addActionListener(e->{
+                        if(playAndPause.getName().equals("play")){
+                            URL tmpUrl = getClass().getResource("/DSPlay.png");
+                            Image tmpImage = Toolkit.getDefaultToolkit().getImage(tmpUrl);
+                            ImageIcon tmpIcon = new ImageIcon(tmpImage);
+                            playAndPause.setIcon(tmpIcon);
+                            playAndPause.setName("pause");
+                            //Fixme: da mandare in puasa l'esecuzione della query.
+                        }else{
+                            URL tmpUrl = getClass().getResource("/DSPause.png");
+                            Image tmpImage = Toolkit.getDefaultToolkit().getImage(tmpUrl);
+                            ImageIcon tmpIcon = new ImageIcon(tmpImage);
+                            playAndPause.setIcon(tmpIcon);
+                            playAndPause.setName("play");
+                            //Fixme: fare riprendere l'esecuzione della query.
+                        }
+
+                    });
+                    killQuery.setBackground(Color.DARK_GRAY);
+                    killQuery.setForeground(Color.DARK_GRAY);
+                    killQuery.addActionListener(e->{
+                        //FIXME: inviare messaggio a tutti dicendo di stoppare questa query
+                        mainFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        eastPanelQuery.remove(aglomeratePanel);
+                        mainFrame.setCursor(Cursor.getDefaultCursor());
+                        if(betterVisualizationBool)externalPanel.updateUI();
+                        else mainPanel.updateUI();
+                        //DSCluster.getInstance().endedQuery(host, mapVersion, mapWrapper.getStillToVerify());
+                        //DSCluster.getInstance().getActiveQueries(host).remove(mapVersionTmp,mapWrapperTmp);
+                    });
+                    northPanelWithLabelAndClosure.add(queryNameLbl, BorderLayout.CENTER);
+                    northPanelWithLabelAndClosure.add(killQuery, BorderLayout.EAST);
+                    northPanelWithLabelAndClosure.setBackground(Color.DARK_GRAY);
+                    northPanelWithLabelAndClosure.setName("");
                     aglomeratePanel.add(northPanelWithLabelAndClosure, BorderLayout.NORTH);
+
                     aglomeratePanel.add(twoQueryStatusPanel, BorderLayout.CENTER);
                     aglomeratePanel.setBorder(new MatteBorder(0, 0, 2, 0, Color.WHITE));
                     eastPanelQuery.add(aglomeratePanel);

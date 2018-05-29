@@ -9,9 +9,34 @@ text-offset: 2px, 2px;
 text-size: 10px;
 }
 
-
-
-node.occupied{
+node.bender{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('DSBender.png');
+    text-color: #7EF9FF;
+}
+node.r2d2{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('DSR2d2.png');
+    text-color: #7EF9FF;
+}
+node.duck{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('DucktypeIcon.png');
+    text-color: #7EF9FF;
+}
+node.robot{
 	fill-color: #3AAED8;
 	size: 20px;
 	text-background-mode: plain;
