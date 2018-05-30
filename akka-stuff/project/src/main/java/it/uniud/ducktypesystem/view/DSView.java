@@ -575,8 +575,8 @@ public class DSView implements DSAbstractView {
         // Start computation listener.
         queryButton.addActionListener(e -> {
             //FixMe: da aggiungere la storia degli host
-            hostManager();
-            /*JFileChooser fileChooser = new JFileChooser();
+           // hostManager();
+            JFileChooser fileChooser = new JFileChooser();
             fileChooser.showOpenDialog(mainFrame);
             queryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
             graphPathString=queryField.getText();
@@ -592,28 +592,32 @@ public class DSView implements DSAbstractView {
                 showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
                         " TLP, NET, graphML, GEXF.");
                 queryField.setText("");
-            }*/
+            }
         });
     }
 
     private void hostManager(){
         JDialog secondFrame = new JDialog(getMainFrame());
-        JPanel hostPanel= new JPanel(new FlowLayout());
+        JPanel hostPanel= new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        JList list = new JList(activeHost.toArray()); //data has type Object[]
-        list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        JList list = new JList(activeHost.toArray());
+        JPanel centralPanel = new JPanel(new BorderLayout());
+        JScrollPane listScroller = new JScrollPane(list);
+        JButton addHost= new JButton("Connect new host");
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
         list.setVisibleRowCount(-1);
-
-        JScrollPane listScroller = new JScrollPane(list);
-        listScroller.setPreferredSize(new Dimension(250, 80));
-        hostPanel.add(listScroller);
+        listScroller.setPreferredSize(new Dimension(300, 200));
+        hostPanel.add(addHost,BorderLayout.NORTH);
+        centralPanel.add(listScroller, BorderLayout.CENTER);
+        hostPanel.add(centralPanel, BorderLayout.CENTER);
 
         secondFrame.getContentPane().add(hostPanel);
-        secondFrame.setBounds(0, 0, 500, 600);
-        secondFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
+        secondFrame.setBounds(0, 0, 300, 400);
+        secondFrame.setLocation(dim.width/2-secondFrame.getSize().width/2, dim.height/2-secondFrame.getSize().height/2);
         secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         secondFrame.setVisible(true);
+        secondFrame.setTitle("Select host");
     }
 
     private ViewPanel queryVisualization(DSGraph x){
