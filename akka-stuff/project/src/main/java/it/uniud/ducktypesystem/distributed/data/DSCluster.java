@@ -92,6 +92,7 @@ public class DSCluster {
 
     public void disconnectHost(int i) {
         // FIXME: how to kill ActorSystem?
+        // FIXME kill every query.
         this.activeQueries.get(i).clear();
     }
 

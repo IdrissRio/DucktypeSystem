@@ -7,6 +7,7 @@
 *.DS_Store
 *.ps
 *.inputs
+akka-stuff/log/
 akka-stuff/first-project/target/classes/
 akka-stuff/first-project/target/test-classes/
 akka-stuff/first-project/target/maven-status
