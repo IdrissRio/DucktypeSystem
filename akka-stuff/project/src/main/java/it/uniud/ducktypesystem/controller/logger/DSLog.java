@@ -29,9 +29,13 @@ public class DSLog implements DSAbstractLog {
         logPane.setCharacterAttributes(aset, false);
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String date =LocalDate.now().format(formatterDate);
+        String time=LocalDateTime.now().format(formatterTime);
         logPane.setEditable(true);
-        logPane.replaceSelection("<"+LocalDate.now().format(formatterDate) +" "+ LocalDateTime.now().format(formatterTime) +">: "+logMessage+"\n");
+        logPane.replaceSelection("<"+ date +" "+ time +">: "+logMessage+"\n");
+
         logPane.setEditable(false);
+        logPane.revalidate();
 
     }
     public JTextPane getLog(){

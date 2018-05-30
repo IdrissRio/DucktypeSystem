@@ -12,7 +12,10 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
+import scala.Int;
+
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
@@ -20,11 +23,15 @@ import java.awt.event.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static com.sun.tools.doclint.Entity.forall;
 import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
 
-
 public class DSView implements DSAbstractView {
+    private Integer lastHost;
     private String defaultRobot;
     private Boolean autoMoveMOVEFAIL;
     private Boolean autoMoveCRITICALFAIL;
@@ -32,11 +39,12 @@ public class DSView implements DSAbstractView {
     private Integer backupMOVEFAIL;
     private Integer backupCRITICALFAIL;
     private Integer backupWAITINGFAIL;
-    private ArrayList<Integer>activeHost;
+    private DefaultListModel<Integer> activeHost;
     private JFrame mainFrame;
     private DSApplication App;
     private DSAbstractLog logger;
     private JScrollPane logScroll;
+    private JTextField queryField;
     private JPanel graphPanel;
     private ViewPanel graphView;
     // The DSGraph is accessible by `facade.getMap()' *after* configureSystem() is called.
@@ -96,17 +104,8 @@ public class DSView implements DSAbstractView {
         autoMove=false;
         betterVisualizationBool=false;
         //Fixme: questo per consistenza dovrei aggiungerlo quando ho creato tutti i clustermanager.
-        activeHost=new ArrayList<Integer>(0);
-        activeHost.add(0);
-        activeHost.add(1);
-        activeHost.add(2);
-        activeHost.add(5);activeHost.add(0);
-        activeHost.add(1);
-        activeHost.add(2);
-        activeHost.add(5);activeHost.add(0);
-        activeHost.add(1);
-        activeHost.add(2);
-        activeHost.add(5);
+        activeHost= new DefaultListModel<>();
+        activeHost.addElement(0);
     }
 
 
@@ -510,7 +509,7 @@ public class DSView implements DSAbstractView {
         JPanel northPanel=new JPanel(new BorderLayout());
         JLabel pathLbl =new JLabel("Graph path:");
         JButton queryButton = new JButton("Query source");
-        JTextField queryField = new JTextField();
+        queryField = new JTextField();
         JPanel soutWithStartPanel = new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JPanel southWithScroll= new JPanel(new BorderLayout());
@@ -547,7 +546,7 @@ public class DSView implements DSAbstractView {
         // MainFrame window listener
         moveRobot.addActionListener(e -> {
             try {
-                DSCluster.getInstance().makeMove(0); //FIXME: this is the current host. Deve essere indicizzatato.
+                DSCluster.getInstance().makeMove(0); //FIXME: in questo caso va bene che sia l'host 0 ad effettuare la makeMove.
             }catch (NullPointerException error){
                 showErrorMessage("Wait. We are initializing the Akka environment.");
             }
@@ -562,8 +561,7 @@ public class DSView implements DSAbstractView {
         startNewComputation.addActionListener(e -> {
             //Start the computation in a new thread.
             Thread thread = new Thread(() -> {
-                // FIXME: here 0 stands for `host' index.
-                DSCluster.getInstance().startNewComputation(0, newQuery);
+                DSCluster.getInstance().startNewComputation(lastHost, newQuery);
                 setQueryCheck(false);
                 startNewComputation.setEnabled(isStartEnable());
                 updateQuery(newQuery.getId(), DSQuery.QueryStatus.NEW);
@@ -572,27 +570,8 @@ public class DSView implements DSAbstractView {
             });
             thread.start();
         });
-        // Start computation listener.
         queryButton.addActionListener(e -> {
-            //FixMe: da aggiungere la storia degli host
-           // hostManager();
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.showOpenDialog(mainFrame);
-            queryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-            graphPathString=queryField.getText();
-            //If there is no exception enable startButton
-            setQueryCheck(true);
-            startNewComputation.setEnabled(isStartEnable());
-            try {
-                newQuery = DSQueryImpl.createQueryFromFile(graphPathString);
-                showInformationMessage("SETTINGS: Graph reading complete.");
-            }catch(NullPointerException error) {
-                showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
-            }catch(DSSystemError sError){
-                showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
-                        " TLP, NET, graphML, GEXF.");
-                queryField.setText("");
-            }
+            hostManager();
         });
     }
 
@@ -600,24 +579,71 @@ public class DSView implements DSAbstractView {
         JDialog secondFrame = new JDialog(getMainFrame());
         JPanel hostPanel= new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        JList list = new JList(activeHost.toArray());
+        JList list = new JList(activeHost);
+        list.setFont(new Font("Bariol", Font.PLAIN , 50));
         JPanel centralPanel = new JPanel(new BorderLayout());
         JScrollPane listScroller = new JScrollPane(list);
         JButton addHost= new JButton("Connect new host");
+        addHost.addActionListener(x->{
+            activeHost.addElement(DSCluster.getInstance().connectNewHost());
+        });
+        list.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                JList list = (JList)evt.getSource();
+                if (evt.getClickCount() == 2) {
+                    int index = list.locationToIndex(evt.getPoint());
+
+                    try {
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.showOpenDialog(mainFrame);
+                        queryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                        graphPathString = queryField.getText();
+                        setQueryCheck(true);
+                        startNewComputation.setEnabled(isStartEnable());
+                        lastHost = (Integer)list.getSelectedValue();
+                        newQuery = DSQueryImpl.createQueryFromFile(graphPathString, lastHost);
+                        showInformationMessage("SETTINGS: Graph reading complete.");
+                        secondFrame.dispose();
+                    } catch (NullPointerException error) {
+                        error.printStackTrace();
+                        showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
+                        lastHost = null;
+                    } catch (DSSystemError sError) {
+                        sError.printStackTrace();
+                        showErrorMessage("SETTINGS: I cannot read this file. Accepted extensions: DOT, DGS, GML," +
+                                " TLP, NET, graphML, GEXF.");
+                        queryField.setText("");
+                        lastHost = null;
+                    }
+                }
+            }
+        });
+        //JButton querySelection= new JButton("Next -> Query selection");
+        //querySelection.addActionListener(x->{
+
+
+        //});
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        list.setLayoutOrientation(JList.VERTICAL_WRAP);
         list.setVisibleRowCount(-1);
         listScroller.setPreferredSize(new Dimension(300, 200));
         hostPanel.add(addHost,BorderLayout.NORTH);
         centralPanel.add(listScroller, BorderLayout.CENTER);
+        URL url = getClass().getResource("/DSInfo.png");
+        Image image = Toolkit.getDefaultToolkit().getImage(url);
+        ImageIcon icon = new ImageIcon(image);
+        JLabel InfoLabel = new JLabel(icon, JLabel.CENTER);
+        InfoLabel.setText("<html>Select one <b>host</b><br>" +
+                          "which will submit the query.</html>");
+        centralPanel.add(InfoLabel,BorderLayout.SOUTH);
         hostPanel.add(centralPanel, BorderLayout.CENTER);
-
+        //hostPanel.add(querySelection, BorderLayout.SOUTH);
         secondFrame.getContentPane().add(hostPanel);
         secondFrame.setBounds(0, 0, 300, 400);
         secondFrame.setLocation(dim.width/2-secondFrame.getSize().width/2, dim.height/2-secondFrame.getSize().height/2);
-        secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        secondFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         secondFrame.setVisible(true);
-        secondFrame.setTitle("Select host");
+        secondFrame.setTitle("Select host...");
     }
 
     private ViewPanel queryVisualization(DSGraph x){
@@ -686,19 +712,19 @@ public class DSView implements DSAbstractView {
         JScrollBar vertical = logScroll.getVerticalScrollBar();
         vertical.setValue( vertical.getMaximum() );
     }
-    public void showQueryStatus( DSQuery.QueryStatus status, String version){
+    public void showQueryStatus( DSQuery.QueryStatus status, String name,int host){
         switch(status) {
             case MATCH:
-                logger.log("Query " + version + " ended: MATCH!", Color.BLUE);
+                logger.log("Host < " +host +" >: Query  < " + name + " > ended: MATCH!", Color.BLUE);
                 break;
             case FAIL:
-                logger.log("Query " + version + " ended: FAIL!", Color.red);
+                logger.log("Host < " +host +" >: Query < " + name + " > ended: FAIL!", Color.red);
                 break;
             case NEW:
-                logger.log("Started the computation of a new query: " + version , pink);
+                logger.log("Host < "+ host+" >: Started the computation of a new query: < " + name +" >" , pink);
                 break;
             default:
-                logger.log("Query "+version+" ended: DONTKNOW!",Color.ORANGE );
+                logger.log("Host < "+ host +" >: Query < "+name+" > ended: DONTKNOW!",Color.ORANGE );
         }
         JScrollBar vertical = logScroll.getVerticalScrollBar();
         vertical.setValue( vertical.getMaximum() );
@@ -722,31 +748,35 @@ public class DSView implements DSAbstractView {
         }
         graphPanel.updateUI();
     }
-    private void refreshButton(){
-        // FIXME for all hosts -- for each ( active queries) should be ok..
-        DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
-            for (Component c : eastPanelQuery.getComponents()) {
-                if (c instanceof JPanel && c.getName().equals(mapVersionTmp)) {
-                    for(Component e: ((JPanel) c).getComponents())
-                        if(e instanceof  JButton) {
-                            e.setVisible(!autoMove);
-                            if(autoMove) {
-                                e.setEnabled(false);
-                                if(!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n")) {
-                                    DSQuery.QueryId id = ((DSQueryResult) mapWrapperTmp).getQuery().getId();
-                                    DSCluster.getInstance().retryQuery(id);
+    private void refreshButton() {
+        for (int i = 0; i < DSCluster.getInstance().getNumHost(); ++i) {
+            if (DSCluster.getInstance().getActiveQueries(i) != null) {
+                DSCluster.getInstance().getActiveQueries(i).forEach((mapVersionTmp, mapWrapperTmp) -> {
+                    for (Component c : eastPanelQuery.getComponents()) {
+                        if (c instanceof JPanel && c.getName().equals(mapVersionTmp)) {
+                            for (Component e : ((JPanel) c).getComponents())
+                                if (e instanceof JButton) {
+                                    e.setVisible(!autoMove);
+                                    if (autoMove) {
+                                        e.setEnabled(false);
+                                        if (!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n") && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.FAIL ) {
+                                            DSQuery.QueryId id = ((DSQueryResult) mapWrapperTmp).getQuery().getId();
+                                            DSCluster.getInstance().retryQuery(id);
+                                        }
+                                    }
                                 }
-                            }
                         }
-                }
+                    }
+                });
             }
-        });
+        }
     }
+
     private void refreshQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
-        // FIXME: here 0 stands for `host' parameter
+
         String version = qId.getVersion();
         int host = qId.getHost();
-        DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
+        DSCluster.getInstance().getActiveQueries(host).forEach((mapVersionTmp, mapWrapperTmp) -> {
             Boolean find = false;
             DSQueryResult mapWrapper = (DSQueryResult) mapWrapperTmp;
             String mapVersion = (String) mapVersionTmp;
@@ -781,14 +811,14 @@ public class DSView implements DSAbstractView {
                 queryNameLbl.setForeground(labelColor);
                 queryNameLbl.setHorizontalAlignment(SwingConstants.CENTER);
                 for (Component c : eastPanelQuery.getComponents()) {
-                    if (c instanceof JPanel && c.getName().equals(mapVersion)) { //FIXME: Rossi G. ... Perdoname por mi vida loca !
+                    if (c instanceof JPanel && c.getName().equals(mapVersion)) {
                         find = true;
                         for (Component d : ((JPanel) c).getComponents()) {
                             if (d instanceof JPanel && d.getName().equals(mapVersion)) {
                                 int i = 0;
                                 for (Component e : ((JPanel) d).getComponents()) {
                                     ++i;
-                                    if (e.getName() != null && !mapWrapper.getStillToVerify().equals("\n") && status!=DSQuery.QueryStatus.FAIL) {
+                                    if (e.getName() != null && !mapWrapper.getStillToVerify().equals("\n") && status!=DSQuery.QueryStatus.FAIL ) {
                                         twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
                                         ((JPanel) d).remove(e);
                                         JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
@@ -908,7 +938,6 @@ public class DSView implements DSAbstractView {
                                 }
                             }
                             if (d instanceof JPanel && d.getName().equals("northPanel")) {
-                                showInformationMessage(d.getName());
                                 for(Component e : ((JPanel) d).getComponents()) {
                                     if(e instanceof  JLabel)
                                     ((JLabel) e).setText(labelText);
@@ -968,7 +997,7 @@ public class DSView implements DSAbstractView {
                             playAndPause.setIcon(tmpIcon);
                             playAndPause.setName("play");
                             if(status!=DSQuery.QueryStatus.DONTKNOW){
-                                DSCluster.getInstance().retryQuery(qId);
+                               DSCluster.getInstance().retryQuery(qId);
                             }
                         }
 
@@ -976,7 +1005,6 @@ public class DSView implements DSAbstractView {
                     killQuery.setBackground(Color.DARK_GRAY);
                     killQuery.setForeground(Color.DARK_GRAY);
                     killQuery.addActionListener(e->{
-                        //FIXME: inviare messaggio a tutti dicendo di stoppare questa query
                         mainFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         eastPanelQuery.remove(aglomeratePanel);
                         mainFrame.setCursor(Cursor.getDefaultCursor());
@@ -1001,14 +1029,13 @@ public class DSView implements DSAbstractView {
     }
     @Override
     public void updateQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
-        // FIXME: update the correct host view.
         String version = qId.getVersion();
         int host = qId.getHost();
         refreshQuery(qId, status);
         switch(status) {
             case MATCH:
             case FAIL:
-            case NEW: showQueryStatus(status, version);
+            case NEW: showQueryStatus(status, qId.getName(),host);
                 for (Component c : eastPanelQuery.getComponents()) {
                     if (c instanceof JPanel && c.getName().equals(version)) {
                         for (Component d : ((JPanel) c).getComponents()) {
@@ -1020,7 +1047,7 @@ public class DSView implements DSAbstractView {
                 }
                 break;
             default:
-                DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
+                DSCluster.getInstance().getActiveQueries(host).forEach((mapVersionTmp, mapWrapperTmp) -> {
                     for (Component c : eastPanelQuery.getComponents()) {
                         if (c instanceof JPanel && c.getName().equals(version)) {
                             for (Component d : ((JPanel) c).getComponents()) {
@@ -1031,7 +1058,7 @@ public class DSView implements DSAbstractView {
                         }
                     }
                 });
-                showQueryStatus(status, version);
+                showQueryStatus(status, qId.getName(), host);
                 if(autoMove){
                  DSCluster.getInstance().makeMove(host);
                 DSCluster.getInstance().retryQuery(qId);

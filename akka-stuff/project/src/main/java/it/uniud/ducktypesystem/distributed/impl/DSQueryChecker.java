@@ -47,7 +47,7 @@ public class DSQueryChecker extends AbstractActor {
         log.info("FORWARDING from "+myNode+": query: "+query.toString());
         mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.queryId.getPath()), getSelf());
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

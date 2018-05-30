@@ -63,7 +63,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
                 .match(DSRobotFailureOccurred.class, in -> {
                     log.info("CLUSTER"+ host + " was informed that robot in " + in.getDeadNode() + " died.");
                     DSCluster.getInstance().getView()
-                            .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
+                            .showErrorMessage("Host < "+ host +" >: Robot died. It was recreated in " + in.getDeadNode());
                 })
                 .match(DSEndQuery.class, in -> {
                     log.info("CLUSTER"+ host + " stopping query "+ in.getQueryId().getName());

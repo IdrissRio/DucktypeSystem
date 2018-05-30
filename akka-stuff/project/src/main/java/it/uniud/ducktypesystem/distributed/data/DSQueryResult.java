@@ -19,6 +19,8 @@ public class DSQueryResult {
         this.query = query;
     }
 
+
+
     public String getStillToVerify() {
         return stillToVerify;
     }
@@ -30,4 +32,6 @@ public class DSQueryResult {
     public void setStatus(DSQuery.QueryStatus status) {
         this.status = status;
     }
+
+    public DSQuery.QueryStatus getStatus() {return status;}
 }

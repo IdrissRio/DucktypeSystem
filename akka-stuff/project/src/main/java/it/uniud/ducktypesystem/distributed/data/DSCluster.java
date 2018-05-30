@@ -172,4 +172,7 @@ public class DSCluster {
         DSEndQuery endQuery = new DSEndQuery(id);
         clusterInterfaceArray.get(host).tell(endQuery, ActorRef.noSender());
     }
+    public int getNumHost(){
+        return numHost;
+    }
 }

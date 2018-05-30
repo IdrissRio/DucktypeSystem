@@ -13,13 +13,17 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
         super(g);
         id = new QueryId(0, "unknownname");
     }
+    public DSQueryImpl(DSGraph g, Integer host) {
+        super(g);
+        id = new QueryId(host, "unknownname");
+    }
     public DSQueryImpl(DSQuery q) {
         super(q);
         id = new QueryId(q.getId());
     }
 
-    public static DSQuery createQueryFromFile(String filePath) throws DSSystemError {
-        DSQuery q = new DSQueryImpl(DSGraphImpl.createGraphFromFile(filePath));
+    public static DSQuery createQueryFromFile(String filePath, Integer host) throws DSSystemError {
+        DSQuery q = new DSQueryImpl(DSGraphImpl.createGraphFromFile(filePath),host);
         // Get version name from fileName without extensions and previous path.
         filePath = filePath.replaceFirst("(.*)/","");
         filePath = filePath.replaceFirst("[.][^.]+$", "");
