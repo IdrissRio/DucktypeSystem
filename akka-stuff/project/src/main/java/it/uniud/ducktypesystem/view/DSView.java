@@ -719,6 +719,7 @@ public class DSView implements DSAbstractView {
         graphPanel.updateUI();
     }
     private void refreshButton(){
+        // FIXME for all hosts -- for each ( active queries) should be ok..
         DSCluster.getInstance().getActiveQueries(0).forEach((mapVersionTmp, mapWrapperTmp) -> {
             for (Component c : eastPanelQuery.getComponents()) {
                 if (c instanceof JPanel && c.getName().equals(mapVersionTmp)) {
@@ -727,8 +728,10 @@ public class DSView implements DSAbstractView {
                             e.setVisible(!autoMove);
                             if(autoMove) {
                                 e.setEnabled(false);
-                                if(!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n"))
-                                     DSCluster.getInstance().retryQuery(0, (String) mapVersionTmp);
+                                if(!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n")) {
+                                    DSQuery.QueryId id = ((DSQueryResult) mapWrapperTmp).getQuery().getId();
+                                    DSCluster.getInstance().retryQuery(id);
+                                }
                             }
                         }
                 }
@@ -915,7 +918,7 @@ public class DSView implements DSAbstractView {
                     JButton retry = new JButton("Retry");
                     retry.addActionListener(e ->{
                                 retry.setEnabled(false);
-                                DSCluster.getInstance().retryQuery(host, version);
+                                DSCluster.getInstance().retryQuery(qId);
                             }
                     );
                     retry.setVisible(!autoMove);
@@ -975,7 +978,7 @@ public class DSView implements DSAbstractView {
                         mainFrame.setCursor(Cursor.getDefaultCursor());
                         if(betterVisualizationBool)externalPanel.updateUI();
                         else mainPanel.updateUI();
-                        DSCluster.getInstance().killQuery(host, mapVersion);
+                        DSCluster.getInstance().killQuery(qId);
                     });
                     northPanelWithLabelAndClosure.add(queryNameLbl, BorderLayout.CENTER);
                     northPanelWithLabelAndClosure.add(killQuery, BorderLayout.EAST);
@@ -1027,7 +1030,7 @@ public class DSView implements DSAbstractView {
                 showQueryStatus(status, version);
                 if(autoMove){
                  DSCluster.getInstance().makeMove(host);
-                DSCluster.getInstance().retryQuery(host, version);
+                DSCluster.getInstance().retryQuery(qId);
                 }
         }
     }
