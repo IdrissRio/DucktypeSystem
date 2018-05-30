@@ -560,6 +560,7 @@ public class DSView implements DSAbstractView {
         });
         // Start computation listener.
         queryButton.addActionListener(e -> {
+            //FixMe: da aggiungere la storia degli host
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.showOpenDialog(mainFrame);
             queryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -870,9 +871,13 @@ public class DSView implements DSAbstractView {
                                     ((JPanel) d).add(northPanelForBetterVisualization);
                                 }
                             }
-                            if ((d instanceof JLabel)) {
-                                ((JLabel) d).setText(labelText);
-                                d.setForeground(labelColor);
+                            if (d instanceof JPanel && d.getName().equals("northPanel")) {
+                                showInformationMessage(d.getName());
+                                for(Component e : ((JPanel) d).getComponents()) {
+                                    if(e instanceof  JLabel)
+                                    ((JLabel) e).setText(labelText);
+                                    e.setForeground(labelColor);
+                                }
                             }
                         }
                     }
@@ -911,6 +916,7 @@ public class DSView implements DSAbstractView {
                     playAndPause.setName("play");
                     playAndPause.setOpaque(true);
                     northPanelWithLabelAndClosure.add(playAndPause, BorderLayout.WEST);
+                    northPanelWithLabelAndClosure.setName("northPanel");
                     playAndPause.addActionListener(e->{
                         if(playAndPause.getName().equals("play")){
                             URL tmpUrl = getClass().getResource("/DSPlay.png");
@@ -945,7 +951,6 @@ public class DSView implements DSAbstractView {
                     northPanelWithLabelAndClosure.add(queryNameLbl, BorderLayout.CENTER);
                     northPanelWithLabelAndClosure.add(killQuery, BorderLayout.EAST);
                     northPanelWithLabelAndClosure.setBackground(Color.DARK_GRAY);
-                    northPanelWithLabelAndClosure.setName("");
                     aglomeratePanel.add(northPanelWithLabelAndClosure, BorderLayout.NORTH);
 
                     aglomeratePanel.add(twoQueryStatusPanel, BorderLayout.CENTER);
