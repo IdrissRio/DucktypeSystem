@@ -47,7 +47,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
                 })
                 .match(DSRetryQuery.class, msg -> {
                     log.info("Retrying query...");
-                    DSCluster.getInstance().retryQuery(host, msg.getQueryId().getVersion());
+                    DSCluster.getInstance().retryQuery(msg.getQueryId());
                 })
                 .match(DeadLetter.class, deadLetter -> {
                     log.info("DEAD LETTER");
@@ -56,7 +56,10 @@ public class DSClusterInterfaceActor extends AbstractActor {
                     log.info("CLUSTER"+ host + " was informed that robot in " + in.getDeadNode() + " died.");
                     DSCluster.getInstance().getView()
                             .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
-                    // TODO: re-enable retry button!
+                })
+                .match(DSEndQuery.class, in -> {
+                    mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
+                            in, false), getSelf());
                 })
                 .build();
     }

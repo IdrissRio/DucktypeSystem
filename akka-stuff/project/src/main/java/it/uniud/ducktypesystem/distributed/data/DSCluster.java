@@ -7,6 +7,7 @@ import com.typesafe.config.ConfigFactory;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.impl.DSClusterInterfaceActor;
 import it.uniud.ducktypesystem.distributed.impl.DSRobot;
+import it.uniud.ducktypesystem.distributed.messages.DSEndQuery;
 import it.uniud.ducktypesystem.distributed.messages.DSMove;
 import it.uniud.ducktypesystem.distributed.messages.DSStartQueryCheck;
 import it.uniud.ducktypesystem.view.DSAbstractView;
@@ -129,7 +130,9 @@ public class DSCluster {
         return this.view;
     }
 
-    public void retryQuery(int host, String version) {
+    public void retryQuery(DSQuery.QueryId id) {
+        int host = id.getHost();
+        String version = id.getVersion();
         if (host >= numHost) return; // FIXME
         HashMap hostQueries = activeQueries.get(host);
         DSQueryResult qres = ((DSQueryResult) hostQueries.get(version));
@@ -152,12 +155,16 @@ public class DSCluster {
         ((DSQueryResult) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
     }
 
-    public void killQuery(int host, String version){
-        //Fixme: da implementare. Questa è la funzione che chiamo quando dalla view voglio completamente eliminare una query.
-        //DSCluster.getInstance().getActiveQueries(host).remove(mapVersionTmp,mapWrapperTmp); //Fixme: dalla view avrei chiamato questa. Da rimuovre i commenti quando killQuery sarà implmentata.
+    public void killQuery(DSQuery.QueryId id) {
+        int host = id.getHost();
+        String version = id.getVersion();
+        temporaryQueryStop(id);
+        DSCluster.getInstance().getActiveQueries(host).remove(version);
     }
 
-    public void temporaryQueryStop(int host, String version){
-        //Fixme: da implementare. Questa è la funzione che chiamo quando voglio sospendere l'esecuzione di una query, Il risultato dovrebbe ritornare DONTKNOW.
+    public void temporaryQueryStop(DSQuery.QueryId id){
+        int host = id.getHost();
+        DSEndQuery endQuery = new DSEndQuery(id);
+        clusterInterfaceArray.get(host).tell(endQuery, ActorRef.noSender());
     }
 }
