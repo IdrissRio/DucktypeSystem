@@ -34,7 +34,6 @@ public class DSRobot extends AbstractActor {
         }
     }
 
-    // private ActorRef supervisor;
     private String myName;
     private DSGraph myView;
     private String myNode;
@@ -72,7 +71,7 @@ public class DSRobot extends AbstractActor {
                 .match(DSMove.class, x -> {
                     // Simulate Robot Death.
                     if (DataFacade.getInstance().shouldFailMove())
-                        throw new DSSystemFailureSimulation(myName + " DEATH in MOVE!");
+                        throw new DSSystemFailureSimulation(myName + " DIED.");
 
                     String tmp = myNode;
                     myNode = myView.obtainNewView(myNode, lastStep);
@@ -121,14 +120,14 @@ public class DSRobot extends AbstractActor {
                     else if (activeQueryCheckers.get(deadPath) != null
                             && ((QCMonitor)activeQueryCheckers.get(deadPath)).status == QCStatus.WAITING) {
                         // log.info(deadPath + " is DEAD in WAITING!!!!");
-                        log.info("Recreating QUERYCHECKER");
+                        log.info("Recreating QueryChecker...");
                         ActorRef child = getContext().actorOf(DSQueryChecker.props(this.myView, this.myNode,
                                 new DSQuery.QueryId(deadPath)), deadPath);
                         getContext().watch(child);
                         activeQueryCheckers.put(deadPath, new QCMonitor(child));
                     }
                     else
-                        log.info(deadPath+" is DEAD in peace.");
+                        log.info("QueryChecker on "+ deadPath + " is DEAD in peace.");
                 })
                 .match(DSCreateQueryChecker.class, in -> {
                     ActorRef child = getContext().actorOf(DSQueryChecker.props(this.myView, this.myNode,
@@ -139,7 +138,7 @@ public class DSRobot extends AbstractActor {
 
                     // Simulate QueryChecker's Death in WAITING.
                     if (DataFacade.getInstance().shouldDieInWaiting()) {
-                        log.info("QUERYCHECKER DEATH IN WAITING.");
+                        log.info("QueryChecker DEATH in WAITING.");
                         getContext().stop(child);
                     }
                 })

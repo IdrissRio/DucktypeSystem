@@ -151,8 +151,12 @@ public class DSCluster {
         return this.activeQueries.get(host);
     }
 
-    public void endedQuery(int host, String version, String stillToVerify) {
-        ((DSQueryResult) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
+    public void endedQuery(DSQuery.QueryId id, String stillToVerify, DSQuery.QueryStatus status) {
+        int host = id.getHost();
+        String version = id.getVersion();
+        ((DSQueryResult) activeQueries.get(host).get(version)).setStatus(status);
+        if (status == DSQuery.QueryStatus.DONTKNOW)
+            ((DSQueryResult) activeQueries.get(host).get(version)).setStillToVerify(stillToVerify);
     }
 
     public void killQuery(DSQuery.QueryId id) {

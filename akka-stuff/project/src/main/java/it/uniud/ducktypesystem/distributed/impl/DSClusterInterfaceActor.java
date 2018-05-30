@@ -6,6 +6,7 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import it.uniud.ducktypesystem.distributed.data.DSCluster;
+import it.uniud.ducktypesystem.distributed.data.DSQuery;
 import it.uniud.ducktypesystem.distributed.messages.*;
 
 public class DSClusterInterfaceActor extends AbstractActor {
@@ -26,7 +27,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DSMissionAccomplished.class, msg -> {
-                    DSCluster.getInstance().endedQuery(host, msg.getQueryId().getVersion(), msg.getSerializedQuery());
+                    DSCluster.getInstance().endedQuery(msg.getQueryId(), msg.getSerializedQuery(), msg.getStatus());
                     DSCluster.getInstance().getView().updateQuery(msg.getQueryId(), msg.getStatus());
                 })
                 .match(DSMove.class, msg -> {
@@ -41,16 +42,23 @@ public class DSClusterInterfaceActor extends AbstractActor {
                     // Start a new Query.
                     mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                             new DSCreateQueryChecker(msg.getQueryId()), true), getSelf());
-                    Thread.sleep(3000);
+                    Thread.sleep(2000);
                     mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+msg.getQueryId().getPath(),
-                            new DSTryNewQuery(msg.getSerializedQuery(), msg.getTTL()), false), getSelf());
+                            new DSTryNewQuery(msg.getSerializedQuery(), msg.getTTL(), msg.getQueryId()),
+                            false), getSelf());
                 })
                 .match(DSRetryQuery.class, msg -> {
                     log.info("Retrying query...");
                     DSCluster.getInstance().retryQuery(msg.getQueryId());
                 })
                 .match(DeadLetter.class, deadLetter -> {
-                    log.info("DEAD LETTER");
+                    log.info("Dead Letter encountered. Some critical failure combination occurred!");
+                    if (deadLetter.message().getClass() == DSTryNewQuery.class) {
+                        DSQuery.QueryId id = ((DSTryNewQuery) deadLetter.message()).getId();
+                        mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
+                                new DSEndQuery(id), false), getSelf());
+                    }
+
                 })
                 .match(DSRobotFailureOccurred.class, in -> {
                     log.info("CLUSTER"+ host + " was informed that robot in " + in.getDeadNode() + " died.");

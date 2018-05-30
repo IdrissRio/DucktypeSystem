@@ -2,21 +2,18 @@ package it.uniud.ducktypesystem.distributed.impl;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.DeadLetter;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import it.uniud.ducktypesystem.distributed.data.DSGraph;
-import it.uniud.ducktypesystem.distributed.data.DSQuery;
-import it.uniud.ducktypesystem.distributed.data.DSQueryImpl;
-import it.uniud.ducktypesystem.distributed.data.DataFacade;
+import it.uniud.ducktypesystem.distributed.data.*;
+import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 import it.uniud.ducktypesystem.distributed.messages.*;
 
 public class DSQueryChecker extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    // CHECKME: DSQueryChecker and MainRobot are on the same node: they can share resources.
-    // Reference to the MainRobot view: the MainRobot must not clone its own view in its Checkers when constructing them.
     private DSGraph myView;
     private String myNode;
     private DSQuery.QueryId queryId;
@@ -30,13 +27,13 @@ public class DSQueryChecker extends AbstractActor {
         this.query = null;
         this.mediator = DistributedPubSub.get(getContext().system()).mediator();
         this.mediator.tell(new DistributedPubSubMediator.Put(getSelf()), getSelf());
-        log.info("QC: SONO NATO: "+getSelf().path()+ " con vista: "+myView.toString());
+        log.info("QueryChecker created on " + myNode + " for query "+ queryId.getPath());
     }
 
     // Communication methods
     private void publishQueryResult(DSQuery.QueryStatus status) {
-        log.info((status == DSQuery.QueryStatus.MATCH) ? "MATCH da: "+ myNode
-                : (status == DSQuery.QueryStatus.FAIL) ? "FAIL da: " : "DONTKNOW da: " + myNode);
+        log.info((status == DSQuery.QueryStatus.MATCH) ? "MATCH form: "+ myNode
+                : (status == DSQuery.QueryStatus.FAIL) ? "FAIL from: " : "DONTKNOW da: " + myNode);
         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+this.queryId.getHost(),
                 new DSMissionAccomplished(this.queryId, this.query.serializeToString(), status),
                 false), getSelf());
@@ -46,16 +43,22 @@ public class DSQueryChecker extends AbstractActor {
                 new DSEndQuery(this.queryId), false), getSelf());
     }
 
-    private void forwardQuery(int ttl) {
-        log.info("FORWARDING da "+myNode+": query: "+query.toString());
+    private void forwardQuery(int ttl) throws DSSystemError {
+        log.info("FORWARDING from "+myNode+": query: "+query.toString());
         mediator.tell(new DistributedPubSubMediator.Remove("/user/ROBOT/"+this.queryId.getPath()), getSelf());
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         mediator.tell(new DistributedPubSubMediator.Send("/user/ROBOT/"+this.queryId.getPath(),
-                new DSTryNewQuery(this.query.serializeToString(), ttl-1) , false), getSelf());
+                new DSTryNewQuery(this.query.serializeToString(), ttl-1, queryId) , false), getSelf());
+
+        // Simulate QueryChecker's Death in DONE
+        if (DataFacade.getInstance().shouldDieInWaiting()) {
+            log.info("QueryChecker DEATH in DONE.");
+            getContext().stop(getSelf());
+        }
     }
 
     @Override
@@ -70,7 +73,7 @@ public class DSQueryChecker extends AbstractActor {
 
                     // Simulate QueryChecker's Death during critical work
                     if (DataFacade.getInstance().shouldFailInCriticalWork()) {
-                        log.info("QUERYCHECKER DEATH in CRITICAL WORK.");
+                        log.info("QueryChecker DEATH in CRITICAL WORK.");
                         getContext().stop(getSelf());
                         return;
                     }

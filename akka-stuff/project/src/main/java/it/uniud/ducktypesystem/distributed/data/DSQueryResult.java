@@ -26,4 +26,8 @@ public class DSQueryResult {
     public void setStillToVerify(String stillToVerify) {
         this.stillToVerify = stillToVerify;
     }
+
+    public void setStatus(DSQuery.QueryStatus status) {
+        this.status = status;
+    }
 }
