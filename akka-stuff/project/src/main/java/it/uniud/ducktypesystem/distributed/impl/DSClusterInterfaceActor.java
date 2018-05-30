@@ -58,6 +58,7 @@ public class DSClusterInterfaceActor extends AbstractActor {
                             .showErrorMessage("Robot died. It was recreated in " + in.getDeadNode());
                 })
                 .match(DSEndQuery.class, in -> {
+                    log.info("CLUSTER"+ host + " stopping query "+ in.getQueryId().getName());
                     mediator.tell(new DistributedPubSubMediator.SendToAll("/user/ROBOT",
                             in, false), getSelf());
                 })

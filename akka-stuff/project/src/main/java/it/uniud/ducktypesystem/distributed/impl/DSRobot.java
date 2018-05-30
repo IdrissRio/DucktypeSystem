@@ -89,15 +89,21 @@ public class DSRobot extends AbstractActor {
                 })
                 .match(DSStartCriticalWork.class, msg -> {
                     // log.info("Un mio figlio "+ getSender() + "è in critical work...");
-                    ((QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath())).status = QCStatus.CRITICAL;
+                    QCMonitor qcMonitor = (QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath());
+                    if (qcMonitor != null)
+                        qcMonitor.status = QCStatus.CRITICAL;
                 })
                 .match(DSEndCriticalWork.class, msg -> {
                     // log.info("Un mio figlio "+ getSender()+" ha finito la critical work...");
-                    if (activeQueryCheckers.get(msg.getQueryId().getPath()) != null)
-                        ((QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath())).status = QCStatus.DONE;
+                    QCMonitor qcMonitor = (QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath());
+                    if (qcMonitor != null)
+                        qcMonitor.status = QCStatus.DONE;
                 })
                 .match(DSEndQuery.class, msg -> {
-                    ActorRef qChecker = ((QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath())).queryChecker;
+                    QCMonitor qcMonitor = (QCMonitor) activeQueryCheckers.get(msg.getQueryId().getPath());
+                    if (qcMonitor == null) return;
+                    ActorRef qChecker = qcMonitor.queryChecker;
+                    getContext().unwatch(qChecker);
                     getContext().stop(qChecker);
                     activeQueryCheckers.remove(msg.getQueryId().getPath());
                 })
