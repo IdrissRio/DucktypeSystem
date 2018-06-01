@@ -18,3 +18,5 @@ akka-stuff/project/target/maven-status
 akka-stuff/project/.idea/workspace.xml
 akka-stuff/project/classes/
 akka-stuff/project/.idea/artifacts/
+report/tikzuml/
+
