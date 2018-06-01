@@ -21,7 +21,7 @@ public class DSQueryChecker extends AbstractActor {
     private ActorRef mediator;
 
     public DSQueryChecker(DSGraph myView, String myNode, DSQuery.QueryId queryId) {
-        this.myView = myView;
+        this.myView = new DSGraphImpl(myView);
         this.myNode = myNode;
         this.queryId = queryId;
         this.query = null;
