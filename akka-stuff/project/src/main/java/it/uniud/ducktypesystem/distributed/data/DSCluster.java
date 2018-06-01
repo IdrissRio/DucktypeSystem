@@ -87,6 +87,7 @@ public class DSCluster {
         this.clusterInterfaceArray.add(actorSystemArray.get(numRobots + numHost)
                 .actorOf(DSClusterInterfaceActor.props(numHost, numRobots), "CLUSTERMANAGER"+numHost));
         this.activeQueries.add(new HashMap());
+        this.view.showInformationMessage("Host < " +numHost+" > connected");
         return this.numHost++;
     }
 

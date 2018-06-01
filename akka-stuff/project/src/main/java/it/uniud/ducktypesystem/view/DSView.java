@@ -34,6 +34,7 @@ public class DSView implements DSAbstractView {
     private Integer backupWAITINGFAIL;
     private DefaultListModel<Integer> activeHost;
     private JFrame mainFrame;
+    private JButton queryButton;
     private DSApplication App;
     private DSAbstractLog logger;
     private JScrollPane logScroll;
@@ -64,7 +65,7 @@ public class DSView implements DSAbstractView {
 
     public DSView(DSApplication application) {
         try {
-            System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "ted" );
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "DucktypeSystem");
             System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
             System.setProperty( "apple.laf.useScreenMenuBar", "true" );
             Class util = Class.forName("com.apple.eawt.Application");
@@ -484,7 +485,7 @@ public class DSView implements DSAbstractView {
         mainFrame.getContentPane().add(welcomeMainPanel);
         mainFrame.setTitle("A distributed subgraph isomorphism");
         mainFrame.setUndecorated(true);
-        mainFrame.setBounds(00, 00, 700, 500);
+        mainFrame.setBounds(0, 0, 700, 500);
         mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainFrame.setVisible(true);
@@ -501,7 +502,7 @@ public class DSView implements DSAbstractView {
         JPanel southPanel=new JPanel(new BorderLayout());
         JPanel northPanel=new JPanel(new BorderLayout());
         JLabel pathLbl =new JLabel("Graph path:");
-        JButton queryButton = new JButton("Query source");
+        queryButton = new JButton("Query source");
         queryField = new JTextField();
         JPanel soutWithStartPanel = new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -511,7 +512,8 @@ public class DSView implements DSAbstractView {
         eastPanelQuery.setLayout(new BoxLayout(eastPanelQuery, BoxLayout.Y_AXIS));
         scrollForQuery=new JScrollPane(eastPanelQuery,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollForQuery.setPreferredSize(new Dimension(500,500));
-        startNewComputation = new JButton("Start");
+        startNewComputation = new JButton("START");
+        startNewComputation.setForeground(greenForest);
         startNewComputation.setEnabled(isStartEnable());
         mainPathField=new JTextField();
         mainPathField.setEditable(false);
@@ -564,12 +566,14 @@ public class DSView implements DSAbstractView {
             thread.start();
         });
         queryButton.addActionListener(e -> {
+            queryButton.setEnabled(false);
             hostManager();
+
         });
     }
 
     private void hostManager(){
-        JDialog secondFrame = new JDialog(getMainFrame());
+        JDialog hostManagerFrame = new JDialog(getMainFrame());
         JPanel hostPanel= new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JList list = new JList(activeHost);
@@ -578,14 +582,20 @@ public class DSView implements DSAbstractView {
         JScrollPane listScroller = new JScrollPane(list);
         JButton addHost= new JButton("Connect new host");
         addHost.addActionListener(x->{
+            hostManagerFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             activeHost.addElement(DSCluster.getInstance().connectNewHost());
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            hostManagerFrame.setCursor(Cursor.getDefaultCursor());
         });
         list.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 JList list = (JList)evt.getSource();
                 if (evt.getClickCount() == 2) {
-                    int index = list.locationToIndex(evt.getPoint());
-
                     try {
                         JFileChooser fileChooser = new JFileChooser();
                         fileChooser.showOpenDialog(mainFrame);
@@ -596,7 +606,8 @@ public class DSView implements DSAbstractView {
                         lastHost = (Integer)list.getSelectedValue();
                         newQuery = DSQueryImpl.createQueryFromFile(graphPathString, lastHost);
                         showInformationMessage("SETTINGS: Graph reading complete.");
-                        secondFrame.dispose();
+                        hostManagerFrame.dispose();
+                        queryButton.setEnabled(true);
                     } catch (NullPointerException error) {
                         error.printStackTrace();
                         showErrorMessage("SETTINGS: You have to choose a file description for the graph.");
@@ -611,11 +622,6 @@ public class DSView implements DSAbstractView {
                 }
             }
         });
-        //JButton querySelection= new JButton("Next -> Query selection");
-        //querySelection.addActionListener(x->{
-
-
-        //});
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL_WRAP);
         list.setVisibleRowCount(-1);
@@ -631,12 +637,19 @@ public class DSView implements DSAbstractView {
         centralPanel.add(InfoLabel,BorderLayout.SOUTH);
         hostPanel.add(centralPanel, BorderLayout.CENTER);
         //hostPanel.add(querySelection, BorderLayout.SOUTH);
-        secondFrame.getContentPane().add(hostPanel);
-        secondFrame.setBounds(0, 0, 300, 400);
-        secondFrame.setLocation(dim.width/2-secondFrame.getSize().width/2, dim.height/2-secondFrame.getSize().height/2);
-        secondFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        secondFrame.setVisible(true);
-        secondFrame.setTitle("Select host...");
+        hostManagerFrame.getContentPane().add(hostPanel);
+        hostManagerFrame.setBounds(0, 0, 300, 400);
+        hostManagerFrame.setLocation(dim.width/2-hostManagerFrame.getSize().width/2, dim.height/2-hostManagerFrame.getSize().height/2);
+        hostManagerFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        hostManagerFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evento) {
+                queryButton.setEnabled(true);
+                hostManagerFrame.dispose();
+            }
+        });
+        hostManagerFrame.setVisible(true);
+        hostManagerFrame.setTitle("Select host...");
     }
 
     private ViewPanel queryVisualization(DSGraph x){
@@ -752,7 +765,7 @@ public class DSView implements DSAbstractView {
                                     e.setVisible(!autoMove);
                                     if (autoMove) {
                                         e.setEnabled(false);
-                                        if (!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n") && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.FAIL ) {
+                                        if (!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n") && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.FAIL && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.MATCH ) {
                                             DSQuery.QueryId id = ((DSQueryResult) mapWrapperTmp).getQuery().getId();
                                             DSCluster.getInstance().retryQuery(id);
                                         }
@@ -811,7 +824,7 @@ public class DSView implements DSAbstractView {
                                 int i = 0;
                                 for (Component e : ((JPanel) d).getComponents()) {
                                     ++i;
-                                    if (e.getName() != null && !mapWrapper.getStillToVerify().equals("\n") && status!=DSQuery.QueryStatus.FAIL ) {
+                                    if (e.getName() != null && !mapWrapper.getStillToVerify().equals("\n") && (status!=DSQuery.QueryStatus.FAIL && status!=DSQuery.QueryStatus.MATCH)) {
                                         twoQueryStatusPanel.setLayout(new GridLayout(0, 2));
                                         ((JPanel) d).remove(e);
                                         JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
@@ -869,11 +882,12 @@ public class DSView implements DSAbstractView {
                                         ((JPanel) d).add(northPanelForBetterVisualization);
                                     }
                                     if (e.getName() != null && status != DSQuery.QueryStatus.DONTKNOW) {
-                                        twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
                                         ((JPanel) d).remove(e);
+                                        twoQueryStatusPanel.setLayout(new GridLayout(0, 1));
+                                        twoQueryStatusPanel.updateUI();
                                     }
                                 }
-                                if (i < 2 && !mapWrapper.getStillToVerify().equals("\n") && status!=DSQuery.QueryStatus.FAIL) {
+                                if (i < 2 && !mapWrapper.getStillToVerify().equals("\n") && (status!=DSQuery.QueryStatus.FAIL && status!=DSQuery.QueryStatus.MATCH)){
                                     JPanel tmp = queryVisualization(DSGraphImpl.createFromSerializedString(mapWrapper.getStillToVerify()));
                                     JPanel northPanelForBetterVisualization = new JPanel(new BorderLayout());
                                     JPanel reallyNorthPanel = new JPanel(new BorderLayout());
@@ -910,12 +924,10 @@ public class DSView implements DSAbstractView {
                                                     }
                                                 });
                                             }
-
                                         }catch(DSSystemError error){
                                             JOptionPane.showMessageDialog(null,
                                                     error.getMessage(),"Error !",JOptionPane.ERROR_MESSAGE);
                                         }
-
                                     });
                                     statusLable.setForeground(Color.WHITE);
                                     statusLable.setFont(new Font("Bariol", Font.PLAIN, 20));
@@ -1009,7 +1021,6 @@ public class DSView implements DSAbstractView {
                     northPanelWithLabelAndClosure.add(killQuery, BorderLayout.EAST);
                     northPanelWithLabelAndClosure.setBackground(Color.DARK_GRAY);
                     aglomeratePanel.add(northPanelWithLabelAndClosure, BorderLayout.NORTH);
-
                     aglomeratePanel.add(twoQueryStatusPanel, BorderLayout.CENTER);
                     aglomeratePanel.setBorder(new MatteBorder(0, 0, 2, 0, Color.WHITE));
                     eastPanelQuery.add(aglomeratePanel);
