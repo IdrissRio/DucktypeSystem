@@ -676,8 +676,11 @@ public class DSView implements DSAbstractView {
             node.addAttribute("ui.label", node.getId());
             if(facade.getOccupied().contains(node.toString()))
                 node.addAttribute("ui.class", defaultRobot);
-            else
-                node.addAttribute("ui.class", "normal");
+            else {
+                if(node.toString().equals("Parma")) node.addAttribute("ui.class", "parma");
+                else if(node.toString().equals("Udine")) node.addAttribute("ui.class", "udine");
+                else node.addAttribute("ui.class", "normal");
+            }
         }
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
@@ -733,7 +736,7 @@ public class DSView implements DSAbstractView {
                 logger.log("Host < "+ host +" >: Query < "+name+" > ended: DONTKNOW!",Color.ORANGE );
         }
         JScrollBar vertical = logScroll.getVerticalScrollBar();
-        vertical.setValue( vertical.getMaximum() );
+        vertical.setValue(vertical.getMaximum());
     }
     public JFrame getMainFrame(){return mainFrame;}
     @Override
@@ -749,8 +752,11 @@ public class DSView implements DSAbstractView {
             node.addAttribute("ui.label", node.getId());
             if(facade.getOccupied().contains(node.toString()))
                 node.addAttribute("ui.class", defaultRobot);
-            else
-                node.addAttribute("ui.class", "");
+            else {
+                if(node.toString().equals("Parma")) node.addAttribute("ui.class", "parma");
+                else if(node.toString().equals("Udine")) node.addAttribute("ui.class", "udine");
+                else node.addAttribute("ui.class", "normal");
+            }
         }
         graphPanel.updateUI();
     }

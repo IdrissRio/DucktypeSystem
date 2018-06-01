@@ -18,6 +18,27 @@ node.bender{
     fill-image: url('DSBender.png');
     text-color: #7EF9FF;
 }
+
+node.parma{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('parma.png');
+    text-color: #7EF9FF;
+}
+node.udine{
+	fill-color: #3AAED8;
+	size: 20px;
+	text-background-mode: plain;
+	size: 40px, 40px;
+    fill-mode: image-scaled;
+    fill-image: url('udine.png');
+    text-color: #7EF9FF;
+}
+
+
 node.r2d2{
 	fill-color: #3AAED8;
 	size: 20px;
