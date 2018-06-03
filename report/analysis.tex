@@ -76,7 +76,6 @@ del grafo e far partire la ricerca.
 Il sistema può ricevere un numero arbitrario di query
 contemporaneamente e deve provvedere a versionarle.
 
-\coanote{Abbozzato...ancora da verificare..\\}
 L'interfaccia permette di simulare la connessione di un altro
 client che accede allo stesso insieme di robot, sottoponendo
 le proprie query. Ogni client host deve essere indipendente:
@@ -214,14 +213,6 @@ la query ancora da verificare (marcata in giallo in figura).
 Supponiamo che il robot si sposti sul nodo $b$: esso può allora verificare
 l'esistenza degli archi rimanenti e concludere con \texttt{MATCH}.
 \end{example}
-
-L'ambiente di sviluppo deve essere scelto in modo da poter
-evidenziare solamente le caratteristiche più rilevanti del problema.
-Il sistema è implementato in \emph{Akka}, un toolkit per
-la creazione di applicazioni distribuite e concorrenti con supporto
-alla \emph{fault-tollerance event-driven}.
-Il toolkit è disponibile sia per il linguaggio imperativo usato (\emph{Java})
-che per il funzionale \emph{Scala}.
 
 \subsection{Requisiti non funzionali}
 \label{sec:nonfunc-req}

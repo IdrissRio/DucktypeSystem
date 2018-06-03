@@ -8,9 +8,135 @@ e.g., peculiar data structures.
 \end{quote}
 
 \subsection{Implementazione del sistema distribuito}
-\coanote{Metterei qui la descrizione di come funziona Akka...
-  TCP, garanzia ricezione messaggi.. un po' di handwaving per dire che
-  l'abbiamo letto..}
+\label{sec:akka}
+L'ambiente di sviluppo è stato scelto in modo da poter
+evidenziare solamente le caratteristiche più rilevanti del problema.
+Il sistema è stato implementato in \emph{Akka}, un toolkit costituito da un 
+insieme di librerie \emph{open source} per la progettazione e creazione
+di sistemi distribuiti e concorrenti, con supporto alla scalabilità e alla
+\emph{fault tollerance}, eseguibile su una JVM.
+Il toolkit è disponibile sia per il linguaggio imperativo usato (\emph{Java})
+che per il funzionale \emph{Scala} e attualmente la versione più aggiornata 
+è la 2.5.4.
+
+Akka si basa sul \emph{modello ad attori}: un astrazione utilizzata per
+effettuare analisi sulla concorrenza e per la progettazione ad alto livello
+di sistemi distribuiti.
+Lo scopo del modello è  quello di risolvere i problemi relativi alla concorrenza
+legati alla memoria condivisa, eliminandola completamente sgravando dunque
+il programmatore da tali problemi. L'astrazione, come già detto, si basa sull'entità
+\emph{attore} che comunicano attraverso l'invio di messaggi.
+
+Quando un attore riceve un messaggio può decidere il comportamento
+da utilizzare per processare il prossimo messaggio, quindi può:
+\begin{itemize}
+	\item creare nuovi attori,
+	\item inviare messaggi ad attori della quale conosce il nome, attraverso il metodo \texttt{tell},
+	\item inviare messaggi ad attori della quale non conosce nè il nome nè l'esistenza.
+	Ciò è possibile utilizzando i metodi definiti nel package \texttt{akka.cluster.pub- sub.DistributedPubSubMediator}.
+\end{itemize}
+La creazione di attori e l'invio dei messaggi non dipendente dalla
+locazione fisica dell'attore all'interno del network di computer;
+ciò garantisce un elevato livello di \emph{location transparency}.
+
+Gli attori in Akka sono organizzati in gerarchie chiamate Actor Systems.
+Un Actor System è un gruppo gerarchico di attori che condividono delle
+opzioni di configurazione (si veda Appendice \ref{sec:akkaconf}).
+
+La definizione di un nuovo attore comporta la creazione di una nuova classe
+che estende \texttt{AbstractActor}.
+Per tale classe è possibile definire i costruttori, metodi e attributi come per una
+qualunque classe Java. E' inoltre possibile  effettuare l'overriding di alcuni metodi 
+tra cui:
+\begin{itemize}
+	\item \texttt{preRestar}: tale metodo viene invocato prima che l'attore inizi
+	a processare messaggi. E' utile per inizializzarne l'istanza;
+	\item \texttt{postRestart}: metodo invocato dopo l'inizializzazione dell'attore;
+	\item \texttt{postStop}: tale metodo viene invocato quando l'attore viene arrestato.
+	Permette di definire una terminazione \emph{pulita} dell'esecuzione;
+	\item \texttt{createReceive}: permette di definire il comportamento dell'attore
+	a seconda del tipo di messaggio ricevuto.
+\end{itemize}
+L'istanza di un actor system è un oggetto della classe \texttt{Props}; per tale motivo
+nella definizione del nuovo attore bisognare definire un metodo \texttt{Props}, che prenderà
+come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice \ref{sec:akkanew}).
+\begin{figure}[h]
+\begin{center}
+	\begin{tikzpicture}[scale=0.1]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [blue,very thick] (37,-10.2) circle (3);
+	\draw [black] (37,-10.2) node {/};
+	\draw [orange,very thick] (15.8,-26.7) circle (3);
+	\draw (15.8,-26.7) node {};
+	\draw (-35,-26.7) node {/user};
+	\draw (75,-26.7) node {/system};
+	\draw[red] (0,-20) rectangle (30,-60);
+	\draw[red] (15,-65) node {Un actor system};
+
+	\draw (37,-26.7) node {};
+	\draw [violet, very thick] (60.6,-26.7) circle (3);
+	\draw (60.6,-26.7) node {};
+	\draw [black] (5.3,-42.1) circle (3);
+	\draw (5.3,-42.1) node {};
+	\draw (-25,-42.1) node {/user/some\_actor};
+	\draw [gray] (14.8,-42.1) circle (3);
+	\draw[thick,dashed] (0,-34.5) -- (69,-34.5);
+	\draw (14.8,-42.1) node {};
+	\draw [gray] (25.6,-42.1) circle (3);
+	\draw (25.6,-42.1) node {};
+	\draw [black] (5.3,-54.6) circle (3);
+	\draw (5.3,-54.6) node {};
+	\draw (-20,-54.6) node {/user/some\_actor/child};
+	\draw [white] (26.4,-26.8) circle (3);
+
+	\draw [white] (49.8,-26.7) circle (3);
+
+	\draw [black] (34.63,-12.04) -- (18.17,-24.86);
+	\fill [black] (18.17,-24.86) -- (19.11,-24.76) -- (18.49,-23.97);
+	\draw [black] (39.46,-11.92) -- (58.14,-24.98);
+	\fill [black] (58.14,-24.98) -- (57.77,-24.11) -- (57.2,-24.93);
+	\draw [black] (14.11,-29.18) -- (6.99,-39.62);
+	\fill [black] (6.99,-39.62) -- (7.85,-39.24) -- (7.03,-38.68);
+	\draw [black] (15.61,-29.69) -- (14.99,-39.11);
+	\fill [black] (14.99,-39.11) -- (15.55,-38.34) -- (14.55,-38.28);
+	\draw [black] (17.41,-29.23) -- (23.99,-39.57);
+	\fill [black] (23.99,-39.57) -- (23.98,-38.63) -- (23.14,-39.16);
+	\draw [black] (5.3,-45.1) -- (5.3,-51.6);
+	\fill [black] (5.3,-51.6) -- (5.8,-50.8) -- (4.8,-50.8);
+	\draw [black] (37,-2.2) -- (37,-7.2);
+	\fill [black] (37,-7.2) -- (37.5,-6.4) -- (36.5,-6.4);
+	\end{tikzpicture}
+\end{center}
+\caption{Gerarchia del modello ad attori in Akka. In {\color{blue} blu }il \emph{root guardian},
+	padre di tutti gli Actor System. In {\color{orange}arancione} il \emph{root user},
+	padre di tutti gli user e in fine in {\color{violet}viola} il \emph{system guardian}.}
+\end{figure}
+
+\subsection{Scambio di messaggi}
+Il protocollo di rete utilizzato per la comunicazione tra i nodi
+è \emph{TCP/IP}. Utilizzando tale tipo di protocollo, una volta instaurata
+la connessione tra i nodi, il programmatore non si deve preoccupare della
+perdita di messaggi o del fatto che possano arrivare non in ordine.
+
+Come protocollo di comunicazione Akka utilizza il \emph{Gossiping};
+con l'unica differenza che l'aggiunta di un nuovo membro al cluster viene
+inoltrata ai nodi, dando precedenza a quelli che hanno una visione
+dello stato meno aggiornata.
+
+Per avere un livello di \emph{location trasparency} discretamente elevato,
+abbiamo deciso di non utilizzare la comunicazione diretta tra nodi ma bensì
+la indiretta, ovvero un tipo di comunicazione \emph{(time and space)}-\emph{uncoupled}:
+ \emph{publish subscribe}.
+Come già detto in precedenza, i metodi per la comunicazione indiretta
+sono definiti nel package \texttt{akka.cluster.pub-sub.DistributedPubSubMediator}.
+La gestione dei gruppi, dei topic e del dispatcher di messaggi è affidata al \emph{mediator};
+ogni attore, sia nella fase d'inizializzazione che in qualunque altro momento, potrà informare
+il mediator che è interessato ad un determinato topic o che è interessato a ricevere messaggi
+da un determinato gruppo di attori. In ogni momento l'attore potrà disiscriversi da un topic o da un gruppo.
+ 
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%
 

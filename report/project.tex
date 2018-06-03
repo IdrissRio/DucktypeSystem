@@ -31,7 +31,7 @@ il problema.\\
 
 Gli altri moduli del sistema sono volti a implementare i
 ruoli coinvolti in un'implementazione fisica reale.
-Utilizzando la terminologia di \emph{Akka}, questi costituiscono
+Utilizzando la terminologia di \emph{Akka} (si veda Sezione \ref{sec:akka}), questi costituiscono
 \emph{attori}, ovvero astrazioni con comportamento fortemente coeso
 che implementano determinate funzionalità innescate dallo scambio di
 messaggi. Gli attori si possono trovare su diversi \emph{Actor Systems},
@@ -262,7 +262,6 @@ in quel momento.
 
 \begin{figure}[ht!]
 \centering
-%\includegraphics[width=\textwidth]{UML-classes.jpg}
 \hspace*{-1.5cm}
 	\begin{tikzpicture}
 \umlsimpleclass[x=0,y=4]{DSView}
@@ -377,7 +376,7 @@ in quel momento.
 
 \draw[-latex', Violet](setteA) node[above,xshift=-3.3cm] {\footnotesize{DSRetryQuery}} -- (setteB);
 
-\draw[-latex', Violet](ottoA) -- node[below,yshift=-0.5cm,xshift=0.5cm] {\footnotesize{\ DSTryNewQuery}} node[above,xshift=0.5cm] {\footnotesize{DONTKNOW}}++ (1,0) |- (ottoB) ;
+\draw[-latex', Violet](ottoA) -- node[below,yshift=-0.5cm,xshift=0.65cm] {\footnotesize{\ DSTryNewQuery}} node[above,xshift=0.5cm] {\footnotesize{DONTKNOW}}++ (1,0) |- (ottoB) ;
 
 \draw[-latex', YellowOrange](noveA) node[above,xshift=-3.3cm] {\footnotesize{DSEndQuery}} -- (noveB);
 

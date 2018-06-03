@@ -1,2 +1,118 @@
+\colorlet{punct}{red!60!black}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+	basicstyle=\normalfont\ttfamily,
+	stepnumber=1,
+	numbersep=8pt,
+	showstringspaces=false,
+	breaklines=true,
+	frame=lines,
+	backgroundcolor=\color{white},
+	literate=
+	*{0}{{{\color{numb}0}}}{1}
+	{1}{{{\color{numb}1}}}{1}
+	{2}{{{\color{numb}2}}}{1}
+	{3}{{{\color{numb}3}}}{1}
+	{4}{{{\color{numb}4}}}{1}
+	{5}{{{\color{numb}5}}}{1}
+	{6}{{{\color{numb}6}}}{1}
+	{7}{{{\color{numb}7}}}{1}
+	{8}{{{\color{numb}8}}}{1}
+	{9}{{{\color{numb}9}}}{1}
+	{:}{{{\color{punct}{:}}}}{1}
+	{,}{{{\color{punct}{,}}}}{1}
+	{\{}{{{\color{delim}{\{}}}}{1}
+	{\}}{{{\color{delim}{\}}}}}{1}
+	{[}{{{\color{delim}{[}}}}{1}
+	{]}{{{\color{delim}{]}}}}{1},
+}
+
+\begin{quote}
 In the Appendix we can put code snippets, snapshots,
 installation instructions, etc.
+\end{quote}
+\subsection{Akka: configurazione Actor Systems}
+\label{sec:akkaconf}
+Ogni Actor System viene creato con le seguenti configurazioni:
+\begin{itemize}
+	\item ogni attore deve permettere la serializzazione di oggetti;
+	\item la comunicazione è orientata alla connessione, infatti viene utilizzato il protocollo TCP;
+	\item l'host sulla quale verrà eseguita l'applicazione è 127.0.0.1\footnote{Essendo la nostra implementazione una simulazione di un sistema distribuito l'host è unico e coincide con \texttt{localhost}; in contesti reali gli host corrispondono ad ogni macchina connessa alla rete. } e la prima porta che verrà occupata è la 2551;
+	\item attraverso l'opzione \texttt{multi-mbeans-in-same-jvm = on} informiamo il sistema che su un unico host potranno essere eseguite più JVM; una per ogni Actor System.
+\end{itemize}
+\begin{lstlisting}[language=json]
+akka {
+  actor {
+    provider = "cluster"
+    warn-about-java-serializer-usage = false
+    serialize-messages = on
+    allow-java-serialization = on
+  }
+  remote {
+   transport = "akka.remote.netty.NettyRemoteTransport"
+   log-remote-lifecycle-events = off
+   netty.tcp {
+      hostname = "127.0.0.1"
+      port = 2551
+      }
+  }
+
+  cluster {
+    jmx {
+      multi-mbeans-in-same-jvm = on
+      }
+    seed-nodes = [
+      "akka.tcp://ClusterSystem@127.0.0.1:2551"]
+    }
+}
+\end{lstlisting}
+
+\subsection{Akka: creazione di un nuovo attore}
+\label{sec:akkanew}
+Di seguito il codice sorgente in Java per la definizione di un nuovo attore.
+\begin{lstlisting}[language=java]
+import akka.actor.*;
+
+public class newActor extends AbstractActor {
+
+  //Constructor whitout parameters
+  public newActor(){};
+
+  //Constructor whit two parameters
+  public newActor(String str, CustomClass cs){
+    //Initialize attributes
+  };
+
+  @Override
+  public void preRestart(Throwable reason) {
+   //Do something before the initialization
+  }
+  
+   @Override
+  public void postRestart(Throwable reason) {
+    //Do something after the preRestart
+  }
+  
+  @Override
+  public void postStop(Throwable reason) {
+    //Release the resource
+  }
+  
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+      .match(SomeClass.class, x -> {
+        //Do something with x;
+      })
+      .match(AnotherClass.class, x->{
+        //Do something with x
+      })
+    .build();
+  
+  static public Props props(String str, CustomClass cs) {
+  return Props.create(newActor.class, str, cs);
+  }
+}
+\end{lstlisting}
