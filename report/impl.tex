@@ -1,6 +1,6 @@
 \begin{quote}
 L'intero progetto è stato sviluppato cercando di mantenere
-il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-contoller o MVC}).
+il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-contoller o MVC}), e cercando di rispettare i principi SOLID.
 \end{quote}
 \begin{figure}
 \centering{
@@ -19,7 +19,7 @@ il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-
 		edge={ForestGreen,rounded corners,line width=1pt},
 		fit=band,
 	},
-	[it.uniud.ducktypesystem
+	[it.uniud.ducktypesystem, color=SkyBlue
 		[\textbf{controller}, color={violet}
 			[logger
 			]
@@ -40,7 +40,7 @@ il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-
 		]
 	]
 \end{forest}
-\caption{descrizione del pattern architetturale utilizzato. La cartella \emph{distributed} rappresenta il modulo \emph{model} nel pattern MVC. }
+\caption{Descrizione del pattern architetturale utilizzato. La cartella \emph{distributed} rappresenta il modulo \emph{model} nel pattern MVC. }
 }
 \end{figure}
 
@@ -271,7 +271,23 @@ Allo stesso modo viene implementato l'accesso alla \emph{DSView} e
 ai dati del \emph{DSCluster} da parte del corrispondente
 \emph{DSClusterInterfaceActor}.\\
 
-[...]
+\subsection{Implementazione della view}
+\label{sec:viewImpl}
+La view (si veda Appendice \ref{sec:view}) è stata realizzata utilizzando \emph{Swing}:
+un framework per java appartenente
+alla \emph{Java Foundation Class} e orientato allo sviluppo di interfacce grafiche.
+La view è composta da tre elementi principali:
+\begin{itemize}
+	\item Un \emph{JPanel} (\emph{mainPanel}) contenente la rappresentazione
+	grafica del grafo etichettato; tale rappresentazione avviene sfruttando le librerie del progetto \emph{graphStream.org (v.1.3)}. Creando un oggetto di tipo \emph{org.graphstream.Graph} e mantenendone il riferimento in memoria, è possibile in qualunque momento modificare le proprietà
+	del grafo e ciò ha permesso di poter aggiornare la posizione dei robot ad ogni spostamento.
+	\item Un \emph{JTextPane} (\emph{logPane}) contenuto in un \emph{JScrollPane} rappresentante il \emph{log} di sistema; vengono mostrati all'utente: errori nella lettura dei grafi, posizione dei robot e stato della query.
+	\item Un \emph{JPanel} (\emph{eastPanelQuery}) anch'esso contenuto in un \emph{JScrollPane} nel quale viene visualizzato lo stato d'avanzamento delle query sottoposte.
+\end{itemize}
+Inoltre è stato aggiunto un \emph{JMenu} dal quale è possibile accedere alle impostazioni dell'applicativo.
 
-\coanote{Metterei qui accenno agli strumenti usati per la View.
-  Swing ecc..}
+Per migliorare l'attività di debugging è stata aggiunta l'opzione `\emph{auto-move-retry}': nel caso il
+risultato di una query fosse \emph{DONTKNOW}, la view inoltra automaticamente al DSCluster il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
+per la query in questione.
+Nel caso in cui l'opzione `\emph{auto-move-retry}' fosse disabilitata, per ogni query presente nell'\emph{eastPanelQuery} verrà visualizzato e abilitato un bottone il cui scopo è quello effettuare
+una `\emph{retry}' sulla specifica query.
