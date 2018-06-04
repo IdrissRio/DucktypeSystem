@@ -69,6 +69,51 @@ akka {
 }
 \end{lstlisting}
 
+\subsection{Akka: recovery mode}
+\label{sec:akkarecovery}
+Di seguito il codice sorgente in Java per la gestione delle eccezioni \emph{Channel Exception}:
+\begin{lstlisting}[language=java]
+public class DSCluster {
+  private Integer numRobots;
+  private int portSeed = 2551;
+  private static final int maxRecovery = 5;
+  
+  private void actorSystemInitialization() {
+    try {
+      // Create Robot's ActorSystem.
+      for (int i = 0; i < numRobots; ++i)
+        actorSystemArray.add(ActorSystem.create("ClusterSystem",
+          ConfigFactory.parseString("akka.remote.netty.tcp.port="
+          + (portSeed + i)).withFallback(config)));
+      view.showInformationMessage("AKKA: Every Robot is connected");
+      robotMainActorInitialization();
+    } catch (ChannelException e) {
+      exceptionFound();
+      portSeed += numRobots;
+      for (int i = 0; i < actorSystemArray.size(); ++i) 
+        actorSystemArray.remove(i);
+      actorSystemInitialization();
+    }
+  }
+  
+  private void exceptionFound(){
+    if (this.maxRecovery<actualRecovery) {
+      JOptionPane.showMessageDialog(view.getMainFrame(),
+      "The error recovery procedure failed.\n" +
+      "The system is corrupt. Self-destruction activated!",
+      "Adios !",
+      JOptionPane.ERROR_MESSAGE);
+      application.exit();
+    }
+    if(actualRecovery==0)
+      view.showErrorMessage("AKKA: Error in cluster initialization."+
+      "Starting recovery mode.");
+    ++actualRecovery;
+  }
+}
+\end{lstlisting}
+La funzione \emph{actorSystemInitialization} prova a connettere uno alla volta gli Actor System nelle porte designate. Il primo sarà connesso alla porta \emph{portSeed}, mentre l'ultimo sarà connesso alla porta \emph{portSeed+numRobots}.
+Nel caso venissero lanciate delle eccezioni del tipo \emph{Channel Exception}, l'utente verrebbe informato, \emph{portSeed} verrebbe incrementato di un numero d'unità pari a \emph{numRobots},  e gli Actor System eventualmente creati verrebbero eliminati. Dopo di che si ripartirebbe con la procedura di inizializzazione.
 \subsection{Akka: creazione di un nuovo attore}
 \label{sec:akkanew}
 Di seguito il codice sorgente in Java per la definizione di un nuovo attore.
@@ -76,9 +121,6 @@ Di seguito il codice sorgente in Java per la definizione di un nuovo attore.
 import akka.actor.*;
 
 public class newActor extends AbstractActor {
-
-  //Constructor whitout parameters
-  public newActor(){};
 
   //Constructor whit two parameters
   public newActor(String str, CustomClass cs){
@@ -112,7 +154,7 @@ public class newActor extends AbstractActor {
     .build();
   
   static public Props props(String str, CustomClass cs) {
-  return Props.create(newActor.class, str, cs);
+    return Props.create(newActor.class, str, cs);
   }
 }
 \end{lstlisting}

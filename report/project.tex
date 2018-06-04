@@ -410,7 +410,7 @@ in alcuni nodi.
 Il contributo che ogni robot può dare alla verifica della query
 è dunque a sua volta parziale e localizzato: in particolare,
 il controllo si deve focalizzare sugli archi.
-Dispondendo della vista $\cR = (\Vset, E)$ ed essendo posizionato
+Disponendo della vista $\cR = (\Vset, E)$ ed essendo posizionato
 nel nodo $v$, per ogni arco della query $(x_\cQ, y_\cQ)$
 il \emph{DSQueryChecker} può distinguere i seguenti casi:
 \begin{itemize}
@@ -597,16 +597,3 @@ Si noti che il risultato sarebbe stato lo stesso per
 qualunque ordine si fosse seguito nella ricezione dei messaggi
 \texttt{TryNewQuery}.
 \end{example}
-
-\subsection{Architettura fisica e sviluppo}
-\label{sec:deploy}
-\begin{quote}
-Which nodes and platforms involved, and where each
-component is deployed.
-\end{quote}
-
-\coanote{
-``Poiché la simulazioe lavora in locale, i vari Actor System sono
-distinti in quanto in ascolto ognuno su porte diverse''... spiegazione
-del `akka-conf' usato per configurarli e del recovery mode...}
-

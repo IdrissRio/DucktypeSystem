@@ -1,5 +1,5 @@
 \begin{quote}
-L'intero progetto è stato sviluppato cercando di mantenere
+L'intero progetto è stato sviluppato cercando di seguire
 il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-contoller o MVC}), e cercando di rispettare i principi SOLID.
 \end{quote}
 \begin{figure}
@@ -16,7 +16,7 @@ il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-
 		text width=40mm,
 		rounded corners=4pt,
 		grow'=0,
-		edge={ForestGreen,rounded corners,line width=1pt},
+		edge={black,rounded corners,line width=0.5pt},
 		fit=band,
 	},
 	[it.uniud.ducktypesystem, color=SkyBlue
@@ -62,7 +62,7 @@ di sistemi distribuiti.
 Lo scopo del modello è  quello di risolvere i problemi relativi alla concorrenza
 legati alla memoria condivisa, eliminandola completamente sgravando dunque
 il programmatore da tali problemi. L'astrazione, come già detto, si basa sull'entità
-\emph{attore} che comunicano attraverso l'invio di messaggi.
+\emph{attore}, che comunica con l'ambiente circostante unicamente attraverso l'invio di messaggi.
 
 Quando un attore riceve un messaggio può decidere il comportamento
 da utilizzare per processare il prossimo messaggio, quindi può:
@@ -78,11 +78,12 @@ ciò garantisce un elevato livello di \emph{location transparency}.
 
 Gli attori in Akka sono organizzati in gerarchie chiamate Actor Systems.
 Un Actor System è un gruppo gerarchico di attori che condividono delle
-opzioni di configurazione (si veda Appendice \ref{sec:akkaconf}).
+opzioni di configurazione (si veda Appendice \ref{sec:akkaconf}). Ogni Actor System si connette ad un \emph{host} su una determinata porta. Nel nostro caso, poiché la simulazione lavora in locale, ogni Actor System si connette a \emph{localhost} ma su porte differenti. La porta alla quale si connette il primo Actor System è costante ed è definita nel file \emph{akka.conf}; se più applicazioni si dovessero connettere alla stessa porta, verrebbe lanciata un'eccezione. Per prevenire il crash dell'applicativo, è stata introdotta la \emph{recovery-mode} (si veda Appendice \ref{sec:akkarecovery} per lo snippet del codice): l'Actor System prova a collegarsi sequenzialmente a porte diverse per un numero di volte definito dalla costante \emph{maxRecovery}. Superata la costante \emph{maxRecovery}, nel caso un Actor System non riuscisse a connettersi, l'utente verrebbe informato e l'esecuzione terminata.\\
+
 
 La definizione di un nuovo attore comporta la creazione di una nuova classe
-che estende \texttt{AbstractActor}.
-Per tale classe è possibile definire i costruttori, metodi e attributi come per una
+che estende la classe \texttt{AbstractActor}.
+Per tale classe è possibile definire costruttori, metodi e attributi come per una
 qualunque classe Java. E' inoltre possibile  effettuare l'overriding di alcuni metodi 
 tra cui:
 \begin{itemize}
@@ -94,7 +95,7 @@ tra cui:
 	\item \texttt{createReceive}: permette di definire il comportamento dell'attore
 	a seconda del tipo di messaggio ricevuto.
 \end{itemize}
-L'istanza di un actor system è un oggetto della classe \texttt{Props}; per tale motivo
+L'istanza di un \emph{abstractActor} è un oggetto della classe \texttt{Props}; per tale motivo
 nella definizione del nuovo attore bisognare definire un metodo \texttt{Props}, che prenderà
 come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice \ref{sec:akkanew}).
 \begin{figure}[h]
@@ -178,7 +179,7 @@ da un determinato gruppo di attori. In ogni momento l'attore potrà disiscrivers
 %%%%%%%%%%%%%%%%%%%%
 
 \subsection{Strutture dati}
-Il principale dato che il sitema deve manipolare è un grafo:
+Il principale dato che il sistema deve manipolare è un grafo:
 la rappresentazione scelta e l'implementazione di tale struttura dati
 gioca quindi un ruolo fondamentale. \`E stata data particolare
 importanza alla modularità del codice in modo che si possa in seguito
@@ -193,7 +194,7 @@ fornisce diversi metodi per caricare agevolmente il grafo da un file
 in formato \texttt{.DOT, .DGS, .GML, .TLP, .NET, .graphML, .GEXF}
 e per la sua visualizzazione grafica.
 La classe \emph{DSGraphImpl} si occupa anche di gestire internamente
-le eccezioni dei metodi della libreria \emph{graph-stream} preferendo,
+le eccezioni dei metodi della libreria \emph{graphstream} preferendo,
 ad esempio,
 la restituzione di un valore booleano al lancio di un'eccezione
 nel caso di duplice inserimento di uno stesso nodo o arco: questo
@@ -208,7 +209,7 @@ Sono di tipo \emph{DSGraph} il `\emph{mainGraph}' della
 robot.
 
 L'interfaccia \textbf{\emph{DSQuery}} estende l'interfaccia
-\emph{DSQuery} aggiungendo il metodo \texttt{check-and-reduce()} e la
+\emph{DSGraph} aggiungendo il metodo \texttt{check-and-reduce()} e la
 definizione interna dell'enumerazione \emph{DSQueryStatus},
 con i valori \texttt{MATCH, FAIL, DONTKNOW}, e della classe
 \textbf{\emph{DSQueryId}}.
@@ -284,10 +285,10 @@ La view è composta da tre elementi principali:
 	\item Un \emph{JTextPane} (\emph{logPane}) contenuto in un \emph{JScrollPane} rappresentante il \emph{log} di sistema; vengono mostrati all'utente: errori nella lettura dei grafi, posizione dei robot e stato della query.
 	\item Un \emph{JPanel} (\emph{eastPanelQuery}) anch'esso contenuto in un \emph{JScrollPane} nel quale viene visualizzato lo stato d'avanzamento delle query sottoposte.
 \end{itemize}
-Inoltre è stato aggiunto un \emph{JMenu} dal quale è possibile accedere alle impostazioni dell'applicativo.
+Inoltre è stato aggiunto un \emph{JMenu} il cui scopo è quello di permettere l'accesso alle impostazioni dell'applicativo.\\
 
 Per migliorare l'attività di debugging è stata aggiunta l'opzione `\emph{auto-move-retry}': nel caso il
-risultato di una query fosse \emph{DONTKNOW}, la view inoltra automaticamente al DSCluster il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
+risultato di una query fosse \emph{DONTKNOW}, la view inoltra automaticamente al \emph{DSCluster} il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
 per la query in questione.
 Nel caso in cui l'opzione `\emph{auto-move-retry}' fosse disabilitata, per ogni query presente nell'\emph{eastPanelQuery} verrà visualizzato e abilitato un bottone il cui scopo è quello effettuare
 una `\emph{retry}' sulla specifica query.
