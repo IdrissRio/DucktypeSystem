@@ -1,11 +1,48 @@
 \begin{quote}
-Details about the implementation: every choice about platforms,
-languages, software/hardware, middlewares, which has not been decided
-in the requirements.
-
-Important choices about implementation should be described here;
-e.g., peculiar data structures.
+L'intero progetto è stato sviluppato cercando di mantenere
+il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-contoller o MVC}).
 \end{quote}
+\begin{figure}
+\centering{
+\begin{forest}
+	my label/.style={
+		label={[font=\sffamily]right:{#1}},
+	},
+	for tree={
+		folder,
+		font=\sffamily,
+		text=black,
+		minimum height=0.45cm,
+		text width=40mm,
+		rounded corners=4pt,
+		grow'=0,
+		edge={ForestGreen,rounded corners,line width=1pt},
+		fit=band,
+	},
+	[it.uniud.ducktypesystem
+		[\textbf{controller}, color={violet}
+			[logger
+			]
+		]
+		[\textbf{distributed}, color={red}
+			[data
+			]
+			[errors
+			]
+			[impl
+			]
+			[messages
+			]
+		]
+		[\textbf{view}, color={blue}
+		]
+		[DucktypeSystem {\color{OliveGreen}$\triangleright$ (Main)}
+		]
+	]
+\end{forest}
+\caption{descrizione del pattern architetturale utilizzato. La cartella \emph{distributed} rappresenta il modulo \emph{model} nel pattern MVC. }
+}
+\end{figure}
 
 \subsection{Implementazione del sistema distribuito}
 \label{sec:akka}
@@ -30,8 +67,8 @@ il programmatore da tali problemi. L'astrazione, come già detto, si basa sull'e
 Quando un attore riceve un messaggio può decidere il comportamento
 da utilizzare per processare il prossimo messaggio, quindi può:
 \begin{itemize}
-	\item creare nuovi attori,
-	\item inviare messaggi ad attori della quale conosce il nome, attraverso il metodo \texttt{tell},
+	\item creare nuovi attori;
+	\item inviare messaggi ad attori della quale conosce il nome, attraverso il metodo \texttt{tell};
 	\item inviare messaggi ad attori della quale non conosce nè il nome nè l'esistenza.
 	Ciò è possibile utilizzando i metodi definiti nel package \texttt{akka.cluster.pub- sub.DistributedPubSubMediator}.
 \end{itemize}
