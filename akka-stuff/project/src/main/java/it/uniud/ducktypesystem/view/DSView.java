@@ -1,5 +1,8 @@
 package it.uniud.ducktypesystem.view;
 
+import com.sun.corba.se.impl.orbutil.graph.GraphImpl;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Loader;
+import it.uniud.ducktypesystem.DucktypeSystem;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.data.*;
 import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
@@ -18,7 +21,9 @@ import javax.swing.border.MatteBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 
 import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
@@ -65,6 +70,43 @@ public class DSView implements DSAbstractView {
 
     public DSView(DSApplication application) {
         try {
+            {
+                try
+                {
+                    Class<?> clazz = Class.forName("com.apple.eawt.Application");
+                    Method getApplication = clazz.getMethod("getApplication");
+                    Method setDockIcon = clazz.getMethod("setDockIconImage", Image.class);
+
+                    Object appli = getApplication.invoke(null);
+
+                    Class<?> abouthandlerclass = Class.forName("com.apple.eawt.AboutHandler");
+                    Method setAboutHandler = clazz.getMethod("setAboutHandler", abouthandlerclass);
+
+                    Object abouthandler = Proxy.newProxyInstance(DucktypeSystem.class.getClassLoader(),
+                            new Class<?>[] { abouthandlerclass }, new InvocationHandler()
+                            {
+                                @Override
+                                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+                                {
+                                    if (method.getName().equals("handleAbout"))
+                                    {
+                                        aboutUsOnlyForMac();
+                                    }
+                                    return null;
+                                }
+                            });
+
+                    setAboutHandler.invoke(appli, abouthandler);
+
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+
+
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "DucktypeSystem");
             System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
             System.setProperty( "apple.laf.useScreenMenuBar", "true" );
@@ -97,10 +139,56 @@ public class DSView implements DSAbstractView {
         graphPanel=new JPanel(new BorderLayout());
         autoMove=false;
         betterVisualizationBool=false;
-        //Fixme: questo per consistenza dovrei aggiungerlo quando ho creato tutti i clustermanager.
         activeHost= new DefaultListModel<>();
         activeHost.addElement(0);
     }
+
+    private void aboutUsOnlyForMac(){
+        JPanel welcomeMainPanel=new JPanel(new BorderLayout());
+        ViewPanel graphViewNew;
+        JPanel panelGraphNew=new JPanel(new BorderLayout());
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
+        JFrame aboutFrame = new JFrame();
+        JLabel mallardLbl= new JLabel("<html><center> \"If it looks like a duck, swims like a duck,<br> and quacks like a duck, then it probably is a duck.\" <br> Just a Ducktype System...</center>  </html>");
+        aboutFrame.setAlwaysOnTop(true);
+        welcomeMainPanel.add(panelGraphNew, BorderLayout.CENTER);
+        mallardLbl.setSize(200, 200);
+        mallardLbl.setFont(new Font("Bariol", Font.PLAIN,20));
+        mallardLbl.setForeground(Color.WHITE);
+        mallardLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        DucktypeSystemLbl.setSize(200, 200);
+        DucktypeSystemLbl.setFont(new Font("Bariol", Font.PLAIN,30));
+        DucktypeSystemLbl.setForeground(Color.WHITE);
+        DucktypeSystemLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        welcomeMainPanel.add(mallardLbl, BorderLayout.NORTH);
+        welcomeMainPanel.setBackground(Color.BLACK);
+        welcomeMainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
+
+        try {
+            graph=(Graph) DSGraphImpl.createGraphFromFile("src/main/resources/aboutUS.DGS").getGraphImpl();
+        } catch (DSSystemError dsSystemError) {
+            System.out.println("culo");
+            dsSystemError.printStackTrace();
+        }
+        graph.setAttribute("ui.class", "marked");
+        graph.addAttribute("ui.stylesheet","url(aboutGraphStyle.css)");
+        for (Node node : graph) {
+            node.addAttribute("ui.label", node.getId());
+        }
+
+        viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
+        graphViewNew=viewer.addDefaultView(false);
+        panelGraphNew.add(graphViewNew);
+        aboutFrame.getContentPane().add(welcomeMainPanel);
+        aboutFrame.setTitle("A distributed subgraph isomorphism");
+        aboutFrame.setBounds(0, 0, 700, 500);
+        aboutFrame.setLocation(dim.width/2-aboutFrame.getSize().width/2, dim.height/2-aboutFrame.getSize().height/2);
+        aboutFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        aboutFrame.setVisible(true);
+    }
+
 
 
     public void openApplication() {
