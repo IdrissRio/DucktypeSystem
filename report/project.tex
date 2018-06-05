@@ -267,11 +267,11 @@ in quel momento.
 \umlsimpleclass[x=0,y=4]{DSView}
 \umlclass[x=0,y=0]{DSCluster}{
 	- int : numRobot\\
-	- DSQueryRobot[] : activeQueries\\
+	- DSQueryResult[] : activeQueries\\
 	- int : numHost}{ 
-	+ StartNewComputation()\\
-	+ MakeMove()\\
-	+ RetryQuery()\\
+	+ startNewComputation()\\
+	+ makeMove()\\
+	+ retryQuery()\\
 }
 \umlclass[x=4,y=-5]{DSClusterInterface - Actor}{
 	- int : host\\
@@ -280,7 +280,7 @@ in quel momento.
 \umlclass[x=10,y=-0]{DSRobot - Actor}{
 	- String : myNode\\
 	- DSGraph : myView\\
-	- ActorRef[] : activeQueryChecker
+	- QCMonitor[] : activeQueryChecker
 }{}
 \umlclass[x=10,y=-5]{DSQueryChecker - Actor}{
 	- String : myNode\\
@@ -289,19 +289,21 @@ in quel momento.
 }{}
 \umluniassoc[name=hasDSView]{DSCluster}{DSView}
 \node[left] at (hasDSView-1) {has};
+\umluniassoc[name=hasDSView]{DSView}{DSCluster};
 \umldep[name=depDSRobot]{DSCluster}{DSRobot - Actor}
 \node[above] at (depDSRobot-1) {Create};
 \node[below] at (depDSRobot-1) {actorSystemInitialization};
 \umldep[name=depQueryChecker]{DSRobot - Actor}{DSQueryChecker - Actor}
 \node[right] at (depQueryChecker-1) {Create};
 \umldep[geometry=|-, name=depClusterInterface]{DSCluster}{DSClusterInterface - Actor}
-\node[right] at (-3,-3) {ConnectNewHost};
+\node[right] at (-3,-3) {connectNewHost};
+\node[above] at (-1.75,-2.75) {Create};
 \umldep[geometry=-|, name=depClusterInterface]{DSCluster}{DSClusterInterface - Actor}
 \umluniassoc[geometry=|-|,name=hasDSCluster]{DSClusterInterface - Actor}{DSCluster}
 \node[right, align=left] at (hasDSCluster-1) {(Static access to\\ host instance)};
 \end{tikzpicture}
 \caption{\label{fig:UML-classes}
-\coanote{FIXME: add the UML from photo...}
+Descrizione delle dipendenze tra i moduli e gli attori del sistema.
 }
 \end{figure}
 %%%%%%
@@ -363,41 +365,36 @@ in quel momento.
 \draw[] (topB) -- (bottomB);
 \draw[] (topC) -- (bottomC);
 
-\draw[-latex', YellowOrange](unoA) node[above,xshift=1cm] {\footnotesize{DSStartNewQueryChecker}} -- (unoB);
+\draw[-latex', blue](unoA) node[above,xshift=1cm] {\footnotesize{DSStartNewQueryChecker}} -- (unoB);
 
-\draw[-latex', YellowOrange](dueA) node[above,xshift=2cm] {\footnotesize{DSCreateQueryCheckers}} -- (dueB);
-\draw[-latex', YellowOrange](treA) node[above,xshift=8cm] {\footnotesize{DSTryNewQuery}} -- (treB);
+\draw[-latex', blue](dueA) node[above,xshift=2cm] {\footnotesize{DSCreateQueryCheckers}} -- (dueB);
+\draw[-latex',blue](treA) node[above,xshift=8cm] {\footnotesize{DSTryNewQuery}} -- (treB);
 
-\draw[-latex', Violet](quattroA) node[above,xshift=-3cm] {\footnotesize{DSStartCriticalWork}} -- (quattroB);
+\draw[-latex', Orange](quattroA) node[above,xshift=-3cm] {\footnotesize{DSStartCriticalWork}} -- (quattroB);
 
-\draw[-latex', Violet](cinqueA) node[above,xshift=-3cm] {\footnotesize{DSEndCriticalWork}} -- (cinqueB);
+\draw[-latex', Orange](cinqueA) node[above,xshift=-3cm] {\footnotesize{DSEndCriticalWork}} -- (cinqueB);
 
-\draw[-latex', Violet](seiA) node[above,xshift=-3.3cm] {\footnotesize{TERMINATED}} -- (seiB);
+\draw[-latex', Orange](seiA) node[above,xshift=-3.3cm] {\footnotesize{TERMINATED}} -- (seiB);
 
-\draw[-latex', Violet](setteA) node[above,xshift=-3.3cm] {\footnotesize{DSRetryQuery}} -- (setteB);
+\draw[-latex', Orange](setteA) node[above,xshift=-3.3cm] {\footnotesize{DSRetryQuery}} -- (setteB);
 
-\draw[-latex', Violet](ottoA) -- node[below,yshift=-0.5cm,xshift=0.65cm] {\footnotesize{\ DSTryNewQuery}} node[above,xshift=0.5cm] {\footnotesize{DONTKNOW}}++ (1,0) |- (ottoB) ;
+\draw[-latex', blue](ottoA) -- node[below,yshift=-0.5cm,xshift=0.65cm] {\footnotesize{\ DSTryNewQuery}} node[above,xshift=0.5cm] {\footnotesize{DONTKNOW}}++ (1,0) |- (ottoB) ;
 
-\draw[-latex', YellowOrange](noveA) node[above,xshift=-3.3cm] {\footnotesize{DSEndQuery}} -- (noveB);
+\draw[-latex',blue](noveA) node[above,xshift=-3.3cm] {\footnotesize{DSEndQuery}} -- (noveB);
 
-\draw[-latex', YellowOrange](dieciA) node[above,xshift=-8.0cm] {\footnotesize{DSMissionAccomplished}} -- (dieciB);
+\draw[-latex', blue](dieciA) node[above,xshift=-8.0cm] {\footnotesize{DSMissionAccomplished}} -- (dieciB);
 
-\draw[-latex', Black](undiciA) node[above,xshift=1.7cm] {\footnotesize{DSMakeMove}} -- (undiciB);
+\draw[-latex', blue](undiciA) node[above,xshift=1.7cm] {\footnotesize{DSMakeMove}} -- (undiciB);
 
-\draw[-latex', Black](dodiciA) node[above,xshift=1.4cm] {\footnotesize{DSMove}} -- (dodiciB);
+\draw[-latex', blue](dodiciA) node[above,xshift=1.4cm] {\footnotesize{DSMove}} -- (dodiciB);
 
-\draw[-latex', Red](trediciA) node[above,xshift=-2.5cm] {\footnotesize{DSRobotFaillureOccurred}} -- (trediciB);
+\draw[-latex', Red](trediciA) node[above,xshift=-2.5cm] {\footnotesize{DSRobotFailureOccurred}} -- (trediciB);
 
-\draw[-latex', Red](quattordiciA) -- node[below,yshift=-0.5cm,xshift=1.5cm] {\footnotesize{DSRobotFaillureOccurred}} ++ (1,0) |- (quattordiciB) ;
+\draw[-latex', Red](quattordiciA) -- node[below,yshift=-0.5cm,xshift=1.5cm] {\footnotesize{DSRobotFailureOccurred}} ++ (1,0) |- (quattordiciB) ;
 
 \end{tikzpicture}
 
-%\includegraphics[width=\textwidth]{UML-messages.jpg}
-\caption{\label{fig:UML-messages}
-  \coanote{FIXME: add the UML from photo...
-    cassu! c'è un errore: l'arco di messaggi tra DSRobot e DSRobot rosso
-  è DSRobotFailureOccurred, e *non* DSEndQuery.}
-}
+\caption{Descrizione dello scambio di messaggi tra le entità: \emph{DSClusterInterface, DSRobot, DSQueryChecker}.}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%
 %
