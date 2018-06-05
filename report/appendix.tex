@@ -1,7 +1,6 @@
 \colorlet{punct}{red!60!black}
 \definecolor{delim}{RGB}{20,105,176}
 \colorlet{numb}{magenta!60!black}
-
 \lstdefinelanguage{json}{
 	basicstyle=\normalfont\ttfamily,
 	stepnumber=1,
@@ -28,11 +27,25 @@
 	{[}{{{\color{delim}{[}}}}{1}
 	{]}{{{\color{delim}{]}}}}{1},
 }
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+\lstset{language=Java,
+	showspaces=false,
+	showtabs=false,
+	breaklines=true,
+	showstringspaces=false,
+	breakatwhitespace=true,
+	commentstyle=\color{pgreen},
+	keywordstyle=\color{pblue},
+	stringstyle=\color{pred},
+	basicstyle=\ttfamily,
+	moredelim=[il][\textcolor{pgrey}]{$ $},
+	moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
 
-\begin{quote}
-In the Appendix we can put code snippets, snapshots,
-installation instructions, etc.
-\end{quote}
+
 \subsection{Akka: configurazione Actor Systems}
 \label{sec:akkaconf}
 Ogni Actor System viene creato con le seguenti configurazioni:
@@ -177,5 +190,34 @@ Nel centro la topologia del grafo principale.}
 	\includegraphics[scale=0.3]{immagini/betterVisualization.png}
 	\caption{Modalità \emph{better visualization}: essendo alcuni grafi molto grandi, è stata introdotta la possibilità di scorporare il \emph{JPanel} di destra in una finestra a sè stante, permettendo una migliore visualizzazione delle query.}
 \end{figure}
+\newpage
+\subsection{Java Reflection}
+\label{sec:javaReflection}
+A seguire, la porzione di codice dove viene utilizzata la \emph{riflessione}. Ciò permette di eseguire
+porzioni di codice relative ad un unico sistema operativo, senza dovere importare nel progetto
+dipendenze, come \emph{com.apple.eawt.Application}, presenti solo nel sistema operativo \emph{macOS X}, che
+causerebbero la terminazione dell'esecuzione nel caso quest'ultima avvenisse su sistemi operativi differenti.\\
+
+Con la seguente porzione di codice riusciamo a personalizzare il metodo \emph{handleAbout}.
+\begin{lstlisting}[language=java]
+Class<?> clazz = Class.forName("com.apple.eawt.Application");
+Method getApplication = clazz.getMethod("getApplication");
+Object appli = getApplication.invoke(null);
+Class<?> abouthandlerclass = Class.forName("com.apple.eawt.AboutHandler");
+Method setAboutHandler = clazz.getMethod("setAboutHandler", abouthandlerclass);
+Object abouthandler = 
+          Proxy.newProxyInstance(
+          DucktypeSystem.class.getClassLoader(),
+          new Class<?>[] { abouthandlerclass }, new InvocationHandler(){
+    @Override
+       public Object invoke(Object proxy, Method method, Object[] args)
+           throws Throwable{
+         if (method.getName().equals("handleAbout"))
+          aboutUsOnlyForMac();
+         return null;
+    }
+});
+setAboutHandler.invoke(appli, abouthandler);
+\end{lstlisting}
 
 

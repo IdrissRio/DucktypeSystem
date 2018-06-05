@@ -73,22 +73,14 @@ public class DSView implements DSAbstractView {
                 {
                     Class<?> clazz = Class.forName("com.apple.eawt.Application");
                     Method getApplication = clazz.getMethod("getApplication");
-                    Method setDockIcon = clazz.getMethod("setDockIconImage", Image.class);
                     Object appli = getApplication.invoke(null);
                     Class<?> abouthandlerclass = Class.forName("com.apple.eawt.AboutHandler");
                     Method setAboutHandler = clazz.getMethod("setAboutHandler", abouthandlerclass);
                     Object abouthandler = Proxy.newProxyInstance(DucktypeSystem.class.getClassLoader(),
-                            new Class<?>[] { abouthandlerclass }, new InvocationHandler()
-                            {
-                                @Override
-                                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-                                {
-                                    if (method.getName().equals("handleAbout"))
-                                    {
-                                        aboutUsOnlyForMac();
-                                    }
-                                    return null;
-                                }
+                            new Class<?>[] { abouthandlerclass }, (proxy, method, args) -> {
+                                if (method.getName().equals("handleAbout"))
+                                    aboutUsOnlyForMac();
+                                return null;
                             });
                     setAboutHandler.invoke(appli, abouthandler);
                 }
@@ -815,7 +807,11 @@ public class DSView implements DSAbstractView {
                 logger.log("Host < "+ host +" >: Query < "+name+" > ended: DONTKNOW!",Color.ORANGE );
         }
         JScrollBar vertical = logScroll.getVerticalScrollBar();
-        vertical.setValue(vertical.getMaximum());
+        try {
+            vertical.setValue(vertical.getMaximum());
+        }catch(Throwable e){
+            e.printStackTrace();
+        }
     }
     public JFrame getMainFrame(){return mainFrame;}
     @Override

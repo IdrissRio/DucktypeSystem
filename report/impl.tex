@@ -72,7 +72,7 @@ da utilizzare per processare il prossimo messaggio, quindi può:
 	\item inviare messaggi ad attori della quale non conosce nè il nome nè l'esistenza.
 	Ciò è possibile utilizzando i metodi definiti nel package \texttt{akka.cluster.pub- sub.DistributedPubSubMediator}.
 \end{itemize}
-La creazione di attori e l'invio dei messaggi non dipendente dalla
+La creazione di attori e l'invio di messaggi non dipendente dalla
 locazione fisica dell'attore all'interno del network di computer;
 ciò garantisce un elevato livello di \emph{location transparency}.
 
@@ -156,7 +156,7 @@ Il protocollo di rete utilizzato per la comunicazione tra i nodi
 la connessione tra i nodi, il programmatore non si deve preoccupare della
 perdita di messaggi o del fatto che possano arrivare non in ordine.
 
-Come protocollo di comunicazione Akka utilizza il \emph{Gossiping};
+Come protocollo di comunicazione Akka utilizza il \emph{Gossiping},
 con l'unica differenza che l'aggiunta di un nuovo membro al cluster viene
 inoltrata ai nodi, dando precedenza a quelli che hanno una visione
 dello stato meno aggiornata.
@@ -167,7 +167,7 @@ la indiretta, ovvero un tipo di comunicazione \emph{(time and space)}-\emph{unco
  \emph{publish subscribe}.
 Come già detto in precedenza, i metodi per la comunicazione indiretta
 sono definiti nel package \texttt{akka.cluster.pub-sub.DistributedPubSubMediator}.
-La gestione dei gruppi, dei topic e del dispatcher di messaggi è affidata al \emph{mediator};
+La gestione dei gruppi, dei topic e del dispatcher di messaggi è affidata ad un attore speciale detto \emph{mediator};
 ogni attore, sia nella fase d'inizializzazione che in qualunque altro momento, potrà informare
 il mediator che è interessato ad un determinato topic o che è interessato a ricevere messaggi
 da un determinato gruppo di attori. In ogni momento l'attore potrà disiscriversi da un topic o da un gruppo.
@@ -285,10 +285,25 @@ La view è composta da tre elementi principali:
 	\item Un \emph{JTextPane} (\emph{logPane}) contenuto in un \emph{JScrollPane} rappresentante il \emph{log} di sistema; vengono mostrati all'utente: errori nella lettura dei grafi, posizione dei robot e stato della query.
 	\item Un \emph{JPanel} (\emph{eastPanelQuery}) anch'esso contenuto in un \emph{JScrollPane} nel quale viene visualizzato lo stato d'avanzamento delle query sottoposte.
 \end{itemize}
-Inoltre è stato aggiunto un \emph{JMenu} il cui scopo è quello di permettere l'accesso alle impostazioni dell'applicativo.\\
+Inoltre è stato aggiunto un \emph{JMenu} (\emph{menuItem}) il cui scopo è quello di permettere l'accesso alle impostazioni dell'applicativo.\\
 
 Per migliorare l'attività di debugging è stata aggiunta l'opzione `\emph{auto-move-retry}': nel caso il
 risultato di una query fosse \emph{DONTKNOW}, la view inoltra automaticamente al \emph{DSCluster} il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
 per la query in questione.
 Nel caso in cui l'opzione `\emph{auto-move-retry}' fosse disabilitata, per ogni query presente nell'\emph{eastPanelQuery} verrà visualizzato e abilitato un bottone il cui scopo è quello effettuare
-una `\emph{retry}' sulla specifica query.
+una `\emph{retry}' sulla specifica query.\\
+
+Essendo l'applicativo \emph{cross-platform}, per poter adattare l'interfaccia grafica
+allo stile dei diversi sistemi operativi, è stata utilizzata la \emph{reflection} (si veda Appendice \ref{sec:javaReflection}):
+una tecnica che permette l’interrogazione dinamica di istanze di classi java
+(proprietà riflessive). In questo modo, a partire da una generica classe possiamo
+interrogarla e conoscere i nomi dei suoi metodi, dei suoi attributi e di tutto ciò
+che essa contiene, direttamente durante la sua esecuzione. Permette inoltre
+ di interrogarne i metodi, o invocarli, come se ci si trovasse in un normale flusso di esecuzione.
+In particolare la \emph{reflection} è stata utilizzata per gestire alcune sfaccettature del sistema operativo
+\emph{MacOS X}: 
+\begin{itemize}
+	\item Inserimento del JMenu \emph{menuItem} nella barra di stato del Mac;
+	\item Gestione degli eventi \emph{Quit} e \emph{About}, dove è possibile conoscere
+	perché il progetto è stato chiamato \emph{DucktypeSystem.}
+\end{itemize}
