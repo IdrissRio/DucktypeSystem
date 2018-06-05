@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 public interface DSQuery extends DSGraph {
 
+    /**
+     * Wrapper for the three values (host, name, nrAttempt) which provides
+     * a unique identification (path) for the query.
+     */
     class QueryId implements Serializable {
         private String path;
         private int host;
@@ -63,6 +67,9 @@ public interface DSQuery extends DSGraph {
         }
     }
 
+    /**
+     * Enumeration for the possible query results.
+     */
     enum QueryStatus {
         MATCH,
         FAIL,

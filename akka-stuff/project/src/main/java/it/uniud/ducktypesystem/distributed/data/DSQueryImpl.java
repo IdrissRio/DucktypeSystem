@@ -60,26 +60,41 @@ public class DSQueryImpl extends DSGraphImpl implements DSQuery {
         id.incrementAttemptNr();
     }
 
+    /**
+     * This is the main algorithm used by the QueryCheckers.
+     * Precondition:
+     *   The full view from `myNode' inside the (unknown) main graph, is a subgraph of `myView'.
+     * Results:
+     *  - MATCH    : if `this' is a subgraph of `myView'; `this' results to be empty.
+     *  - FAIL     : if `this' has an edge from `myNode' which is not present in `myView'.
+     *  - DONTKNOW : in any other case; `this' results not to be empty.
+     */
     public DSQuery.QueryStatus checkAndReduce(DSGraph myView, String myNode) {
 
         for (String qN : getNodes()) {
+            // If nothing can be said about `qN', skip it.
             if (!myView.hasNode(qN)) continue;
-            // If the knowledge about `qN' is complete and more edges are required, then query fails.
+
+            // If the knowledge about `qN' is complete (i.e., the robot is on `qN')
+            // but more edges are required by the query, then it FAILS.
             if (qN.equals(myNode) && !myView.adjNodes(qN).containsAll(adjNodes(qN)))
                 return QueryStatus.FAIL;
+
             // Remove verified edges
             for (String qN2 : adjNodes(qN)) {
                 if (!myView.hasNode(qN2) || !myView.areAdj(qN, qN2)) continue;
                 removeEdge(qN, qN2);
             }
-        }
+        } // end loop on query nodes.
+
+        // Remove nodes whose edges have been entirely verified.
         removeUnconnectedNodes();
 
         // `myView' verified it all.
         if (isEmpty())
             return QueryStatus.MATCH;
 
-        // `myView' had nothing to say about it.
+        // `myView' couldn't verify it all.
         return QueryStatus.DONTKNOW;
     }
 }

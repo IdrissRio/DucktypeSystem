@@ -7,6 +7,7 @@ import java.util.List;
 public interface DSGraph {
     void loadGraphFromFile(String filePath) throws DSSystemError;
 
+    /** Read only methods. */
     int numNodes();
     String getNode(int i);
     int getNodeIndex(String id);
@@ -21,7 +22,12 @@ public interface DSGraph {
     List<Integer> adjNodesIndexes(int n);
     boolean areAdj(String id1, String id2);
     boolean areAdj(int n1, int n2);
+    boolean isEmpty();
+    Object getGraphImpl();
+    boolean isEqual(DSGraph graph);
+    boolean hasUnconnectedNodes();
 
+    /** Modifying graph methods. */
     boolean addNode(String id);
     boolean addEdge(String id1, String id2);
     boolean addEdge(int n1, int n2);
@@ -31,19 +37,16 @@ public interface DSGraph {
     void clear();
     void removeUnconnectedNodes();
 
-    boolean isEmpty();
-    boolean hasUnconnectedNodes();
-
+    /** Methods simulating the physical sensors use. */
+    // These simulate the first acquiring of knowledge from the main graph.
     DSGraph getViewFromNode(String id);
     DSGraph getViewFromNode(int n);
-
+    // These simulate the learning during move, possibly forgetting old nodes.
     void obtainView(String whereIAm);
     String obtainNewView(String whereIAm, String alreadyBeen);
 
-    Object getGraphImpl();
-
-    boolean isEqual(DSGraph graph);
-
+    /** The following methods are required because the chosen low level implementation
+     * may not implement the Serializable interface. */
     String serializeToString();
     void loadFromSerializedString(String serialized);
 }

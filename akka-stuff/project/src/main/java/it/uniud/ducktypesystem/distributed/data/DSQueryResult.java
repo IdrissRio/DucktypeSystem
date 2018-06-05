@@ -1,5 +1,8 @@
 package it.uniud.ducktypesystem.distributed.data;
 
+/**
+ * Wrapper holding the intermediate result of a query.
+ */
 public class DSQueryResult {
     private DSQuery query;
     private String stillToVerify;
@@ -14,24 +17,18 @@ public class DSQueryResult {
     public DSQuery getQuery() {
         return query;
     }
-
-    public void setQuery(DSQuery query) {
-        this.query = query;
-    }
-
-
-
     public String getStillToVerify() {
         return stillToVerify;
     }
+    public DSQuery.QueryStatus getStatus() {return status;}
 
     public void setStillToVerify(String stillToVerify) {
         this.stillToVerify = stillToVerify;
     }
-
+    public void setQuery(DSQuery query) {
+        this.query = query;
+    }
     public void setStatus(DSQuery.QueryStatus status) {
         this.status = status;
     }
-
-    public DSQuery.QueryStatus getStatus() {return status;}
 }

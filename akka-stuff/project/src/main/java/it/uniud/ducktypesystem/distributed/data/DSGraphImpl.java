@@ -1,6 +1,7 @@
 package it.uniud.ducktypesystem.distributed.data;
 
 import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
+import it.uniud.ducktypesystem.distributed.system.DSDataFacade;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.IdAlreadyInUseException;
 import org.graphstream.graph.Node;
@@ -14,11 +15,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-/***
-* DSGraphImpl:
-* Implements the required method for the system
-* providing a wrapper for the graphstream `DefaultGraph' low level implementation.
-*/
+/**
+ * DSGraphImpl:
+ * Implements the required methods for the system
+ * providing an exception safe wrapper for the `DefaultGraph' low level implementation,
+ * form the graphstream library.
+ * Each access to the main graph is done through the static DSDataFacade.
+ */
 public class DSGraphImpl implements DSGraph {
     private DefaultGraph impl;
 
@@ -254,7 +257,7 @@ public class DSGraphImpl implements DSGraph {
     public void obtainView(String whereIAm) {
         try {
             clear();
-            DSGraph mainGraph = DataFacade.getInstance().getMap();
+            DSGraph mainGraph = DSDataFacade.getInstance().getMap();
             if (!mainGraph.hasNode(whereIAm)) return;
             addNode(whereIAm);
             for (String s : mainGraph.adjNodes(whereIAm)) {
@@ -268,6 +271,7 @@ public class DSGraphImpl implements DSGraph {
     }
 
     private String chooseNext(String whereIAm, String alreadyBeen) {
+        // Heuristic for move:
         /* Finding the most informative node wouldn't let explore nodes with few adjs.
         int max = 0; String next = whereIAm; int adjNum;
         for (String s : mainGraph.adjNodes(whereIAm)) {
@@ -279,20 +283,23 @@ public class DSGraphImpl implements DSGraph {
                 next = s;
             }
         }*/
+        // Choose random the next node.
         int n = adjNodes(whereIAm).size();
         int randomNum = ThreadLocalRandom.current().nextInt(0, n);
         String next = adjNodes(whereIAm).get(randomNum);
-        return next.equals(alreadyBeen) ? adjNodes(whereIAm).get((randomNum+1) % n) : next;
+        return next.equals(alreadyBeen) ?
+                adjNodes(whereIAm).get((randomNum+1) % n)
+                : next;
     }
 
     private void mergeView(DSGraph view1, DSGraph view2) {
-        // Add newView
+        // Add the new view
         for (String s : view2.getNodes())
             addNode(s);
         for (String s1 : view2.getNodes())
             for (String s2 : view2.adjNodes(s1))
                 addEdge(s1, s2);
-        // Remove old nodes
+        // Remove old discovered two steps back.
         for (String s : getNodes())
             if (!view1.hasNode(s) && !view2.hasNode(s))
                 removeNode(s);
@@ -302,8 +309,7 @@ public class DSGraphImpl implements DSGraph {
     @Override
     public String obtainNewView(String whereIAm, String alreadyBeen) {
         try {
-            DSGraph mainGraph = DataFacade.getInstance().getMap();
-            // Choose the most informative node from its adjacent
+            DSGraph mainGraph = DSDataFacade.getInstance().getMap();
             String next = chooseNext(whereIAm, alreadyBeen);
             mergeView(mainGraph.getViewFromNode(whereIAm), mainGraph.getViewFromNode(next));
             return next;
@@ -358,10 +364,9 @@ public class DSGraphImpl implements DSGraph {
                 b.append(n1+" "+n2+"\t");
         return b.toString();
     }
-
     @Override
     public void loadFromSerializedString(String serialized) {
-        if (serialized == null || serialized.equals("\n")) return; // FIXME
+        if (serialized == null || serialized.equals("\n")) return;
         String[] ne = serialized.split("\n");
         String[] nodes = ne[0].split("\t");
         String[] edges = ne[1].split("\t");

@@ -1,8 +1,8 @@
 package it.uniud.ducktypesystem.tests.data;
 
+import it.uniud.ducktypesystem.distributed.system.DSDataFacade;
 import it.uniud.ducktypesystem.distributed.data.DSGraph;
 import it.uniud.ducktypesystem.distributed.data.DSGraphImpl;
-import it.uniud.ducktypesystem.distributed.data.DataFacade;
 import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.stream.file.FileSource;
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class GraphTest {
-    private DataFacade facade;
+    private DSDataFacade facade;
     private DSGraph graph;
     private DefaultGraph realGraph;
     private String fileName;
@@ -22,7 +22,7 @@ public class GraphTest {
     public GraphTest() throws DSSystemError, IOException {
         String basePath = new File("").getAbsolutePath();
         fileName = basePath + "/src/test/resources/graphTest01.DGS";
-        facade = DataFacade.create(fileName);
+        facade = DSDataFacade.create(fileName);
         graph = facade.getMap();
 
         realGraph = new DefaultGraph("g");
@@ -41,7 +41,7 @@ public class GraphTest {
     public void initFacade01() {
         facade = null;
         try {
-            facade = DataFacade.create(fileName);
+            facade = DSDataFacade.create(fileName);
             facade.setOccupied(2);
 
             Assert.assertEquals(facade.getOccupied().size(), 2);
@@ -52,7 +52,7 @@ public class GraphTest {
 
     @Test
     public void initFacade02() throws DSSystemError {
-        facade = DataFacade.create(fileName);
+        facade = DSDataFacade.create(fileName);
         graph = facade.getMap();
 
         Assert.assertEquals(facade.getOccupied().size(), 0);

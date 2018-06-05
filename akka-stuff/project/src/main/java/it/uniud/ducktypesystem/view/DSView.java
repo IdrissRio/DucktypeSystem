@@ -1,13 +1,13 @@
 package it.uniud.ducktypesystem.view;
 
-import com.sun.corba.se.impl.orbutil.graph.GraphImpl;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Loader;
 import it.uniud.ducktypesystem.DucktypeSystem;
 import it.uniud.ducktypesystem.controller.DSApplication;
 import it.uniud.ducktypesystem.distributed.data.*;
 import it.uniud.ducktypesystem.distributed.errors.DSSystemError;
 import it.uniud.ducktypesystem.controller.logger.DSAbstractLog;
 import it.uniud.ducktypesystem.controller.logger.DSLog;
+import it.uniud.ducktypesystem.distributed.system.DSCluster;
+import it.uniud.ducktypesystem.distributed.system.DSDataFacade;
 import org.graphstream.algorithm.generator.FlowerSnarkGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Graph;
@@ -21,12 +21,11 @@ import javax.swing.border.MatteBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 
-import static it.uniud.ducktypesystem.distributed.data.DSCluster.akkaEnvironment;
+import static it.uniud.ducktypesystem.distributed.system.DSCluster.akkaEnvironment;
 
 public class DSView implements DSAbstractView {
     private Integer lastHost;
@@ -46,7 +45,7 @@ public class DSView implements DSAbstractView {
     private JTextField queryField;
     private JPanel graphPanel;
     private ViewPanel graphView;
-    private DataFacade facade;
+    private DSDataFacade facade;
     private Integer processNumber;
     private Graph graph;
     private Viewer viewer;
@@ -612,7 +611,7 @@ public class DSView implements DSAbstractView {
         // MainFrame window listener
         moveRobot.addActionListener(e -> {
             try {
-                DSCluster.getInstance().makeMove(0); //FIXME: in questo caso va bene che sia l'host 0 ad effettuare la makeMove.
+                DSCluster.getInstance().makeMove(0);
             }catch (NullPointerException error){
                 showErrorMessage("Wait. We are initializing the Akka environment.");
             }
@@ -769,7 +768,7 @@ public class DSView implements DSAbstractView {
         graphPanel.add(graphView);
     }
     private void configureSystem(String filePath, int numRobot, DSAbstractLog log) throws DSSystemError {
-        facade=DataFacade.create(filePath);
+        facade=DSDataFacade.create(filePath);
         facade.setOccupied(numRobot);
         StringBuilder b = new StringBuilder();
         b.append("Robot posizionati in: ");
