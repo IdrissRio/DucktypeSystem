@@ -31,10 +31,13 @@ public class DSLog implements DSAbstractLog {
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm:ss");
         String date =LocalDate.now().format(formatterDate);
         String time=LocalDateTime.now().format(formatterTime);
-        logPane.setEditable(true);
-        logPane.replaceSelection("<"+ date +" "+ time +">: "+logMessage+"\n");
-
-        logPane.setEditable(false);
+        try {
+            logPane.setEditable(true);
+            logPane.replaceSelection("<" + date + " " + time + ">: " + logMessage + "\n");
+            logPane.setEditable(false);
+        }catch(Throwable e){
+            e.printStackTrace();
+        }
         logPane.revalidate();
 
     }
