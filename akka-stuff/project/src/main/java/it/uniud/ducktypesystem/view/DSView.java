@@ -46,8 +46,6 @@ public class DSView implements DSAbstractView {
     private JTextField queryField;
     private JPanel graphPanel;
     private ViewPanel graphView;
-    // The DSGraph is accessible by `facade.getMap()' *after* configureSystem() is called.
-    // or NullPointerException will be thrown.
     private DataFacade facade;
     private Integer processNumber;
     private Graph graph;
@@ -76,12 +74,9 @@ public class DSView implements DSAbstractView {
                     Class<?> clazz = Class.forName("com.apple.eawt.Application");
                     Method getApplication = clazz.getMethod("getApplication");
                     Method setDockIcon = clazz.getMethod("setDockIconImage", Image.class);
-
                     Object appli = getApplication.invoke(null);
-
                     Class<?> abouthandlerclass = Class.forName("com.apple.eawt.AboutHandler");
                     Method setAboutHandler = clazz.getMethod("setAboutHandler", abouthandlerclass);
-
                     Object abouthandler = Proxy.newProxyInstance(DucktypeSystem.class.getClassLoader(),
                             new Class<?>[] { abouthandlerclass }, new InvocationHandler()
                             {
@@ -95,15 +90,9 @@ public class DSView implements DSAbstractView {
                                     return null;
                                 }
                             });
-
                     setAboutHandler.invoke(appli, abouthandler);
-
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-
+                catch (Exception e) {}
             }
 
 
@@ -249,6 +238,8 @@ public class DSView implements DSAbstractView {
         confirmButton.addActionListener(e -> {
             try {
                 processNumber = Integer.parseInt(numberProcess.getText());
+                if(processNumber==0)
+                    throw new NumberFormatException();
                 autoMove=autoMoveCB.isSelected();
                 mainPathField.setText(pathField.getText());
                 configureSystem(graphPathString, processNumber, logger);
@@ -376,55 +367,55 @@ public class DSView implements DSAbstractView {
 
             });
             JRadioButton altaMOVEFAIL = new JRadioButton("High");
-            altaMOVEFAIL.setSelected(facade.getMOVEFAIL()==2);
+            altaMOVEFAIL.setSelected(facade.getMOVEFAIL()==5);
            altaMOVEFAIL.addActionListener(x->{
                     autoMoveMOVEFAIL=false;
                     autoMoveCB.setEnabled(isAutoMoveEnable());
                     autoMoveCB.setSelected(isAutoMoveSelected());
-                    backupMOVEFAIL=2;
+                    backupMOVEFAIL=5;
             });
             JRadioButton altaWAITINGFAIL = new JRadioButton("High");
-            altaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==2);
+            altaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==5);
             altaWAITINGFAIL.addActionListener(x->{
-                    autoMoveWAITINGFAIL=false;
-                    autoMoveCB.setEnabled(isAutoMoveEnable());
-                    autoMoveCB.setSelected(isAutoMoveSelected());
-                    backupWAITINGFAIL=2;
-            });
-            JRadioButton altaCRITICALFAIL = new JRadioButton("High");
-            altaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==2);
-            altaCRITICALFAIL.addActionListener(x->{
-                    autoMoveCRITICALFAIL=false;
-                    autoMoveCB.setEnabled(isAutoMoveEnable());
-                    autoMoveCB.setSelected(isAutoMoveSelected());
-                    backupCRITICALFAIL=2;
-
-            });
-            JRadioButton mediaMOVEFAIL = new JRadioButton("Medium");
-            mediaMOVEFAIL.setSelected(facade.getMOVEFAIL()==5);
-            mediaMOVEFAIL.addActionListener(x->{
-
-                    autoMoveMOVEFAIL=false;
-                    autoMoveCB.setEnabled(isAutoMoveEnable());
-                    autoMoveCB.setSelected(isAutoMoveSelected());
-                   backupMOVEFAIL=5;
-
-            });
-            JRadioButton mediaWAITINGFAIL = new JRadioButton("Medium");
-            mediaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==5);
-            mediaWAITINGFAIL.addActionListener(x->{
                     autoMoveWAITINGFAIL=false;
                     autoMoveCB.setEnabled(isAutoMoveEnable());
                     autoMoveCB.setSelected(isAutoMoveSelected());
                     backupWAITINGFAIL=5;
             });
-            JRadioButton mediaCRITICALFAIL = new JRadioButton("Medium");
-            mediaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==5);
-            mediaCRITICALFAIL.addActionListener(x->{
+            JRadioButton altaCRITICALFAIL = new JRadioButton("High");
+            altaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==5);
+            altaCRITICALFAIL.addActionListener(x->{
                     autoMoveCRITICALFAIL=false;
                     autoMoveCB.setEnabled(isAutoMoveEnable());
                     autoMoveCB.setSelected(isAutoMoveSelected());
                     backupCRITICALFAIL=5;
+
+            });
+            JRadioButton mediaMOVEFAIL = new JRadioButton("Medium");
+            mediaMOVEFAIL.setSelected(facade.getMOVEFAIL()==10);
+            mediaMOVEFAIL.addActionListener(x->{
+
+                    autoMoveMOVEFAIL=false;
+                    autoMoveCB.setEnabled(isAutoMoveEnable());
+                    autoMoveCB.setSelected(isAutoMoveSelected());
+                   backupMOVEFAIL=10;
+
+            });
+            JRadioButton mediaWAITINGFAIL = new JRadioButton("Medium");
+            mediaWAITINGFAIL.setSelected(facade.getWAITINGFAIL()==10);
+            mediaWAITINGFAIL.addActionListener(x->{
+                    autoMoveWAITINGFAIL=false;
+                    autoMoveCB.setEnabled(isAutoMoveEnable());
+                    autoMoveCB.setSelected(isAutoMoveSelected());
+                    backupWAITINGFAIL=10;
+            });
+            JRadioButton mediaCRITICALFAIL = new JRadioButton("Medium");
+            mediaCRITICALFAIL.setSelected(facade.getCRITICALFAIL()==10);
+            mediaCRITICALFAIL.addActionListener(x->{
+                    autoMoveCRITICALFAIL=false;
+                    autoMoveCB.setEnabled(isAutoMoveEnable());
+                    autoMoveCB.setSelected(isAutoMoveSelected());
+                    backupCRITICALFAIL=10;
             });
             ButtonGroup CRITICALFAIL = new ButtonGroup();
             ButtonGroup WAITINGFAIL = new ButtonGroup();
