@@ -149,16 +149,17 @@ della query: in questo modo sarà possibile gestire
 distintamente le comunicazioni relative alle diverse versioni delle
 query sottoposte senza rischio di interferenza.
 
-\`E il \emph{DSClusterInterface} a mandare in Send per primo
-il messaggio \texttt{TryNewQuery} sul path dei \emph{DSQueryChecker}.
+\`E il \emph{DSClusterInterface} a mandare in Send
+il messaggio \texttt{DSTryNewQuery} per primo
+sul path dei \emph{DSQueryChecker}.
 La query viene così ricevuta da un attore alla volta: esso provvede
 a confrontare la query con la propria conoscenza parziale del grafo.
 Questa computazione corrisponde al cuore dell'algoritmo del
 subgraph isomorphism problem e verrà analizzato in dettaglio
 successivamente.
 Se rimangono degli elementi da verificare, l'attore manda allora
-un nuovo messaggio \texttt{TryNewQuery} contenente la query ridotta
-al path, dopo essersi disinscritto da esso.
+un nuovo messaggio \texttt{DSTryNewQuery} contenente la query ridotta
+al path, dopo essersi disiscritto da esso.
 
 Quando il query checker di ogni robot ha visualizzato e partecipato
 alla verifica della query, ovvero quando non c'è più alcun destinatario
@@ -214,7 +215,7 @@ figli conoscendo il loro stato di esecuzione:\begin{itemize}
 \item waiting : è iscritto al cluster ma non ha ancora ricevuto la query;
 \item critical : sta verificando la query;
 \item done : ha già contribuito con le sue informazioni alla verifica
-  della query e si è disinscritto.
+  della query e si è disiscritto.
 \end{itemize}
 Se un \emph{DSQueryChecker} termina, grazie al sistema gerarchico
 formatosi, il padre viene informato e può controllare in quale fase del
@@ -423,7 +424,7 @@ il \emph{DSQueryChecker} può distinguere i seguenti casi:
 %
 Ogni arco verificato può essere rimosso dalla query, lasciando
 che in questa rimangano solo gli elementi ancora da verificare.
-Se, al termine di questa operazione risulta che $E_\cQ = \varnothing$,
+Se al termine di questa operazione risulta che $E_\cQ = \varnothing$,
 allora la query è stata interamente verificata e si può
 pubblicare il risultato \texttt{MATCH}.
 
@@ -578,7 +579,7 @@ della query $\cQ'$, con\[
 E_{\cQ'} = \bigl\{\,(d,f),(f,i)\,\bigr\};\]
 poiché sono ancora presenti altri attori in ascolto sul path,
 spedisce in Send (dopo essersi disiscritto)
-in un messaggio \texttt{TryNewQuery}.
+in un messaggio \texttt{DSTryNewQuery}.
 
 Supponiamo che venga ricevuto dal \emph{DSQueryChecker}
 figlio del robot posizionato sul nodo $e$.
@@ -592,5 +593,5 @@ e pubblicare il risultato \texttt{MATCH} al
 
 Si noti che il risultato sarebbe stato lo stesso per
 qualunque ordine si fosse seguito nella ricezione dei messaggi
-\texttt{TryNewQuery}.
+\texttt{DSTryNewQuery}.
 \end{example}

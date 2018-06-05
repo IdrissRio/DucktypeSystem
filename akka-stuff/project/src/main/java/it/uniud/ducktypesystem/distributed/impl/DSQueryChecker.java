@@ -33,7 +33,7 @@ public class DSQueryChecker extends AbstractActor {
     // Communication methods
     private void publishQueryResult(DSQuery.QueryStatus status) {
         log.info((status == DSQuery.QueryStatus.MATCH) ? "MATCH form: "+ myNode
-                : (status == DSQuery.QueryStatus.FAIL) ? "FAIL from: " : "DONTKNOW da: " + myNode);
+                : (status == DSQuery.QueryStatus.FAIL) ? "FAIL from: " : "DONTKNOW from: " + myNode);
         mediator.tell(new DistributedPubSubMediator.Send("/user/CLUSTERMANAGER"+this.queryId.getHost(),
                 new DSMissionAccomplished(this.queryId, this.query.serializeToString(), status),
                 false), getSelf());

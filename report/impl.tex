@@ -56,16 +56,16 @@ Il toolkit è disponibile sia per il linguaggio imperativo usato (\emph{Java})
 che per il funzionale \emph{Scala} e attualmente la versione più aggiornata 
 è la 2.5.4.
 
-Akka si basa sul \emph{modello ad attori}: un astrazione utilizzata per
+Akka si basa sul \emph{modello ad attori}: un'astrazione utilizzata per
 effettuare analisi sulla concorrenza e per la progettazione ad alto livello
 di sistemi distribuiti.
-Lo scopo del modello è  quello di risolvere i problemi relativi alla concorrenza
-legati alla memoria condivisa, eliminandola completamente sgravando dunque
-il programmatore da tali problemi. L'astrazione, come già detto, si basa sull'entità
+Lo scopo del modello è  quello di risolvere le questioni relative alla concorrenza
+e alla memoria condivisa, eliminandola completamente e sgravando dunque
+il programmatore da questi problemi. L'astrazione, come già detto, si basa sull'entità
 \emph{attore}, che comunica con l'ambiente circostante unicamente attraverso l'invio di messaggi.
 
 Quando un attore riceve un messaggio può decidere il comportamento
-da utilizzare per processare il prossimo messaggio, quindi può:
+da utilizzare per processare il prossimo, quindi può:
 \begin{itemize}
 	\item creare nuovi attori;
 	\item inviare messaggi ad attori della quale conosce il nome, attraverso il metodo \texttt{tell};
@@ -84,19 +84,22 @@ opzioni di configurazione (si veda Appendice \ref{sec:akkaconf}). Ogni Actor Sys
 La definizione di un nuovo attore comporta la creazione di una nuova classe
 che estende la classe \texttt{AbstractActor}.
 Per tale classe è possibile definire costruttori, metodi e attributi come per una
-qualunque classe Java. E' inoltre possibile  effettuare l'overriding di alcuni metodi 
+qualunque classe Java. \`E inoltre possibile  effettuare l'overriding di alcuni metodi 
 tra cui:
 \begin{itemize}
-	\item \texttt{preRestar}: tale metodo viene invocato prima che l'attore inizi
-	a processare messaggi. E' utile per inizializzarne l'istanza;
-	\item \texttt{postRestart}: metodo invocato dopo l'inizializzazione dell'attore;
+	\item \texttt{preStart}: tale metodo viene invocato prima che l'attore inizi
+	  a processare messaggi. \`E utile per inizializzarne l'istanza.
+          In caso di creazione automatica dopo un fallimento, tale compito è affidato
+          all'implementazione del metodo \texttt{preRestart}.
+	\item \texttt{postStart} (e \texttt{postRestart}):
+          metodo invocato dopo l'inizializzazione dell'attore;
 	\item \texttt{postStop}: tale metodo viene invocato quando l'attore viene arrestato.
 	Permette di definire una terminazione \emph{pulita} dell'esecuzione;
 	\item \texttt{createReceive}: permette di definire il comportamento dell'attore
 	a seconda del tipo di messaggio ricevuto.
 \end{itemize}
 L'istanza di un \emph{abstractActor} è un oggetto della classe \texttt{Props}; per tale motivo
-nella definizione del nuovo attore bisognare definire un metodo \texttt{Props}, che prenderà
+nella definizione del nuovo attore bisogna definire un metodo \texttt{Props}, che prenderà
 come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice \ref{sec:akkanew}).
 \begin{figure}[h]
 \begin{center}
@@ -154,7 +157,7 @@ come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice
 Il protocollo di rete utilizzato per la comunicazione tra i nodi
 è \emph{TCP/IP}. Utilizzando tale tipo di protocollo, una volta instaurata
 la connessione tra i nodi, il programmatore non si deve preoccupare della
-perdita di messaggi o del fatto che possano arrivare non in ordine.
+perdita di pacchetti o della loro gestione.
 
 Come protocollo di comunicazione Akka utilizza il \emph{Gossiping},
 con l'unica differenza che l'aggiunta di un nuovo membro al cluster viene
@@ -258,7 +261,7 @@ wrapper per i dati che contengono:
   String serializedStillToVerify, DSQueryStatus status)}
 \item \texttt{DSStartCriticalWork(DSQueryId id)}
 \item \texttt{DSEndCriticalWork(DSQueryId id)}
-\item \texttt{DSRetryQuery(DSQueryId id}
+\item \texttt{DSRetryQuery(DSQueryId id)}
 \item \texttt{DSMove()}
 \item \texttt{DSRobotFailureOccurred(String deadNode)}
 \end{itemize}
@@ -279,8 +282,8 @@ un framework per java appartenente
 alla \emph{Java Foundation Class} e orientato allo sviluppo di interfacce grafiche.
 La view è composta da tre elementi principali:
 \begin{itemize}
-	\item Un \emph{JPanel} (\emph{mainPanel}) contenente la rappresentazione
-	grafica del grafo etichettato; tale rappresentazione avviene sfruttando le librerie del progetto \emph{graphStream.org (v.1.3)}. Creando un oggetto di tipo \emph{org.graphstream.Graph} e mantenendone il riferimento in memoria, è possibile in qualunque momento modificare le proprietà
+	\item Un \emph{JPanel} (\emph{mainPanel}) contenente la visualizzazione
+	del grafo etichettato; tale rappresentazione avviene sfruttando le librerie del progetto \emph{graphStream.org (v.1.3)}. Creando un oggetto di tipo \emph{org.graphstream.Graph} e mantenendone il riferimento in memoria, è possibile in qualunque momento modificare le proprietà
 	del grafo e ciò ha permesso di poter aggiornare la posizione dei robot ad ogni spostamento.
 	\item Un \emph{JTextPane} (\emph{logPane}) contenuto in un \emph{JScrollPane} rappresentante il \emph{log} di sistema; vengono mostrati all'utente: errori nella lettura dei grafi, posizione dei robot e stato della query.
 	\item Un \emph{JPanel} (\emph{eastPanelQuery}) anch'esso contenuto in un \emph{JScrollPane} nel quale viene visualizzato lo stato d'avanzamento delle query sottoposte.
@@ -288,7 +291,7 @@ La view è composta da tre elementi principali:
 Inoltre è stato aggiunto un \emph{JMenu} (\emph{menuItem}) il cui scopo è quello di permettere l'accesso alle impostazioni dell'applicativo.\\
 
 Per migliorare l'attività di debugging è stata aggiunta l'opzione `\emph{auto-move-retry}': nel caso il
-risultato di una query fosse \emph{DONTKNOW}, la view inoltra automaticamente al \emph{DSCluster} il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
+risultato di una query fosse \texttt{DONTKNOW}, la view inoltra automaticamente al \emph{DSCluster} il comando `\emph{move}' per tutti i robot, seguito dal comando `\emph{retry}'
 per la query in questione.
 Nel caso in cui l'opzione `\emph{auto-move-retry}' fosse disabilitata, per ogni query presente nell'\emph{eastPanelQuery} verrà visualizzato e abilitato un bottone il cui scopo è quello effettuare
 una `\emph{retry}' sulla specifica query.\\
