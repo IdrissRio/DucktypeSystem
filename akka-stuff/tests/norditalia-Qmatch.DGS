@@ -1,0 +1,23 @@
+DGS004
+null 0 0
+an Rovigo
+an Ferrara
+an Ravenna
+an Forlì
+an Rimini
+an Bologna
+an Modena
+an Reggio-Emilia
+an Parma
+an Piacenza
+ae ROVIGOFERRARA Rovigo Ferrara
+ae FERRARARAVENNA Ferrara Ravenna
+ae FERRARABOLOGNA Ferrara Bologna 
+ae FERRARAMODENA Ferrara Modena 
+ae RAVENNAFORLI Ravenna Forlì
+ae RAVENNABOLOGNA Ravenna Bologna
+ae FORLIRIMINI Forlì Rimini
+ae BOLOGNAMODENA Bologna Modena
+ae MODENAREGGIO Modena Reggio-Emilia
+ae REGGIOPARMA Reggio-Emilia Parma
+ae PARMAPIACENZA Parma Piacenza
