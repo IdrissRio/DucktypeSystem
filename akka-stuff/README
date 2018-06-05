@@ -57,9 +57,9 @@ Per ogni file contenente un grafo principale sono associati (almeno)
 altri due file contenenti possibili query da sottoporre: la notazione
 usata è:
  - NOME-G.DGS  : per il grafo principale.
- - NOME-QMatch.DGS : per le query che, se sottoposte al grafo "NOME",
+ - NOME-Qmatch.DGS : per le query che, se sottoposte al grafo "NOME",
                      hanno risultato atteso MATCH.
- - NOME-QFail.DGS : per le query che, se sottoposte al grafo "NOME",
+ - NOME-Qfail.DGS : per le query che, se sottoposte al grafo "NOME",
                      hanno risultato atteso FAIL.
 
 Generalmente, sottoporre una query a un grafo diverso da quello riportato

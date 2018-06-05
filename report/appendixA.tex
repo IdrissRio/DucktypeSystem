@@ -1,0 +1,180 @@
+\subsection{Struttura delle directory dei sorgenti}
+I file sorgenti \emph{.java} del progetto si possono trovare nella directory:
+
+\printlog{DS-BecchiRiouak/project/src/main/java/it/uniud/ducktypesystem/}
+
+In essa è contenuta la main class (\emph{DucktypeSystem.java})
+ed è strutturata in sottocartelle come segue:
+\begin{itemize}
+\item controller : contiene la classe DSApplication.java punto di accesso
+  all'applicazione MVC, e le classi del sistema di Log.
+\item view : contiene le classi che implementano il modulo di visualizzazione grafica.
+\item distributed : contiene le classi che implementano i processi e le strutture
+  dati del sistema distribuito.
+\end{itemize}
+
+La cartella ``distributed'' è a sua volta strutturata in:
+\begin{itemize}
+\item system : contiene la classe volta a simulare l'esistenza di un
+  contesto fisico reale (\emph{DSDataFacade})
+  e la classe che simula le connessioni di diversi host
+  fornendo loro punti di accesso al sistema (\emph{DSCluster}).
+\item data : contiene le classi che implementano le strutture dati
+  utilizzate dal sistema.
+\item impl : contiene le classi che implementano gli attori del sistema.
+\item messages : contiene le classi utilizzate come messaggi.
+\item errors : contiene le classi utilizzate per segnalare o simulare
+  particolari comportamentei anomali del sistema.
+\end{itemize}
+
+\subsection{Materiale per il testing}
+La cartella \emph{DS-BecchiRiouak/test/} contiene un insieme di file che
+rappresentano grafi nel formato richiesto dal sistema.
+Per ogni file contenente un grafo principale sono associati (almeno)
+altri due file contenenti possibili query da sottoporre: la notazione
+usata è:
+\begin{itemize}
+\item NOME-G.DGS : per il grafo principale.
+\item NOME-Qmatch.DGS : per le query che, se sottoposte al grafo ``NOME'',
+  hanno risultato atteso \texttt{MATCH}.
+\item NOME-Qfail.DGS : per le query che, se sottoposte al grafo ``NOME'',
+  hanno risultato atteso \texttt{FAIL}.
+\end{itemize}
+
+Generalmente, sottoporre una query a un grafo diverso da quello riportato
+nel nome del file conduce al risultato \texttt{FAIL}.
+
+Si noti che per ottenere il risultato atteso può essere necessario
+che la query venga ripresentata più volte dopo aver fatto muovere i robot:
+nei tentativi intermedi il risultato può infatti essere ancora \texttt{DONTKNOW}.
+
+Sono stati scritti anche alcuni test per il framework \emph{Junit}, volti al
+testing delle strutture dati e dell'algoritmo \texttt{check-and-reduce()}.
+Questi si possono trovare nella cartella:
+\printlog{DS-BecchiRiouak/project/src/test/java/it/
+  uniud/ducktypesystem/tests/data/}
+
+\subsection{Run e testing del progetto}
+Il progetto è eseguibile utilizzando lo script
+
+\begin{quote}\texttt{
+    \$ cd DS-BecchiRiouak\\
+    \$ /dsquack.sh }
+\end{quote}
+che ammette l'inserimento dei parametri:
+\begin{itemize}
+\item quiet : (di default) reindirizza i messaggi di log interni in un file nella
+  cartella \emph{DS-BecchiRiouak/log/ }
+\item noisy : stampa i messaggi di log interni in std output.
+\end{itemize}
+
+Tramite l'interfaccia grafica è possibile settare le configurazioni di sistema:
+il grafo principale può essere selezionato tra i grafi della cartella
+\emph{DS-BecchiRiouak /test}.
+Si vedrà allora una rappresentazione grafica della mappa caricata con
+evidenziati i nodi occupati dai robot.
+
+Il log del sistema annuncerà:
+\begin{quote}\texttt{
+ <date time>: DucktypeSystem v 0.1\\
+ <date time>: Robot posizionati in: `node' `node' `node'\\
+ <date time>: INFO: starting the AKKA environment.\\
+ <date time>: AKKA: Every Robot is connected
+ }
+\end{quote}
+
+Se tale fase è andata a buon fine, si potrà sottoporre una query tramite
+l'interfaccia grafica: questa permette di selezionare l'host tramite selezione
+tra gli indici degli host correntemente attivi (in questa fase è anche possibile
+connettere un nuovo host).
+
+Le query sottoposte verranno elencate identificandole per nome e per l'indice
+numerico dell'host da cui provengono, insieme al loro stato:
+\begin{quote}\texttt{
+    NEW / MATCH / FAIL / DONTKNOW
+    }
+\end{quote}
+
+In caso di \texttt{DONTKNOW} verrà anche riportata la parte della query che è
+rimasta ancora da verificare.
+
+Il menu di setting propone le opzioni relative al setting delle probabilità
+di fallimento dei vari processi.
+
+\subsection{Messaggi di Log interni}
+I messaggi di log interni riportano informazioni riguardanti lo stato di
+esecuzione: riportiamo i messaggi prodotti dai principali passi di
+esecuzione del sistema, utili per monitorarne la correttezza.
+
+La creazione del cluster e il JOIN di un nuovo Actor System produrrà messaggi di log
+che riportano l'indirizzo e la porta del nuovo Actor System.
+
+\printlog{
+  [INFO] [..omissis..] Starting remoting\\
+  [INFO] [..omissis..] Remoting started; listening on addresses :[akka.tcp://ClusterSystem@127.0.0.1:2551]\\
+  [INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551] - Starting up...\\
+  [INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551] - Registered cluster JMX MBean [akka:type=Cluster,port=2551]\\
+  [INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551] - Started up successfully\\
+  [INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551] - Metrics collection has started successfully}
+
+La creazione di un nuovo attore DSRobot produrrà messaggi di log che riportano
+il nome assegnato al robot, l'etichetta del nodo sul quale è stato posizionato
+e una descrizione della vista acquisita.
+\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] `RobotName' created on `myNode' with view Graph: [...]}
+
+
+L'invio di una nuova query da parte di un host comporta la creazione di nuovi attori DSQueryChecker,
+uno per ogni robot: ciò produrrà messaggi di log che riportano
+l'etichetta del nodo sul quale sono posizionati e la vista ereditata dal padre.
+\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
+
+
+Quando un DSRobot viene informato della morte di un suo DSQueryChecker
+genera messaggi di log riportanti lo stato con il quale l'attore è terminato.
+
+In caso di morte in stato DONE o in seguito a una normale terminazione del
+processo, ci si aspetta di ottenere messaggi della forma:
+\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in DONE. }
+
+In caso di morte in WAITING ci si aspetta di ottenere nuovamente il messaggio
+che testimonia la creazione di un nuovo DSQueryChecker sullo stesso path.
+\printlog{
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in DONE.\\
+  [...]\\
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] Recreating QueryChecker...\\
+  [...]\\
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
+
+In caso di morte in CRITICALWORK ci si aspetta di ottenere messaggi di log
+che testimonino la terminazione della query e la richiesta di un nuovo
+tentativo al DSClusterInterfaceActor.
+\printlog{
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in CRITICAL WORK.\\
+  [...]\\
+  [INFO] [..omissis..] [akka://ClusterSystem/user/CLUSTERMANAGERX] Retrying query...}
+
+L'inoltro di una query appena elaborata da parte di un DSQueryChecker produce
+messaggi di log della forma:
+\printlog{
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] FORWARDING from `node': query: [...]
+  }
+
+Il raggiungimento di un risultato produce messaggi della forma:
+
+\printlog{
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] MATCH da: `node'\\
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] FAIL da: `node'\\
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] DONTKNOW da: `node'}
+La morte di un DSRobot è simulata tramite il lancio di un'eccezione dedicata. Si otterrà dunque:
+\printlog{
+  [ERROR] [..omissis..] [akka://ClusterSystem/user/ROBOT] Robot2 DIED.
+  it.uniud.ducktypesystem.distributed.errors.DSSystemFailureSimulation: Robot2 DIED.
+  at [...]}
+
+Ci si aspetta di leggere il messaggio che testimonia la creazione di un nuovo robot
+e i messaggi che impongono la terminazione di tutte le query attive.
+\printlog{
+  [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] `Robotname' killing all my sons.}
+
+La terminazione del sistema produce numerosi messaggi di log, tra questi
+osserveremo anche messaggi che riportano un atteso "dead letter encountered".
