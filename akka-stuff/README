@@ -177,8 +177,8 @@ Il raggiungimento di un risultato produce messaggi della forma:
   [INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] DONTKNOW da: `node'
 
 La morte di un DSRobot è simulata tramite il lancio di un'eccezione dedicata. Si otterrà dunque:
-  [ERROR] [..omissis..] [akka://ClusterSystem/user/ROBOT] Robot2 DIED.
-it.uniud.ducktypesystem.distributed.errors.DSSystemFailureSimulation: Robot2 DIED.
+  [ERROR] [..omissis..] [akka://ClusterSystem/user/ROBOT] `Robotname' DIED.
+it.uniud.ducktypesystem.distributed.errors.DSSystemFailureSimulation: `Robotname' DIED.
 	at it.uniud.ducktypesystem.distributed.impl.DSRobot.lambda$createReceive$0(DSRobot.java:74)
 	[...]
 
