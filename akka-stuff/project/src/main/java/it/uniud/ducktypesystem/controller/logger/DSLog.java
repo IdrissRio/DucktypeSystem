@@ -14,7 +14,8 @@ public class DSLog implements DSAbstractLog {
     private JTextPane logPane;
     public DSLog(){
         logPane=new JTextPane();
-        logPane.setEditable(false);
+        //logPane.setEditable(false);
+        logPane.setEditable(true);
         logPane.setFont(new Font("Avenir", Font.PLAIN, 20));
     }
     @Override
@@ -31,10 +32,12 @@ public class DSLog implements DSAbstractLog {
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm:ss");
         String date =LocalDate.now().format(formatterDate);
         String time=LocalDateTime.now().format(formatterTime);
+
         try {
-            logPane.setEditable(true);
+
+            //logPane.setEditable(true);
             logPane.replaceSelection("<" + date + " " + time + ">: " + logMessage + "\n");
-            logPane.setEditable(false);
+            //logPane.setEditable(false);
         }catch(Throwable e){
             e.printStackTrace();
         }

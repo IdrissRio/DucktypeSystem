@@ -809,7 +809,7 @@ public class DSView implements DSAbstractView {
         facade=DSDataFacade.create(filePath);
         facade.setOccupied(numRobot);
         StringBuilder b = new StringBuilder();
-        b.append("Robot posizionati in: ");
+        b.append("Robot positioned in: ");
         for (String s : facade.getOccupied())
             b.append(s + " ");
         showInformationMessage(b.toString());
@@ -872,7 +872,7 @@ public class DSView implements DSAbstractView {
         StringBuilder b = new StringBuilder();
         b.append("Robot positioned in: ");
         for (String s : facade.getOccupied())
-            b.append(s + " - ");
+            b.append(s + " ");
         showInformationMessage(b.toString());
         graph =(Graph) facade.getMap().getGraphImpl();
         graph.addAttribute("ui.stylesheet","url(nodeStyle.css)");
@@ -888,7 +888,8 @@ public class DSView implements DSAbstractView {
         }
         graphPanel.updateUI();
     }
-    private void refreshButton() {
+    @Override
+    public void refreshButton() {
         for (int i = 0; i < DSCluster.getInstance().getNumHost(); ++i) {
             if (DSCluster.getInstance().getActiveQueries(i) != null) {
                 DSCluster.getInstance().getActiveQueries(i).forEach((mapVersionTmp, mapWrapperTmp) -> {
@@ -904,6 +905,25 @@ public class DSView implements DSAbstractView {
                                             DSCluster.getInstance().retryQuery(id);
                                         }
                                     }
+                                }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void enableButton() {
+        for (int i = 0; i < DSCluster.getInstance().getNumHost(); ++i) {
+            if (DSCluster.getInstance().getActiveQueries(i) != null) {
+                DSCluster.getInstance().getActiveQueries(i).forEach((mapVersionTmp, mapWrapperTmp) -> {
+                    for (Component c : eastPanelQuery.getComponents()) {
+                        if (c instanceof JPanel && c.getName().equals(mapVersionTmp)) {
+                            for (Component e : ((JPanel) c).getComponents())
+                                if (e instanceof JButton) {
+                                    e.setVisible(true);
+                                    e.setEnabled(true);
                                 }
                         }
                     }
