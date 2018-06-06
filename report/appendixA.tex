@@ -30,7 +30,7 @@ La cartella ``distributed'' è a sua volta strutturata in:
 \subsection{Materiale per il testing}
 La cartella \emph{DS-BecchiRiouak/test/} contiene un insieme di file che
 rappresentano grafi nel formato richiesto dal sistema.
-Per ogni file contenente un grafo principale sono associati (almeno)
+Per ogni file contenente un grafo principale sono associati
 altri due file contenenti possibili query da sottoporre: la notazione
 usata è:
 \begin{itemize}
@@ -56,9 +56,9 @@ Questi si possono trovare nella cartella:\\
 \subsection{Run e testing del progetto}
 Il progetto è eseguibile utilizzando lo script
 
-\hspace{0.7cm}{\texttt{\$ cd DS-BecchiRiouak}}
+\hspace{0.5cm}{\texttt{\$ cd DS-BecchiRiouak}}
 
-\hspace{0.7cm}{\texttt{\$ /dsquack.sh}}
+\hspace{0.5cm}{\texttt{\$ /dsquack.sh}}\\
 che ammette l'inserimento dei parametri:
 \begin{itemize}
 \item quiet : (di default) reindirizza i messaggi di log interni in un file nella
@@ -74,13 +74,13 @@ evidenziati i nodi occupati dai robot.
 
 Il log del sistema annuncerà:
 
-\hspace{0.7cm}{\texttt{<date time>: DucktypeSystem v 0.1}}
+\hspace{0.5cm}{\texttt{<date time>: DucktypeSystem v 0.1}}
 
-\hspace{0.7cm}{\texttt{<date time>: Robot posizionati in: `node' `node' `node'}}
+\hspace{0.5cm}{\texttt{<date time>: Robot posizionati in: `node' `node' `node'}}
 
-\hspace{0.7cm}{\texttt{<date time>: INFO: starting the AKKA environment.}}
+\hspace{0.5cm}{\texttt{<date time>: INFO: starting the AKKA environment.}}
 
-\hspace{0.7cm}{\texttt{<date time>: AKKA: Every Robot is connected}}
+\hspace{0.5cm}{\texttt{<date time>: AKKA: Every Robot is connected}}
 
 Se tale fase è andata a buon fine, si potrà sottoporre una query tramite
 l'interfaccia grafica: questa permette di selezionare l'host tramite selezione
@@ -101,35 +101,36 @@ Il menu di setting propone le opzioni relative al setting delle probabilità
 di fallimento dei vari processi.
 
 \subsection{Messaggi di Log interni}
+\label{sec:log-interni}
 I messaggi di log interni riportano informazioni riguardanti lo stato di
 esecuzione: riportiamo i messaggi prodotti dai principali passi di
 esecuzione del sistema, utili per monitorarne la correttezza.
 
 La creazione del cluster e il JOIN di un nuovo Actor System produrrà messaggi di log
 che riportano l'indirizzo e la porta del nuovo Actor System.\\
-\printlog{[INFO] [..omissis..] Starting remoting}\\
-\printlog{[INFO] [..omissis..] Remoting started :
+\printlog{[INFO] [...] Starting remoting}\\
+\printlog{[INFO] [...] Remoting started :
   listening on addresses :}\\
 \printlog{[akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
-\printlog{[INFO] [..omissis..] Cluster Node  [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
+\printlog{[INFO] [...] Cluster Node  [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
 \printlog{ - Starting up...}\\
-\printlog{[INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
+\printlog{[INFO] [...] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
 \printlog{ - Registered cluster JMX MBean [akka:type=Cluster,port=2551]}\\
-\printlog{[INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
+\printlog{[INFO] [...] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
 \printlog{ - Started up successfully}\\
-\printlog{[INFO] [..omissis..] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
+\printlog{[INFO] [...] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2551]}\\
 \printlog{ - Metrics collection has started successfully}
 
 La creazione di un nuovo attore DSRobot produrrà messaggi di log che riportano
 il nome assegnato al robot, l'etichetta del nodo sul quale è stato posizionato
 e una descrizione della vista acquisita.\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] `RobotName' created on `myNode' with view Graph: [...]}
+\printlog{[INFO] [...] [.../user/ROBOT] `RobotName' created on `myNode' with view Graph: [...]}
 
 
 L'invio di una nuova query da parte di un host comporta la creazione di nuovi attori DSQueryChecker,
 uno per ogni robot: ciò produrrà messaggi di log che riportano
 l'etichetta del nodo sul quale sono posizionati e la vista ereditata dal padre.\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
 
 
 Quando un DSRobot viene informato della morte di un suo DSQueryChecker
@@ -137,40 +138,39 @@ genera messaggi di log riportanti lo stato con il quale l'attore è terminato.
 
 In caso di morte in stato DONE o in seguito a una normale terminazione del
 processo, ci si aspetta di ottenere messaggi della forma:\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in DONE.}
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker DEATH in DONE.}
 
 In caso di morte in WAITING ci si aspetta di ottenere nuovamente il messaggio
 che testimonia la creazione di un nuovo DSQueryChecker sullo stesso path.\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in DONE.}\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker DEATH in DONE.}\\
 \printlog{[...]}\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] Recreating QueryChecker...}\\
+\printlog{[INFO] [...] [.../user/ROBOT] Recreating QueryChecker...}\\
 \printlog{[...]}\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
 
 In caso di morte in CRITICALWORK ci si aspetta di ottenere messaggi di log
 che testimonino la terminazione della query e la richiesta di un nuovo
 tentativo al DSClusterInterfaceActor.\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] QueryChecker DEATH in CRITICAL WORK.}\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker DEATH in CRITICAL WORK.}\\
 \printlog{[...]}\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/CLUSTERMANAGERX] Retrying query...}
+\printlog{[INFO] [...] [.../user/CLUSTERMANAGERX] Retrying query...}
 
 L'inoltro di una query appena elaborata da parte di un DSQueryChecker produce
-messaggi di log della forma:
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] FORWARDING from `node': query: [...] }
+messaggi di log della forma:\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] FORWARDING from `node': query: [...] }
 
-Il raggiungimento di un risultato produce messaggi della forma:
-
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] MATCH da: `node'}\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] FAIL da: `node'}\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT/`queryId'] DONTKNOW da: `node'}
+Il raggiungimento di un risultato produce messaggi della forma:\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] MATCH da: `node'}\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] FAIL da: `node'}\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] DONTKNOW da: `node'}
 
 La morte di un DSRobot è simulata tramite il lancio di un'eccezione dedicata. Si otterrà dunque:\\
-\printlog{ [ERROR] [..omissis..] [akka://ClusterSystem/user/ROBOT] `Robotname' DIED.}\\
+\printlog{ [ERROR] [...] [.../user/ROBOT] `Robotname' DIED.}\\
 \printlog{ it.uniud.ducktypesystem.distributed.errors.DSSystemFailureSimulation: `Robotname' DIED. at [...] }
 
 Ci si aspetta di leggere il messaggio che testimonia la creazione di un nuovo robot
 e i messaggi che impongono la terminazione di tutte le query attive.\\
-\printlog{[INFO] [..omissis..] [akka://ClusterSystem/user/ROBOT] `Robotname' killing all my sons.}
+\printlog{[INFO] [...] [.../user/ROBOT] `Robotname' killing all my sons.}
 
 La terminazione del sistema produce numerosi messaggi di log, tra questi
 osserveremo anche messaggi che riportano un atteso "dead letter encountered".
