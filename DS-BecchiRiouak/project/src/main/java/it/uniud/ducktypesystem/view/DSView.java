@@ -157,6 +157,7 @@ public class DSView implements DSAbstractView {
 
     //Mathod that handle the About in MacOS.
     private void aboutUsOnlyForMac(){
+        Viewer viewer;
         JPanel welcomeMainPanel=new JPanel(new BorderLayout());
         ViewPanel graphViewNew;
         JPanel panelGraphNew=new JPanel(new BorderLayout());
