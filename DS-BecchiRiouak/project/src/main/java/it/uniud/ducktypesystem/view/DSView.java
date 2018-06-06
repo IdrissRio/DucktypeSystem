@@ -157,17 +157,15 @@ public class DSView implements DSAbstractView {
 
     //Mathod that handle the About in MacOS.
     private void aboutUsOnlyForMac(){
-        Viewer viewer;
         JPanel welcomeMainPanel=new JPanel(new BorderLayout());
-        ViewPanel graphViewNew;
-        JPanel panelGraphNew=new JPanel(new BorderLayout());
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
+        JLabel DucktypeSystemLbl= new JLabel("<html><center><p color=\"orange\">Anna Becchi - Idriss Riouak.<br> A.A: 2017-2018</p>  <br> Università degli Studi di Udine<br>DucktypeSystem v. 0.1</center></html>");
         JFrame aboutFrame = new JFrame();
         JLabel mallardLbl= new JLabel("<html><center> \"If it looks like a duck, swims like a duck,<br> and quacks like a duck, then it probably is a duck.\" <br> Just a Ducktype System...</center>  </html>");
-        Graph graph= new DefaultGraph("aboutUS");
         aboutFrame.setAlwaysOnTop(true);
-        welcomeMainPanel.add(panelGraphNew, BorderLayout.CENTER);
+        URL url = getClass().getResource("/JavaDuck.png");
+        Image image = Toolkit.getDefaultToolkit().getImage(url);
+        welcomeMainPanel.add(new JLabel(new ImageIcon(image)), BorderLayout.CENTER);
         mallardLbl.setSize(200, 200);
         mallardLbl.setFont(new Font("Bariol", Font.PLAIN,20));
         mallardLbl.setForeground(Color.WHITE);
@@ -179,23 +177,8 @@ public class DSView implements DSAbstractView {
         welcomeMainPanel.add(mallardLbl, BorderLayout.NORTH);
         welcomeMainPanel.setBackground(Color.BLACK);
         welcomeMainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
-        try {
-            graph=(Graph) DSGraphImpl.createGraphFromFile("src/main/resources/aboutUS.DGS").getGraphImpl();
-        } catch (DSSystemError dsSystemError) {
-            System.out.println("culo");
-            dsSystemError.printStackTrace();
-        }
-        graph.setAttribute("ui.class", "marked");
-        graph.addAttribute("ui.stylesheet","url(aboutGraphStyle.css)");
-        for (Node node : graph) {
-            node.addAttribute("ui.label", node.getId());
-        }
-        viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-        viewer.enableAutoLayout();
-        graphViewNew=viewer.addDefaultView(false);
-        panelGraphNew.add(graphViewNew);
         aboutFrame.getContentPane().add(welcomeMainPanel);
-        aboutFrame.setTitle("A distributed subgraph isomorphism");
+        aboutFrame.setTitle("All right reserved.");
         aboutFrame.setBounds(0, 0, 700, 500);
         aboutFrame.setLocation(dim.width/2-aboutFrame.getSize().width/2, dim.height/2-aboutFrame.getSize().height/2);
         aboutFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
