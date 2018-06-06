@@ -574,7 +574,7 @@ public class DSView implements DSAbstractView {
         graphViewNew=viewer.addDefaultView(false);
         panelGraphNew.add(graphViewNew);
         mainFrame.getContentPane().add(welcomeMainPanel);
-        mainFrame.setTitle("A distributed subgraph isomorphism");
+        mainFrame.setTitle("A distributed subgraph isomorphism implementation");
         mainFrame.setUndecorated(true);
         mainFrame.setBounds(0, 0, 700, 500);
         mainFrame.setLocation(dim.width/2-mainFrame.getSize().width/2, dim.height/2-mainFrame.getSize().height/2);
