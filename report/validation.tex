@@ -70,6 +70,12 @@ che rallentassero alcune fasi. Per questo, aggiungendo numerosi robot
 L'esecuzione interna e i messaggi scambiati secondo il protocollo
 definito sono interamente verificabili tramite la lettura del
 log dei messaggi interni del sistema.
+Si noti che l'analisi di tali messaggi è ben più informativa e
+affidabile del log della view: infatti, essendo questa una pura
+simulazione delle view dei diversi host, può accadere che non venga
+correttamente aggiornata in caso di esecuzioni concorrenti di
+diversi host: si invita dunque a controllare i messaggi di log nel
+caso in cui si riscontrino delle apparenti inconsistenze nella view.
 Una dettagliata spiegazione dei messaggi e su come fare a ottenere
 il file di log è riportata nell'Appendice~\ref{sec:log-interni}.
 

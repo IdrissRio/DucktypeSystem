@@ -1,6 +1,51 @@
-What has been done with respect to what has been promised
-in Chapters~\ref{ch:intro} and \ref{ch:analysis},
-and what is left out.
+Il progetto presentato implementa un sistema distribuito che risolve
+il \emph{subgraph isomorphism problem} in un grafo etichettato.
+Sono stati forniti strumenti di visualizzazione, di controllo
+dell'esecuzione e dei messaggi scambiati da un insieme di processi,
+corrispondenti a un cluster di robot dislocati nel grafo principale:
+questi ricevono una query, espressa come un grafo etichettato,
+e collaborano per decidere se tale query è sicuramente presente
+o sicuramente assente nel grafo totale. Poiché la conoscenza è
+distruibuita e non centralizzata, può accadere che non si sappia
+raggiungere un risultato certo: i robot possono allora aumentare
+la loro conoscenza muovendosi nel grafo e ritentare la verifica
+della parte ancora sconosciuta.
 
-L'analisi del funzionale e non funzionale del progetto sono state
-fatte i
+Il sistema implementa una massima location transparency sfruttando
+le caratteristiche dei \emph{ClusterSystem} del toolkit \emph{Akka}
+utilizzato e implementato nel linguaggio \emph{Java}.
+Il cluster è accessibile e interrogabile da parte di diversi
+client host in modo indipendente e autonomo.
+
+Possibili fallimenti delle comunicazioni e dei processi che compongono
+il sistema sono gestiti automaticamente informando l'utente
+solo nel caso in cui a fallire è un robot, altrimenti viene recuperata
+e ripresentata la query in esecuzione senza che l'utente si
+accorga del crash.
+
+\`E possibile definire diversi livelli di probabilità di fallimento
+per simularli e poter monitorare la resilienza del sistema.
+La lettura dei messaggi di log interni permette di verificare
+la loro corretta gestione, oltre che il protocollo seguito.
+
+Il modulo di visualizzazione grafica permette di controllare
+la correttezza del risultato, mostrando anche il grafo sconosciuto
+ai robot e la loro posizione; inoltre si può verificare il
+corretto instradamento dei messaggi ai diversi host che si connettono
+al sistema.\\
+
+La realizzazione del sistema ha permesso di approfondire
+le questioni legate al sistema di \emph{publish-subscribe}
+caratteristico di alcuni sistemi distribuiti, oltre che a
+toccare da vicino le problematiche di modifica concorrente
+di dati distribuiti e di gestione di una rete peer-to-peer
+completamente autonoma.
+
+Il sistema è stato implementato nel modo più modulare possibile,
+così che l'aggiunta di alcune feature, oppure il cambio di
+implementazione a basso livello, comporti poche e localizzate
+modifiche nel codice.
+Ad esempio, potrebbe risultare facile da implementare la possibilità
+di modificare a runtime la configurazione del grafo nel quale i
+robot si muovono, per simulare la loro esecuzione in un
+ambiente non statico.

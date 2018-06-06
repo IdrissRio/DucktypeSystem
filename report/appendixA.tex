@@ -28,7 +28,7 @@ La cartella ``distributed'' è a sua volta strutturata in:
 \end{itemize}
 
 \subsection{Materiale per il testing}
-La cartella \emph{DS-BecchiRiouak/test/} contiene un insieme di file che
+La cartella \emph{DS-BecchiRiouak/tests/} contiene un insieme di file che
 rappresentano grafi nel formato richiesto dal sistema.
 Per ogni file contenente un grafo principale sono associati
 altri due file contenenti possibili query da sottoporre: la notazione
@@ -42,7 +42,7 @@ usata è:
 \end{itemize}
 
 Generalmente, sottoporre una query a un grafo diverso da quello riportato
-nel nome del file conduce al risultato \texttt{FAIL}.
+nel nome del file conduce al risultato \texttt{DONTKNOW}.
 
 Si noti che per ottenere il risultato atteso può essere necessario
 che la query venga ripresentata più volte dopo aver fatto muovere i robot:
@@ -68,7 +68,7 @@ che ammette l'inserimento dei parametri:
 
 Tramite l'interfaccia grafica è possibile settare le configurazioni di sistema:
 il grafo principale può essere selezionato tra i grafi della cartella
-\emph{DS-BecchiRiouak /test}.
+\emph{DS-BecchiRiouak /tests}.
 Si vedrà allora una rappresentazione grafica della mappa caricata con
 evidenziati i nodi occupati dai robot.
 
@@ -129,7 +129,7 @@ e una descrizione della vista acquisita.\\
 
 L'invio di una nuova query da parte di un host comporta la creazione di nuovi attori DSQueryChecker,
 uno per ogni robot: ciò produrrà messaggi di log che riportano
-l'etichetta del nodo sul quale sono posizionati e la vista ereditata dal padre.\\
+l'etichetta del nodo sul quale sono posizionati.\\
 \printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker created on `node' for query `queryId'}
 
 
