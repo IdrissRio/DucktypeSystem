@@ -1,4 +1,5 @@
 \subsection{Struttura delle directory dei sorgenti}
+\label{sec:directory}
 I file sorgenti \emph{.java} del progetto si possono trovare nella directory:
 
 \printlog{DS-BecchiRiouak/project/src/main/java/it/uniud/ducktypesystem/}
@@ -54,11 +55,15 @@ Questi si possono trovare nella cartella:\\
 \printlog{DS-BecchiRiouak/project/src/test/java/it/uniud/ducktypesystem/tests/data/}
 
 \subsection{Run e testing del progetto}
-Il progetto è eseguibile utilizzando lo script
+Il progetto è eseguibile utilizzando lo script~\footnote{
+  Tale script è creato per MacOs o sistemi operativi Unix-like.
+  Se si utilizza Windows occorre eseguire manualmente il
+  file \texttt{app.jar} contenuto nella cartella
+  \texttt{DS-BecchiRiouak/project/classes/artifacts/deployDS\_jar/app.jar}.}
 
 \hspace{0.5cm}{\texttt{\$ cd DS-BecchiRiouak}}
 
-\hspace{0.5cm}{\texttt{\$ /dsquack.sh}}\\
+\hspace{0.5cm}{\texttt{\$ ./dsquack.sh}}\\
 che ammette l'inserimento dei parametri:
 \begin{itemize}
 \item quiet : (di default) reindirizza i messaggi di log interni in un file nella
@@ -142,7 +147,7 @@ processo, ci si aspetta di ottenere messaggi della forma:\\
 
 In caso di morte in WAITING ci si aspetta di ottenere nuovamente il messaggio
 che testimonia la creazione di un nuovo DSQueryChecker sullo stesso path.\\
-\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker DEATH in DONE.}\\
+\printlog{[INFO] [...] [.../user/ROBOT/`queryId'] QueryChecker DEATH in WAITING.}\\
 \printlog{[...]}\\
 \printlog{[INFO] [...] [.../user/ROBOT] Recreating QueryChecker...}\\
 \printlog{[...]}\\

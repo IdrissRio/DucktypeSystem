@@ -1,7 +1,7 @@
-\begin{quote}
 L'intero progetto è stato sviluppato cercando di seguire
 il pattern architetturale \emph{modello-vista-controllo} (i.e. \emph{model-view-contoller o MVC}), e cercando di rispettare i principi SOLID.
-\end{quote}
+Una descrizione più dettagliata della suddivisione in package dei sorgenti
+è fornita in Appendice~\ref{sec:directory}
 \begin{figure}
 \centering{
 \begin{forest}
@@ -121,7 +121,7 @@ come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice
 	\draw (60.6,-26.7) node {};
 	\draw [black] (5.3,-42.1) circle (3);
 	\draw (5.3,-42.1) node {};
-	\draw (-25,-42.1) node {/user/some\_actor};
+	\draw (-25,-42.1) node {/user/ROBOT};
 	\draw [gray] (14.8,-42.1) circle (3);
 	\draw[thick,dashed] (0,-34.5) -- (69,-34.5);
 	\draw (14.8,-42.1) node {};
@@ -129,7 +129,7 @@ come parametri gli argomenti del costruttore del nuovo attore (si veda Appendice
 	\draw (25.6,-42.1) node {};
 	\draw [black] (5.3,-54.6) circle (3);
 	\draw (5.3,-54.6) node {};
-	\draw (-20,-54.6) node {/user/some\_actor/child};
+	\draw (-20,-54.6) node {/user/ROBOT/`idQuery'};
 	\draw [white] (26.4,-26.8) circle (3);
 
 	\draw [white] (49.8,-26.7) circle (3);
@@ -224,7 +224,9 @@ combinazione identifica univocamente una query:~\footnote{
     query viene sottomessa: in particolare il nome viene ricavato
     escludendo il path e l'estensione del file, con l'eventuale
     aggiunta di un numero progressivo nel caso di molteplici
-    inserimenti.}
+    inserimenti. Si noti che utilizzando un sistema operativo
+    Windows l'estrazione del nome potrebbe tenere considerato il nome del path
+    completo.}
 \begin{itemize}
 \item un intero `\emph{host}' identificativo del client che ne ha
   richiesto la verifica;
