@@ -480,14 +480,16 @@ public class DSView implements DSAbstractView {
             JLabel InfoLabel = new JLabel(icon, JLabel.CENTER);
             InfoLabel.setText("<html> <i>High, medium</i> and <i>low</i> are the probability that a fail in <br>" +
                     "CRITICAL-FAIL, MOVE-FAIL or WAITING-FAIL can occur.<br><br>" +
-                    "When one of this failure is enabled<br>" +
-                    "the auto-move-retry is automatically <b>turned off</b>. </html>");
+                    "<center>When one of this failure is enabled<br>" +
+                    "the auto-move-retry is automatically <b>turned off</b>.<br><br><br><p color=\"red\"> Be sure <b>not to have active queries when changing settings</b>.<br>" +
+                    "If you have some queries that are being verified, <br>" +
+                    "stop them before confirming new failure parameters.</p><br><br></center> </html>");
             settingPanel.add(InfoLabel);
             settingPanel.add(confirmButton);
 
             secondFrame.getContentPane().add(settingPanel);
             secondFrame.setTitle("Settings");
-            secondFrame.setBounds(0, 0, 400, 300);
+            secondFrame.setBounds(0, 0, 450, 400);
             secondFrame.setLocation(dim.width/2-secondFrame.getSize().width/2, dim.height/2-secondFrame.getSize().height/2);
             secondFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             secondFrame.setVisible(true);
@@ -862,7 +864,7 @@ public class DSView implements DSAbstractView {
         try {
             vertical.setValue(vertical.getMaximum());
         }catch(Throwable e){
-            e.printStackTrace();
+           // e.printStackTrace();
         }
     }
     public JFrame getMainFrame(){return mainFrame;}
@@ -923,7 +925,10 @@ public class DSView implements DSAbstractView {
                             for (Component e : ((JPanel) c).getComponents())
                                 if (e instanceof JButton) {
                                     e.setVisible(true);
-                                    e.setEnabled(true);
+                                    if (!((DSQueryResult) mapWrapperTmp).getStillToVerify().equals("\n") && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.FAIL && ((DSQueryResult) mapWrapperTmp).getStatus()!=DSQuery.QueryStatus.MATCH ) {
+                                        e.setEnabled(true);
+                                    }
+
                                 }
                         }
                     }
