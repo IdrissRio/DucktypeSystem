@@ -27,15 +27,23 @@ import java.net.URL;
 
 import static it.uniud.ducktypesystem.distributed.system.DSCluster.akkaEnvironment;
 
+/**
+ * DSGView:
+ * Implementation of the DSAbstractView Inteface.
+ * Provide all the methods for the UI visualization except for the logger.
+ */
+
 public class DSView implements DSAbstractView {
-    private Integer lastHost;
-    private String defaultRobot;
+    private Color greenForest= new Color(11,102,35);
+    private Color pink= new Color(255, 102, 255);
     private Boolean autoMoveMOVEFAIL;
     private Boolean autoMoveCRITICALFAIL;
     private Boolean autoMoveWAITINGFAIL;
     private Integer backupMOVEFAIL;
     private Integer backupCRITICALFAIL;
     private Integer backupWAITINGFAIL;
+    private Integer lastHost;
+    private String defaultRobot;
     private DefaultListModel<Integer> activeHost;
     private JFrame mainFrame;
     private JButton queryButton;
@@ -49,8 +57,6 @@ public class DSView implements DSAbstractView {
     private Integer processNumber;
     private Graph graph;
     private Viewer viewer;
-    private Color greenForest= new Color(11,102,35);
-    private Color pink= new Color(255, 102, 255);
     private String graphPathString;
     private JTextField mainPathField;
     private Boolean graphCheck;
@@ -66,6 +72,7 @@ public class DSView implements DSAbstractView {
     private JPanel externalPanel;
 
     public DSView(DSApplication application) {
+        //Intialization of all the components of the view.
         try {
             {
                 try
@@ -85,8 +92,6 @@ public class DSView implements DSAbstractView {
                 }
                 catch (Exception e) {}
             }
-
-
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "DucktypeSystem");
             System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
             System.setProperty( "apple.laf.useScreenMenuBar", "true" );
@@ -100,6 +105,7 @@ public class DSView implements DSAbstractView {
             Image image = Toolkit.getDefaultToolkit().getImage(url);
             setDockIconImage.invoke(application2, image);
         } catch ( Throwable e ) {
+            //Empty catch. Not a macOSX
         }
         defaultRobot="robot";
         processNumber=3;
@@ -123,6 +129,33 @@ public class DSView implements DSAbstractView {
         activeHost.addElement(0);
     }
 
+    //Main method that is called from the DSApplication.
+    @Override
+    public void openApplication() {
+        welcomeFrame();
+        setup();
+        initMainFrame();
+        setMenuItem();
+        facade = null;
+        graphViewInit();
+        showInformationMessage("DucktypeSystem v 0.1");
+    }
+
+
+    @Override
+    public void exit() {
+        if(confirmExit())
+            App.exit();
+    }
+
+    private boolean confirmExit() {
+        return JOptionPane.showConfirmDialog(mainFrame,
+                "Do you really want to Exit?",
+                "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
+    }
+
+
+    //Mathod that handle the About in MacOS.
     private void aboutUsOnlyForMac(){
         JPanel welcomeMainPanel=new JPanel(new BorderLayout());
         ViewPanel graphViewNew;
@@ -131,6 +164,7 @@ public class DSView implements DSAbstractView {
         JLabel DucktypeSystemLbl= new JLabel("DucktypeSystem v. 0.1");
         JFrame aboutFrame = new JFrame();
         JLabel mallardLbl= new JLabel("<html><center> \"If it looks like a duck, swims like a duck,<br> and quacks like a duck, then it probably is a duck.\" <br> Just a Ducktype System...</center>  </html>");
+        Graph graph= new DefaultGraph("aboutUS");
         aboutFrame.setAlwaysOnTop(true);
         welcomeMainPanel.add(panelGraphNew, BorderLayout.CENTER);
         mallardLbl.setSize(200, 200);
@@ -144,7 +178,6 @@ public class DSView implements DSAbstractView {
         welcomeMainPanel.add(mallardLbl, BorderLayout.NORTH);
         welcomeMainPanel.setBackground(Color.BLACK);
         welcomeMainPanel.add(DucktypeSystemLbl, BorderLayout.SOUTH);
-
         try {
             graph=(Graph) DSGraphImpl.createGraphFromFile("src/main/resources/aboutUS.DGS").getGraphImpl();
         } catch (DSSystemError dsSystemError) {
@@ -156,7 +189,6 @@ public class DSView implements DSAbstractView {
         for (Node node : graph) {
             node.addAttribute("ui.label", node.getId());
         }
-
         viewer=new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         graphViewNew=viewer.addDefaultView(false);
@@ -171,27 +203,12 @@ public class DSView implements DSAbstractView {
 
 
 
-    public void openApplication() {
-        welcomeFrame();
-        setup();
-        initMainFrame();
-        setMenuItem();
-        facade = null;
-        graphViewInit();
-        showInformationMessage("DucktypeSystem v 0.1");
-    }
-
-    @Override
-    public void exit() {
-        if(confirmExit())
-            App.exit();
-    }
-
-    private boolean confirmExit() {
-        return JOptionPane.showConfirmDialog(mainFrame,
-                "Do you really want to Exit?",
-                "Groot say:", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
-    }
+    /*
+    This function handle the initial configuration of the application such:
+        * Graph path with relative control of the correctness of the graph.
+        * Number of active robots
+        * If the auto-move is enable.
+     */
 
     private void setup(){
         JDialog secondFrame = new JDialog();
@@ -287,13 +304,15 @@ public class DSView implements DSAbstractView {
             }
         });
     }
-    private boolean isAutoMoveEnable(){
-        return autoMoveCRITICALFAIL && autoMoveWAITINGFAIL && autoMoveMOVEFAIL;
-    }
-    private boolean isAutoMoveSelected(){
-        return autoMove = autoMoveCRITICALFAIL && autoMoveWAITINGFAIL && autoMoveMOVEFAIL;
-    }
 
+
+
+    /*
+    This metohod set the menu Item such:
+        * Setting: allow to select the failure level of the program.
+        * Robot Style: allow to select a different skin for the robot
+        * Exit: a shortcut for terminating the application.
+     */
     private void setMenuItem(){
         JMenuItem openMenuItem = new JMenuItem("Settings...");
         openMenuItem.setMnemonic(KeyEvent.VK_O);
@@ -567,6 +586,7 @@ public class DSView implements DSAbstractView {
         mainFrame.dispose();
     }
 
+    //This function render the main view application:
     private void initMainFrame(){
         mainPanel=new JPanel(new BorderLayout());
         JPanel southPanel=new JPanel(new BorderLayout());
@@ -641,6 +661,11 @@ public class DSView implements DSAbstractView {
 
         });
     }
+
+    /*
+    hostManager(): funciton that provide a little UI for
+     connecting and selecting a new host which will submit the query
+     */
 
     private void hostManager(){
         JDialog hostManagerFrame = new JDialog(getMainFrame());
@@ -722,6 +747,10 @@ public class DSView implements DSAbstractView {
         hostManagerFrame.setTitle("Select host...");
     }
 
+    /*
+    queryVisualization(): this function allow the system to
+    refesh the status of the submitted query.
+     */
     private ViewPanel queryVisualization(DSGraph x){
         ViewPanel queryViewPanel;
         graph =(Graph) x.getGraphImpl();
@@ -737,6 +766,10 @@ public class DSView implements DSAbstractView {
         queryViewPanel = viewer.addDefaultView(false);
         return queryViewPanel;
     }
+    /*
+    graphVisualization(): this function allow to render the
+    main query.
+ */
     private void graphVisualization(DSGraph x){
         graph =(Graph) x.getGraphImpl();
         graph.setStrict(false);
@@ -759,6 +792,7 @@ public class DSView implements DSAbstractView {
         graphPanel.add(graphView);
         graphPanel.updateUI();
     }
+
     private void graphViewInit(){
         graph=new DefaultGraph("WelcomeGraph");
         graph.setAttribute("ui.class", "marked");
@@ -767,6 +801,10 @@ public class DSView implements DSAbstractView {
         graphView=viewer.addDefaultView(false);
         graphPanel.add(graphView);
     }
+    /*
+    * Whit configureSystem() function we pass all the parameter
+     * that we have collected in the view to the DSDataFacade.
+    * */
     private void configureSystem(String filePath, int numRobot, DSAbstractLog log) throws DSSystemError {
         facade=DSDataFacade.create(filePath);
         facade.setOccupied(numRobot);
@@ -776,11 +814,26 @@ public class DSView implements DSAbstractView {
             b.append(s + " ");
         showInformationMessage(b.toString());
     }
+
+    private boolean isAutoMoveEnable(){
+        return autoMoveCRITICALFAIL && autoMoveWAITINGFAIL && autoMoveMOVEFAIL;
+    }
+    private boolean isAutoMoveSelected(){
+        return autoMove = autoMoveCRITICALFAIL && autoMoveWAITINGFAIL && autoMoveMOVEFAIL;
+    }
     private void setGraphCheck(Boolean b){graphCheck=b;}
     private void setQueryCheck(Boolean b){queryCheck=b;}
     private Boolean getGraphCheck(){return graphCheck;}
     private Boolean getQueryCheck(){return queryCheck;}
     private Boolean isStartEnable(){return getGraphCheck() && getQueryCheck();}
+
+    /**
+     * Those method:
+     *      *showInforamtionMessage
+     *      *showErrorMessage
+     *      *showQueryStatus
+     * allow the DSView to interface with the logger.
+     */
     public void showInformationMessage(String s){
         logger.log(s,greenForest);
         JScrollBar vertical = logScroll.getVerticalScrollBar();
@@ -813,12 +866,13 @@ public class DSView implements DSAbstractView {
         }
     }
     public JFrame getMainFrame(){return mainFrame;}
+
     @Override
     public void updateRobotsPosition() {
         StringBuilder b = new StringBuilder();
-        b.append("Robot posizionati in: ");
+        b.append("Robot positioned in: ");
         for (String s : facade.getOccupied())
-            b.append(s + " ");
+            b.append(s + " - ");
         showInformationMessage(b.toString());
         graph =(Graph) facade.getMap().getGraphImpl();
         graph.addAttribute("ui.stylesheet","url(nodeStyle.css)");
@@ -858,8 +912,9 @@ public class DSView implements DSAbstractView {
         }
     }
 
-    private void refreshQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
 
+    //This method allow the view to refresh the query status. In particular for the still-to-verofy query.
+    private void refreshQuery(DSQuery.QueryId qId, DSQuery.QueryStatus status) {
         String version = qId.getVersion();
         int host = qId.getHost();
         DSCluster.getInstance().getActiveQueries(host).forEach((mapVersionTmp, mapWrapperTmp) -> {
