@@ -1,0 +1,149 @@
+DGS004
+null 0 0
+an Trieste
+an Udine
+an Gorizia
+an Pordenone
+an Belluno
+an Treviso
+an Venezia
+an Padova
+an Vicenza
+an Verona
+an Rovigo
+an Ferrara
+an Ravenna
+an Forlì
+an Rimini
+an Bologna
+an Modena
+an Reggio-Emilia
+an Parma
+an Piacenza
+an Mantova
+an Cremona
+an Lodi
+an Pavia
+an Milano
+an Monza-Brianza
+an Varese
+an Como
+an Lecco
+an Sondrio
+an Bergamo
+an Brescia
+an Trento
+an Bolzano
+an Genova
+an La-Spezia
+an Savona
+an Imperia
+an Massa-Carrara
+an Lucca
+an Pistoia
+an Prato
+an Firenze
+an Arezzo
+an Siena
+an Grosseto
+an Livorno
+an Pisa
+ae TRIESTEGORIZIA Trieste Gorizia
+ae GORIZIAUDINE Gorizia Udine
+ae UDINEPORDENONE Udine Pordenone
+ae PORDENONEVENEZIA Pordenone Venezia
+ae PORDENONEBELLUNO Pordenone Belluno
+ae PORDENONETREVISO Pordenone Treviso
+ae UDINEBELLUNO Udine Belluno
+ae BELLUNOVICENZA Belluno Vicenza
+ae BELLUNOTREVISO Belluno Treviso
+ae TREVISOVICENZA Treviso Vicenza
+ae TREVISOPADOVA  Treviso Padova
+ae TREVISOVENEZIA Treviso Venezia
+ae VENEZIAPADOVA Venezia Padova
+ae VICENZAPADOVA Vicenza Padova
+ae VICENZAVERONA Vicenza Verona
+ae PADOVAVERONA Padova Verona
+ae PADOVAROVIGO Padova Rovigo
+ae ROVIGOFERRARA Rovigo Ferrara
+ae FERRARARAVENNA Ferrara Ravenna
+ae FERRARABOLOGNA Ferrara Bologna 
+ae FERRARAMODENA Ferrara Modena 
+ae RAVENNAFORLI Ravenna Forlì
+ae RAVENNABOLOGNA Ravenna Bologna
+ae FORLIRIMINI Forlì Rimini
+ae BOLOGNAMODENA Bologna Modena
+ae MODENAREGGIO Modena Reggio-Emilia
+ae REGGIOPARMA Reggio-Emilia Parma
+ae PARMAPIACENZA Parma Piacenza
+ae PIACENZAPAVIA Piacenza Pavia
+ae PIACENZALODI Piacenza Lodi
+ae PIACENZACREMONA Piacenza Cremona
+ae PARMACREMONA Parma Cremona
+ae REGGIOMANTOVA Reggio-Emilia Mantova
+ae MODENAMANTOVA Modena Mantova
+ae PAVIAMILANO Pavia Milano
+ae PAVIALODI Pavia Lodi 
+ae LODIMILANO Lodi Milano
+ae LODICREMONA Lodi Cremona 
+ae CREMONAMANTOVA Cremona Mantova
+ae CREMONAMILANO Cremona Milano
+ae CREMONABERGAMO Cremona Bergamo
+ae CREMONABRESCIA Cremona Brescia
+ae MANTOVABRESCIA Mantova Brescia
+ae MANTOVAROVIGO Mantova Rovigo
+ae MANTOVAVERONA Mantova Verona
+ae BRESCIAVERONA Brescia Verona
+ae BRESCIATRENTO Brescia Trento
+ae BRESCIABERGAMO Brescia Bergamo
+ae BRESCIASONDRIO Brescia Sondrio
+ae BERGAMOMILANO Bergamo Milano
+ae BERGAMOMONZA Bergamo Monza-Brianza
+ae BERGAMOLECCO Bergamo Lecco
+ae MILANOVARESE Milano Varese
+ae MILANOMONZA Milano Monza-Brianza
+ae VARESECOMO Varese Como
+ae VARESEMONZA Varese Monza-Brianza
+ae MONZACOMO Monza-Brianza Como
+ae MONZALECCO Monza-Brianza Lecco
+ae COMOLECCO Como Lecco
+ae COMOSONDRIO Como Sondrio
+ae SONDRIOBOLZANO Sondrio Bolzano
+ae SONDRIOTRENTO Sondrio Trento
+ae TRENTOVERONA Trento Verona
+ae TRENTOVICENZA Trento Vicenza
+ae TRENTOBELLUNO Trento Belluno 
+ae BOLZANOBELLUNO Bolzano Belluno
+ae IMPERIASAVONA Imperia Savona
+ae SAVONAGENOVA Savona Genova
+ae GENOVALASPEZIA Genova La-Spezia
+ae GENOVAPIACENZA Genova Piacenza
+ae GENOVAPARMA Genova Parma
+ae LASPEZIAPARMA La-Spezia Parma
+ae LASPEZIAMASSA La-Spezia Massa-Carrara
+ae MASSAPARMA Massa-Carrara Parma
+ae MASSAREGGIO Massa-Carrara Reggio-Emilia
+ae MASSALUCCA Massa-Carrara Lucca
+ae LUCCAREGGIO Lucca Reggio-Emilia
+ae LUCCAMODENA Lucca Modena
+ae LUCCAPISTOIA Lucca Pistoia
+ae LUCCAPISA Lucca Pisa
+ae PISTOIAMODENA Pistoia Modena
+ae ISTOIABOLOGNA Pistoia Bologna
+ae PISTOIAPRATO Pistoia Prato
+ae PISTOIAFIRENZE Pistoia Firenze
+ae PRATOBOLOGNA Prato Bologna
+ae PRATOFIRENZE Prato Firenze
+ae FIRENZEBOLOGNA Firenze Bologna
+ae FIRENZERAVENNA Firenze Ravenna
+ae FIRENZEFORLI Firenze Forlì
+ae FIRENZEAREZZO Firenze Arezzo
+ae FIRENZESIENA Firenze Siena
+ae AREZZOFORLI Arezzo Forlì
+ae AREZZORIMINI Arezzo Rimini
+ae AREZZOSIENA Arezzo Siena
+ae SIENAGROSSETO Siena Grosseto
+ae SIENAPISA Siena Pisa
+ae GROSSETOLIVORNO Grosseto Livorno
+ae GROSSETOPISA Grosseto Pisa
+

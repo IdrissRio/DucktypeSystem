@@ -7,6 +7,17 @@
 *.DS_Store
 *.ps
 *.inputs
+DS-BecchiRiouak/log/
+DS-BecchiRiouak/first-project/target/classes/
+DS-BecchiRiouak/first-project/target/test-classes/
+DS-BecchiRiouak/first-project/target/maven-status
+DS-BecchiRiouak/first-project/.idea/workspace.xml
+DS-BecchiRiouak/project/target/classes/
+DS-BecchiRiouak/project/target/test-classes/
+DS-BecchiRiouak/project/target/maven-status
+DS-BecchiRiouak/project/.idea/workspace.xml
+DS-BecchiRiouak/project/classes/
+DS-BecchiRiouak/project/.idea/artifacts/
 akka-stuff/log/
 akka-stuff/first-project/target/classes/
 akka-stuff/first-project/target/test-classes/
