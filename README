@@ -1,6 +1,6 @@
-Implementazione di un algoritmo per il problema del sottografo distribuito.
+#Implementazione di un algoritmo per il problema del sottografo distribuito.
 
-Il presente progetto fornisce un'implementazione del
+##Il presente progetto fornisce un'implementazione del
 subgraph isomorphism problem applicato a grafi
 etichettati dei quali non si ha una conoscenza centralizzata.
 Presenteremo le caratteristiche di un sistema di processi
@@ -59,3 +59,6 @@ che simula il contesto applicativo (i.e., la presenza di un luogo
 fisico nel quale distribuire i robot)
 in modo da monitorare e verificare la correttezza dell'esecuzione
 tramite un'interfaccia grafica.
+
+#Autori
+Anna Becchi - Idriss Riouak
