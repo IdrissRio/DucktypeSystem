@@ -1,20 +1,20 @@
 Implementazione di un algoritmo per il problema del sottografo distribuito.
 
-  Il presente progetto fornisce un'implementazione del
-  subgraph isomorphism problem applicato a grafi
-  etichettati dei quali non si ha una conoscenza centralizzata.
-  Presenteremo le caratteristiche di un sistema di processi
-  distribuiti in esecuzione su robot dislocati in un
-  luogo sconosciuto che dovranno comunicare autonomamente
-  per scoprire l'esistenza di un particolare percorso
-  (query) sottoposto al cluster.
-  Verranno fornite le implementazioni dei
-  processi, del sistema che simula l'ambiente fisico
-  di esecuzione e dell'interfaccia grafica, oltre a una
-  classe di file di test.
+Il presente progetto fornisce un'implementazione del
+subgraph isomorphism problem applicato a grafi
+etichettati dei quali non si ha una conoscenza centralizzata.
+Presenteremo le caratteristiche di un sistema di processi
+distribuiti in esecuzione su robot dislocati in un
+luogo sconosciuto che dovranno comunicare autonomamente
+per scoprire l'esistenza di un particolare percorso
+(query) sottoposto al cluster.
+Verranno fornite le implementazioni dei
+processi, del sistema che simula l'ambiente fisico
+di esecuzione e dell'interfaccia grafica, oltre a una
+classe di file di test.
 
 
-  Il subgraph isomorphism problem corrisponde a dover
+Il subgraph isomorphism problem corrisponde a dover
 stabilire se un grafo contiene un sottografo isomorfo ad
 un altro dato in input.
 Esistono diverse varianti dell'algoritmo che lo risolve, il quale è
